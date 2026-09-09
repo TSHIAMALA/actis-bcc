@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de Prorogation d'Échéance{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Demande de Prorogation d'Échéance</h2>
+        <p class="page-subtitle">
+            {% if action %}
+                Pour l'action : <strong>{{ action.libelle }}</strong> ({{ action.instruction.reference }})
+            {% elseif instruction %}
+                Pour l'instruction : <strong>{{ instruction.reference }}</strong> - {{ instruction.objet }}
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        {% if action %}
+            <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+        {% elseif instruction %}
+            <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="max-width: 650px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-calendar-plus" style="color: var(--bcc-gold);"></i> Formulaire de Report de Délai</h3>
+    </div>
+    <div class="card-body">
+        <div style="background: var(--bg-main); padding: 14px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 0.88rem;">
+            <strong>Échéance actuelle :</strong>
+            <span style="color: var(--color-danger); font-weight: 700; margin-left: 6px;">
+                {{ prorogation.ancienneEcheance ? prorogation.ancienneEcheance|date('d/m/Y') : 'Non définie' }}
+            </span>
+        </div>
+
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.nouvelleEcheance, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.nouvelleEcheance, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.nouvelleEcheance) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.motif, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.motif, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                {{ form_errors(form.motif) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                {% if action %}
+                    <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% elseif instruction %}
+                    <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send-fill"></i> Soumettre la demande
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

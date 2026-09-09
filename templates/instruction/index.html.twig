@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Répertoire des Instructions & Ordres de Service{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Instructions & Ordres de Service</h2>
+        <p class="page-subtitle">Répertoire complet des décisions et engagements du Gouverneur</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ path('app_export_instructions_csv') }}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-download"></i> Exporter CSV
+        </a>
+        <a href="{{ path('app_instruction_new') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Nouvelle Instruction
+        </a>
+    </div>
+</div>
+
+<!-- Filters Box -->
+<div class="filter-box">
+    <form method="get" action="{{ path('app_instruction_index') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: flex-end;">
+        <div>
+            <label class="form-label">Recherche</label>
+            <input type="text" name="q" class="form-control" placeholder="Réf, objet, émetteur..." value="{{ filters.q }}">
+        </div>
+        <div>
+            <label class="form-label">Statut</label>
+            <select name="statut" class="form-select">
+                <option value="">-- Tous les statuts --</option>
+                {% for st in statuts %}
+                    <option value="{{ st.id }}" {% if filters.statut == st.id %}selected{% endif %}>{{ st.libelle }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Priorité</label>
+            <select name="priorite" class="form-select">
+                <option value="">-- Toutes les priorités --</option>
+                {% for pr in priorites %}
+                    <option value="{{ pr.id }}" {% if filters.priorite == pr.id %}selected{% endif %}>{{ pr.libelle }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Type d'instruction</label>
+            <select name="type" class="form-select">
+                <option value="">-- Tous les types --</option>
+                {% for tp in types %}
+                    <option value="{{ tp.id }}" {% if filters.type == tp.id %}selected{% endif %}>{{ tp.libelle }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Direction pilote</label>
+            <select name="entite" class="form-select">
+                <option value="">-- Toutes les entités --</option>
+                {% for ent in entites %}
+                    <option value="{{ ent.id }}" {% if filters.entite == ent.id %}selected{% endif %}>{{ ent.code }} - {{ ent.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Filtre Retard</label>
+            <select name="retard" class="form-select">
+                <option value="">Tous les délais</option>
+                <option value="1" {% if filters.retard == '1' %}selected{% endif %}>Éléments en retard uniquement</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="bi bi-funnel"></i> Filtrer
+            </button>
+            <a href="{{ path('app_instruction_index') }}" class="btn btn-secondary" title="Réinitialiser les filtres">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Table Card -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-list-check"></i> Liste des Instructions ({{ instructions|length }})</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Référence</th>
+                        <th>Type</th>
+                        <th style="min-width: 220px;">Objet</th>
+                        <th>Direction Pilote</th>
+                        <th>Priorité</th>
+                        <th>Statut</th>
+                        <th>Échéance</th>
+                        <th style="width: 140px;">Avancement</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inst in instructions %}
+                        <tr {% if inst.isEnRetard %}style="background-color: #FEF2F2;"{% endif %}>
+                            <td>
+                                <a href="{{ path('app_instruction_show', {'id': inst.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
+                                    {{ inst.reference }}
+                                </a>
+                            </td>
+                            <td><span class="badge badge-secondary">{{ inst.typeInstruction.libelle }}</span></td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--bcc-navy);">{{ inst.objet }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                    Émetteur: {{ inst.emetteur|default('Gouverneur') }} &bull; Du {{ inst.dateInstruction|date('d/m/Y') }}
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ inst.entitePilote.code }}</strong>
+                                {% if inst.responsable %}
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Resp: {{ inst.responsable.nomComplet }}</div>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge {{ inst.priorite.badgeClass }}">{{ inst.priorite.libelle }}</span></td>
+                            <td><span class="badge {{ inst.statut.badgeClass }}">{{ inst.statut.libelle }}</span></td>
+                            <td>
+                                {% if inst.dateEcheance %}
+                                    <span style="font-size: 0.85rem; font-weight: 600; {% if inst.isEnRetard %}color: var(--color-danger);{% endif %}">
+                                        {{ inst.dateEcheance|date('d/m/Y') }}
+                                    </span>
+                                    {% if inst.isEnRetard %}
+                                        <div><span class="badge badge-danger" style="font-size: 0.65rem;">En retard</span></div>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: var(--text-muted);">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill {% if inst.tauxAvancement >= 80 %}success{% elseif inst.tauxAvancement >= 30 %}warning{% else %}danger{% endif %}" style="width: {{ inst.tauxAvancement }}%;"></div>
+                                    </div>
+                                    <span style="font-size: 0.75rem; font-weight: 700;">{{ inst.tauxAvancement }}%</span>
+                                </div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                                    {{ inst.actions|length }} action(s)
+                                </div>
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="{{ path('app_instruction_show', {'id': inst.id}) }}" class="btn btn-secondary btn-sm" title="Ouvrir la fiche 360°">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ path('app_instruction_edit', {'id': inst.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ path('app_export_instruction_fiche', {'id': inst.id}) }}" target="_blank" class="btn btn-secondary btn-sm" title="Fiche imprimable / PDF">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="bi bi-search" style="font-size: 2rem;"></i>
+                                <p style="margin-top: 8px;">Aucune instruction ne correspond à vos critères de recherche.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

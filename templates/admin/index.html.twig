@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration du Système{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Administration & Paramétrage</h2>
+        <p class="page-subtitle">Gestion des entités organisationnelles, habilitations et piste d'audit</p>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi-card blue">
+        <div class="kpi-icon-wrapper"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-content">
+            <div class="kpi-label">Utilisateurs Enregistrés</div>
+            <div class="kpi-value">{{ totalUsers }}</div>
+        </div>
+    </div>
+    <div class="kpi-card gold">
+        <div class="kpi-icon-wrapper"><i class="bi bi-building"></i></div>
+        <div class="kpi-content">
+            <div class="kpi-label">Entités & Directions</div>
+            <div class="kpi-value">{{ totalEntites }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Quick Admin Shortcuts -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-gear-fill" style="color: var(--bcc-navy-light);"></i> Modules d'Administration</h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+                <i class="bi bi-people-fill" style="font-size: 1.2rem; color: var(--bcc-navy);"></i>
+                <div>
+                    <div style="font-weight: 700;">Gestion des Utilisateurs</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Créer, modifier des comptes, assigner des profils et réinitialiser les mots de passe.</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_entites') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+                <i class="bi bi-diagram-3-fill" style="font-size: 1.2rem; color: var(--bcc-gold);"></i>
+                <div>
+                    <div style="font-weight: 700;">Hiérarchie & Organigramme des Entités</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Définir les directions générales, directions et services de la Banque Centrale.</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_audit') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+                <i class="bi bi-shield-lock-fill" style="font-size: 1.2rem; color: var(--color-purple);"></i>
+                <div>
+                    <div style="font-weight: 700;">Journal d'Audit Global</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Consulter la traçabilité intégrale des créations, modifications et validations.</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Audit Items -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-clock-history"></i> Dernières Activités du Système</h3>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                {% for log in recentAudit %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">{{ log.createdAt|date('d/m/Y H:i') }} &bull; {{ log.utilisateur ? log.utilisateur.nomComplet : 'Système' }}</div>
+                        <div class="timeline-content">
+                            <strong>{{ log.typeEvenement.libelle }}</strong> : {{ log.description }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="color: var(--text-muted);">Aucune activité consignée.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

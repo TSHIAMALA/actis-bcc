@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ACTIS-BCC{% endblock %} - Suivi des Instructions du Gouverneur | Banque Centrale du Congo</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {% if app.user %}
+        <div class="app-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="brand-logo-badge">BCC</div>
+                    <div class="brand-text">
+                        <h1>ACTIS-BCC</h1>
+                        <p>Cockpit Décisions</p>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <div class="nav-section-title">Pilotage Exécutif</div>
+                    <a href="{{ path('app_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2 icon"></i>
+                        <span>Tableau de bord</span>
+                    </a>
+
+                    <div class="nav-section-title">Gestion Opérationnelle</div>
+                    <a href="{{ path('app_instruction_index') }}" class="nav-link {% if 'app_instruction' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-journal-bookmark-fill icon"></i>
+                        <span>Instructions & OS</span>
+                    </a>
+                    <a href="{{ path('app_action_index') }}" class="nav-link {% if 'app_action' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-check2-square icon"></i>
+                        <span>Actions de suivi</span>
+                    </a>
+                    <a href="{{ path('app_prorogation_index') }}" class="nav-link {% if 'app_prorogation' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-calendar-range icon"></i>
+                        <span>Prorogations</span>
+                    </a>
+                    <a href="{{ path('app_relance_index') }}" class="nav-link {% if 'app_relance' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-bell-fill icon"></i>
+                        <span>Relances & Alertes</span>
+                    </a>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="nav-section-title">Administration</div>
+                        <a href="{{ path('app_admin_index') }}" class="nav-link {% if 'app_admin' in app.request.attributes.get('_route') %}active{% endif %}">
+                            <i class="bi bi-sliders icon"></i>
+                            <span>Paramètres & Entités</span>
+                        </a>
+                        <a href="{{ path('app_admin_utilisateurs') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_utilisateurs' %}active{% endif %}">
+                            <i class="bi bi-people-fill icon"></i>
+                            <span>Utilisateurs & Rôles</span>
+                        </a>
+                        <a href="{{ path('app_admin_audit') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_audit' %}active{% endif %}">
+                            <i class="bi bi-shield-check icon"></i>
+                            <span>Journal d'audit</span>
+                        </a>
+                    {% endif %}
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-snippet">
+                        <div class="user-avatar">
+                            {{ app.user.prenom|slice(0, 1)|upper }}{{ app.user.nom|slice(0, 1)|upper }}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ app.user.nomComplet }}</div>
+                            <div class="user-role">{{ app.user.entite ? app.user.entite.code : 'BCC' }} &bull; {{ app.user.primaryRoleLabel }}</div>
+                        </div>
+                        <a href="{{ path('app_logout') }}" title="Déconnexion" style="color: rgba(255,255,255,0.6); font-size: 1.1rem;">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Page Content -->
+            <div class="main-wrapper">
+                <!-- Topbar -->
+                <header class="topbar">
+                    <form action="{{ path('app_instruction_index') }}" method="get" class="topbar-search">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="q" placeholder="Rechercher une référence, objet, mot-clé..." value="{{ app.request.query.get('q') }}">
+                    </form>
+
+                    <div class="topbar-actions">
+                        <a href="{{ path('app_instruction_new') }}" class="btn-quick-new">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Nouvelle Instruction</span>
+                        </a>
+                        <a href="{{ path('app_export_instructions_csv') }}" class="btn btn-secondary btn-sm" title="Exporter toutes les instructions en CSV">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Exporter
+                        </a>
+                    </div>
+                </header>
+
+                <!-- Page body -->
+                <main class="content-container">
+                    {# Flash messages #}
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }}">
+                                {% if label == 'success' %}<i class="bi bi-check-circle-fill"></i>{% endif %}
+                                {% if label == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>{% endif %}
+                                {% if label == 'danger' %}<i class="bi bi-x-circle-fill"></i>{% endif %}
+                                {% if label == 'info' %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
+        </div>
+    {% else %}
+        {% block login_body %}{% endblock %}
+    {% endif %}
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

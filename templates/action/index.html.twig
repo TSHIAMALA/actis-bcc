@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actions Opérationnelles de Suivi{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Actions Opérationnelles</h2>
+        <p class="page-subtitle">Suivi granulaire des livrables et des engagements opérationnels</p>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <a href="{{ path('app_action_index', {'my_actions': '1'}) }}" class="btn {% if filters.my_actions %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+            <i class="bi bi-person-check-fill"></i> Mes Actions & Entité
+        </a>
+        <a href="{{ path('app_action_index', {'retard': '1'}) }}" class="btn {% if filters.retard == '1' %}btn-danger{% else %}btn-secondary{% endif %} btn-sm">
+            <i class="bi bi-alarm-fill"></i> Actions en Retard
+        </a>
+    </div>
+</div>
+
+<!-- Filter box -->
+<div class="filter-box">
+    <form method="get" action="{{ path('app_action_index') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: flex-end;">
+        <div>
+            <label class="form-label">Recherche</label>
+            <input type="text" name="q" class="form-control" placeholder="Libellé, réf, instruction..." value="{{ filters.q }}">
+        </div>
+        <div>
+            <label class="form-label">Statut</label>
+            <select name="statut" class="form-select">
+                <option value="">-- Tous les statuts --</option>
+                {% for st in statuts %}
+                    <option value="{{ st.id }}" {% if filters.statut == st.id %}selected{% endif %}>{{ st.libelle }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Direction Responsable</label>
+            <select name="entite" class="form-select">
+                <option value="">-- Toutes les directions --</option>
+                {% for ent in entites %}
+                    <option value="{{ ent.id }}" {% if filters.entite == ent.id %}selected{% endif %}>{{ ent.code }} - {{ ent.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Agent Responsable</label>
+            <select name="responsable" class="form-select">
+                <option value="">-- Tous les agents --</option>
+                {% for usr in utilisateurs %}
+                    <option value="{{ usr.id }}" {% if filters.responsable == usr.id %}selected{% endif %}>{{ usr.nomComplet }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="bi bi-funnel"></i> Filtrer
+            </button>
+            <a href="{{ path('app_action_index') }}" class="btn btn-secondary" title="Réinitialiser">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Actions List Card -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-check2-all"></i> Répertoire des Actions ({{ actions|length }})</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Instruction Parente</th>
+                        <th>Entité</th>
+                        <th>Responsable</th>
+                        <th>Échéance</th>
+                        <th style="width: 140px;">Avancement</th>
+                        <th>Statut</th>
+                        <th style="text-align: right;">Opérations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in actions %}
+                        <tr {% if act.isEnRetard %}style="background-color: #FEF2F2;"{% endif %}>
+                            <td>
+                                <a href="{{ path('app_action_show', {'id': act.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
+                                    {{ act.libelle }}
+                                </a>
+                                {% if act.reference %}
+                                    <span class="badge badge-secondary" style="font-size: 0.65rem;">{{ act.reference }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_instruction_show', {'id': act.instruction.id}) }}" style="color: var(--bcc-navy);">
+                                    <strong>{{ act.instruction.reference }}</strong>
+                                </a>
+                            </td>
+                            <td><strong>{{ act.entiteResponsable.code }}</strong></td>
+                            <td>{{ act.responsable ? act.responsable.nomComplet : '<span style="color: var(--text-muted);">Non assigné</span>'|raw }}</td>
+                            <td>
+                                {% if act.dateEcheance %}
+                                    <span style="font-weight: 600; font-size: 0.85rem; {% if act.isEnRetard %}color: var(--color-danger);{% endif %}">
+                                        {{ act.dateEcheance|date('d/m/Y') }}
+                                    </span>
+                                    {% if act.isEnRetard %}
+                                        <div><span class="badge badge-danger" style="font-size: 0.65rem;">En retard</span></div>
+                                    {% endif %}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill {% if act.tauxAvancement >= 80 %}success{% elseif act.tauxAvancement >= 30 %}warning{% else %}danger{% endif %}" style="width: {{ act.tauxAvancement }}%;"></div>
+                                    </div>
+                                    <span style="font-size: 0.75rem; font-weight: 700;">{{ act.tauxAvancement }}%</span>
+                                </div>
+                            </td>
+                            <td><span class="badge {{ act.statut.badgeClass }}">{{ act.statut.libelle }}</span></td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="{{ path('app_action_avancement', {'id': act.id}) }}" class="btn btn-gold btn-sm" title="Mettre à jour l'avancement">
+                                    <i class="bi bi-speedometer2"></i>
+                                </a>
+                                <a href="{{ path('app_justificatif_depot', {'action_id': act.id}) }}" class="btn btn-secondary btn-sm" title="Déposer un justificatif">
+                                    <i class="bi bi-paperclip"></i>
+                                </a>
+                                <a href="{{ path('app_action_show', {'id': act.id}) }}" class="btn btn-secondary btn-sm" title="Consulter la fiche">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 36px; color: var(--text-muted);">
+                                Aucune action trouvée selon les filtres sélectionnés.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

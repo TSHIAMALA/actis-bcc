@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dépôt de Justificatif / Preuve d'Exécution{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Téléversement d'un Justificatif</h2>
+        <p class="page-subtitle">
+            {% if action %}
+                Rattaché à l'action : <strong>{{ action.libelle }}</strong> ({{ action.instruction.reference }})
+            {% elseif instruction %}
+                Rattaché à l'instruction : <strong>{{ instruction.reference }}</strong> - {{ instruction.objet }}
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        {% if action %}
+            <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour à l'action
+            </a>
+        {% elseif instruction %}
+            <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour à l'instruction
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-upload" style="color: var(--bcc-gold);"></i> Dépôt de Fichier</h3>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.fichier, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.fichier, {'attr': {'class': 'form-control'}}) }}
+                <small style="color: var(--text-muted); font-size: 0.75rem;">Formats acceptés : PDF, Word, Excel, Images (JPG, PNG). Taille max : 20 Mo.</small>
+                {{ form_errors(form.fichier) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                {% if action %}
+                    <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% elseif instruction %}
+                    <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-cloud-arrow-up-fill"></i> Téléverser la pièce
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

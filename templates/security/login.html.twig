@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - ACTIS-BCC{% endblock %}
+
+{% block login_body %}
+<div style="min-height: 100vh; background: linear-gradient(135deg, var(--bcc-navy-dark) 0%, var(--bcc-navy) 50%, var(--bcc-navy-light) 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="width: 100%; max-width: 480px; background: #FFFFFF; border-radius: var(--radius-lg); box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+        <!-- Header -->
+        <div style="background: var(--bcc-navy); padding: 32px 28px 24px; text-align: center; color: #FFFFFF; border-bottom: 3px solid var(--bcc-gold);">
+            <div style="width: 60px; height: 60px; margin: 0 auto 14px; background: linear-gradient(135deg, var(--bcc-gold) 0%, #9B6E12 100%); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; color: #FFFFFF; box-shadow: 0 4px 12px rgba(201, 151, 38, 0.4);">
+                BCC
+            </div>
+            <h1 style="color: #FFFFFF; font-size: 1.45rem; margin-bottom: 4px;">ACTIS - BCC</h1>
+            <p style="color: var(--bcc-gold-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.6px; margin: 0;">
+                Suivi des Ordres et Instructions du Gouverneur
+            </p>
+        </div>
+
+        <div style="padding: 28px;">
+            {% if error %}
+                <div class="alert alert-danger" style="margin-bottom: 20px;">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Identifiant (Email ou Matricule)</label>
+                    <div style="position: relative;">
+                        <i class="bi bi-person" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;"></i>
+                        <input type="text" id="username" name="_username" value="{{ last_username }}" required autofocus class="form-control" style="padding-left: 42px;" placeholder="Ex: admin.actis@bcc.local ou ACTIS001">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Mot de passe</label>
+                    <div style="position: relative;">
+                        <i class="bi bi-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;"></i>
+                        <input type="password" id="password" name="_password" required class="form-control" style="padding-left: 42px;" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 0.95rem;">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Se connecter au Cockpit</span>
+                </button>
+            </form>
+
+            <!-- Demo quick fill accounts -->
+            <div style="margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; text-align: center;">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--bcc-gold);"></i> Comptes de démonstration (Mot de passe: <code>password</code>)
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('admin.actis@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-shield-lock"></i> Admin (DSI)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('paul.kabeya@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-briefcase"></i> Cabinet / Secr.
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('marie.mukendi@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-person-badge"></i> Dir. Générale (DG)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('jean.tshibanda@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-building"></i> Directeur (DOPM)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('patrick.ilunga@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-person-check"></i> Resp. Marchés (SM)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('david.kasongo@bcc.local', 'password')" style="font-size: 0.75rem;">
+                        <i class="bi bi-eye"></i> Consultation (DRH)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #F8FAFC; padding: 14px; text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-color);">
+            Banque Centrale du Congo &bull; Système Sécurisé de Gouvernance
+        </div>
+    </div>
+</div>
+
+<script>
+function setCredentials(email, pass) {
+    document.getElementById('username').value = email;
+    document.getElementById('password').value = pass;
+}
+</script>
+{% endblock %}

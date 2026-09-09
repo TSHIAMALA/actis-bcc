@@ -1,0 +1,16 @@
+parameters:
+    justificatifs_directory: '%kernel.project_dir%/public/uploads/justificatifs'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            string $targetDirectory: '%justificatifs_directory%'
+
+    App\:
+        resource: '../src/'
+
+    App\Service\FileUploader:
+        arguments:
+            $targetDirectory: '%justificatifs_directory%'

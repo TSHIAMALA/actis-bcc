@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Transmettre une Relance{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Transmettre une Relance Manuelle</h2>
+        <p class="page-subtitle">
+            {% if action %}
+                Pour l'action : <strong>{{ action.libelle }}</strong> ({{ action.instruction.reference }})
+            {% elseif instruction %}
+                Pour l'instruction : <strong>{{ instruction.reference }}</strong> - {{ instruction.objet }}
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        {% if action %}
+            <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+        {% elseif instruction %}
+            <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-bell-fill" style="color: var(--bcc-gold);"></i> Message de Relance</h3>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.destinataireUtilisateur, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.destinataireUtilisateur, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.destinataireUtilisateur) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.objet, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.objet, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.objet) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.message, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.message, {'attr': {'class': 'form-control', 'rows': 6}}) }}
+                {{ form_errors(form.message) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                {% if action %}
+                    <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% elseif instruction %}
+                    <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send-fill"></i> Transmettre la relance
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

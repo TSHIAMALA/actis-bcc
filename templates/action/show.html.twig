@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Action : {{ action.libelle }}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span class="badge badge-secondary" style="font-size: 0.85rem;">{{ action.reference|default('ACTION') }}</span>
+            <span class="badge {{ action.statut.badgeClass }}" style="font-size: 0.85rem;">{{ action.statut.libelle }}</span>
+            {% if action.isEnRetard %}
+                <span class="badge badge-danger" style="font-size: 0.85rem;"><i class="bi bi-alarm-fill"></i> En retard</span>
+            {% endif %}
+        </div>
+        <h2 class="page-title" style="margin: 0;">{{ action.libelle }}</h2>
+        <p class="page-subtitle">
+            Rattachée à : <a href="{{ path('app_instruction_show', {'id': action.instruction.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
+                {{ action.instruction.reference }}
+            </a> - {{ action.instruction.objet }}
+        </p>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{{ path('app_relance_new', {'action_id': action.id}) }}" class="btn btn-secondary btn-sm" title="Envoyer une relance pour cette action">
+            <i class="bi bi-bell"></i> Relancer
+        </a>
+        <a href="{{ path('app_prorogation_demande', {'action_id': action.id}) }}" class="btn btn-secondary btn-sm" title="Demander un report d'échéance">
+            <i class="bi bi-calendar-plus"></i> Prorogation
+        </a>
+        <a href="{{ path('app_justificatif_depot', {'action_id': action.id}) }}" class="btn btn-secondary btn-sm" title="Joindre un livrable / preuve">
+            <i class="bi bi-paperclip"></i> Déposer Justificatif
+        </a>
+        <a href="{{ path('app_action_avancement', {'id': action.id}) }}" class="btn btn-gold btn-sm">
+            <i class="bi bi-speedometer2"></i> Mettre à jour l'Avancement
+        </a>
+        <a href="{{ path('app_action_edit', {'id': action.id}) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil"></i> Modifier
+        </a>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-bottom: 24px;">
+    <!-- Details Card -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-card-checklist" style="color: var(--bcc-navy-light);"></i> Caractéristiques de l'Action</h3>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Entité Responsable</div>
+                    <div style="font-weight: 700; color: var(--bcc-navy);">{{ action.entiteResponsable.nomComplet }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Agent Assigné</div>
+                    <div style="font-weight: 600;">{{ action.responsable ? action.responsable.nomComplet : 'Non assigné' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Date de Début</div>
+                    <div style="font-weight: 600;">{{ action.dateDebut ? action.dateDebut|date('d/m/Y') : '-' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Date d'Échéance</div>
+                    <div style="font-weight: 700; {% if action.isEnRetard %}color: var(--color-danger);{% endif %}">
+                        {{ action.dateEcheance ? action.dateEcheance|date('d/m/Y') : 'Non définie' }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Date de Réalisation</div>
+                    <div style="font-weight: 600;">{{ action.dateRealisation ? action.dateRealisation|date('d/m/Y') : '-' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Niveau de Priorité</div>
+                    <div style="font-weight: 600;">{{ action.priorite ? action.priorite.libelle : 'Normale' }}</div>
+                </div>
+            </div>
+
+            {% if action.resultatAttendu %}
+                <div style="background: var(--bg-main); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 12px;">
+                    <div style="font-weight: 700; font-size: 0.78rem; color: var(--bcc-navy); text-transform: uppercase; margin-bottom: 2px;">Résultat Attendu / Livrable :</div>
+                    <div style="font-size: 0.88rem;">{{ action.resultatAttendu|nl2br }}</div>
+                </div>
+            {% endif %}
+
+            {% if action.resultatObtenu %}
+                <div style="background: #ECFDF5; padding: 12px 16px; border-radius: var(--radius-md); border-left: 3px solid var(--color-success);">
+                    <div style="font-weight: 700; font-size: 0.78rem; color: var(--color-success); text-transform: uppercase; margin-bottom: 2px;">Résultat Obtenu / Compte-rendu :</div>
+                    <div style="font-size: 0.88rem;">{{ action.resultatObtenu|nl2br }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Validation & Gauge Card -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-shield-check" style="color: var(--bcc-gold);"></i> Contrôle & Validation</h3>
+        </div>
+        <div class="card-body">
+            <!-- Progress box -->
+            <div style="text-align: center; padding: 16px; background: var(--bg-main); border-radius: var(--radius-lg); margin-bottom: 20px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">Taux d'Avancement</div>
+                <div style="font-size: 2.5rem; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--bcc-navy); margin: 2px 0 8px;">
+                    {{ action.tauxAvancement }} %
+                </div>
+                <div class="progress-bar-container" style="height: 10px; max-width: 280px; margin: 0 auto;">
+                    <div class="progress-bar-fill {% if action.tauxAvancement >= 80 %}success{% elseif action.tauxAvancement >= 30 %}warning{% else %}danger{% endif %}" style="width: {{ action.tauxAvancement }}%;"></div>
+                </div>
+            </div>
+
+            <!-- Validation decision box -->
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); padding: 16px; border-radius: var(--radius-md);">
+                <div style="font-weight: 700; font-size: 0.85rem; color: var(--bcc-navy); margin-bottom: 8px;">
+                    <i class="bi bi-check-circle-fill" style="color: var(--color-success);"></i> Circuit de Validation d'Exécution
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    Une fois le travail réalisé et les justificatifs déposés, la cellule de suivi ou la direction valide l'exécution ou demande des compléments.
+                </p>
+
+                <form action="{{ path('app_action_valider', {'id': action.id}) }}" method="post">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <input type="text" name="motif" class="form-control form-control-sm" placeholder="Motif ou observations éventuelles..." style="font-size: 0.82rem;">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" name="decision" value="VALIDE" class="btn btn-success btn-sm" style="flex: 1;">
+                            <i class="bi bi-check2-circle"></i> Valider Exécutée
+                        </button>
+                        <button type="submit" name="decision" value="COMPLEMENT" class="btn btn-secondary btn-sm" style="color: var(--color-warning);">
+                            <i class="bi bi-arrow-counterclockwise"></i> Complément
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Two columns: Justificatifs & History -->
+<div class="grid-2">
+    <!-- Justificatifs -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-paperclip"></i> Justificatifs & Preuves ({{ action.justificatifs|length }})</h3>
+            <a href="{{ path('app_justificatif_depot', {'action_id': action.id}) }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-upload"></i> Déposer
+            </a>
+        </div>
+        <div class="card-body" style="padding: 12px 20px;">
+            {% for just in action.justificatifs %}
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--bcc-navy);">
+                            {% if just.isPdf %}
+                                <i class="bi bi-file-earmark-pdf-fill" style="color: #DC2626; margin-right: 4px;"></i>
+                            {% elseif just.isImage %}
+                                <i class="bi bi-file-earmark-image-fill" style="color: #2563EB; margin-right: 4px;"></i>
+                            {% else %}
+                                <i class="bi bi-file-earmark-text-fill" style="color: #64748B; margin-right: 4px;"></i>
+                            {% endif %}
+                            {{ just.nomFichier }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                            {{ just.tailleLisible }} &bull; Le {{ just.dateDepot|date('d/m/Y H:i') }} par {{ just.deposePar ? just.deposePar.nomComplet : 'Système' }}
+                            {% if just.description %} &bull; <em>{{ just.description }}</em>{% endif %}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <a href="{{ path('app_justificatif_download', {'id': just.id}) }}" class="btn btn-secondary btn-sm" title="Télécharger">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        <form action="{{ path('app_justificatif_delete', {'id': just.id}) }}" method="post" onsubmit="return confirm('Supprimer ce fichier ?');">
+                            <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-danger);" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                    Aucun justificatif déposé pour cette action.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-clock-history"></i> Historique de l'Action</h3>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                {% for hist in action.historiques %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">{{ hist.createdAt|date('d/m/Y à H:i') }} &bull; {{ hist.utilisateur ? hist.utilisateur.nomComplet : 'Système' }}</div>
+                        <div class="timeline-content">
+                            <strong>{{ hist.typeEvenement.libelle }}</strong> : {{ hist.description }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Aucun historique consigné.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comments Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-chat-left-text-fill"></i> Commentaires & Consignes ({{ action.commentaires|length }})</h3>
+    </div>
+    <div class="card-body">
+        <div style="margin-bottom: 20px;">
+            {{ form_start(commentForm) }}
+                {{ form_widget(commentForm.commentaire, {'attr': {'class': 'form-control', 'rows': 2, 'placeholder': 'Ajouter une note ou consigne sur cette action...'}}) }}
+                <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-send-fill"></i> Publier
+                    </button>
+                </div>
+            {{ form_end(commentForm) }}
+        </div>
+
+        <div>
+            {% for comm in action.commentaires %}
+                <div style="background: var(--bg-main); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 10px; border-left: 3px solid var(--bcc-gold);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <strong style="color: var(--bcc-navy); font-size: 0.85rem;">{{ comm.utilisateur.nomComplet }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ comm.createdAt|date('d/m/Y à H:i') }}</span>
+                    </div>
+                    <div style="font-size: 0.85rem;">{{ comm.commentaire|nl2br }}</div>
+                </div>
+            {% else %}
+                <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 12px;">
+                    Aucun commentaire sur cette action.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

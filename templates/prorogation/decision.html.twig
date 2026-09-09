@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statuer sur la Demande de Prorogation{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Décision sur la Prorogation</h2>
+        <p class="page-subtitle">Demande émise le {{ prorogation.dateDemande|date('d/m/Y H:i') }} par {{ prorogation.demandePar ? prorogation.demandePar.nomComplet : 'N/A' }}</p>
+    </div>
+    <div>
+        <a href="{{ path('app_prorogation_index') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 650px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-shield-check" style="color: var(--bcc-gold);"></i> Décision d'Autorité</h3>
+    </div>
+    <div class="card-body">
+        <div style="background: var(--bg-main); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+            <div style="font-size: 0.85rem; margin-bottom: 6px;">
+                <strong>Cible :</strong>
+                {% if prorogation.action %}
+                    Action <em>{{ prorogation.action.libelle }}</em> ({{ prorogation.instruction.reference }})
+                {% else %}
+                    Instruction <em>{{ prorogation.instruction.reference }}</em>
+                {% endif %}
+            </div>
+            <div style="font-size: 0.85rem; margin-bottom: 6px;">
+                <strong>Échéance actuelle :</strong> {{ prorogation.ancienneEcheance|date('d/m/Y') }} &rarr;
+                <strong>Nouvelle date proposée :</strong> <span style="color: var(--color-success); font-weight: 700;">{{ prorogation.nouvelleEcheance|date('d/m/Y') }}</span>
+            </div>
+            <div style="font-size: 0.85rem; margin-top: 8px;">
+                <strong>Motif invoqué :</strong>
+                <div style="font-style: italic; color: var(--text-secondary); margin-top: 2px;">"{{ prorogation.motif }}"</div>
+            </div>
+        </div>
+
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.statutProrogation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.statutProrogation, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.statutProrogation) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.commentaireValidation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.commentaireValidation, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                {{ form_errors(form.commentaireValidation) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ path('app_prorogation_index') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Enregistrer la décision
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

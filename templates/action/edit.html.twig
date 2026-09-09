@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'action - {{ action.libelle }}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Modifier l'Action Opérationnelle</h2>
+        <p class="page-subtitle">Instruction : <a href="{{ path('app_instruction_show', {'id': action.instruction.id}) }}">{{ action.instruction.reference }}</a></p>
+    </div>
+    <div>
+        <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Retour à l'action
+        </a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 850px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-pencil-square" style="color: var(--bcc-gold);"></i> Paramètres de l'Action</h3>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.libelle, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.libelle, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.libelle) }}
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.entiteResponsable, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.entiteResponsable, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.entiteResponsable) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.responsable, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.responsable) }}
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.dateDebut) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.dateEcheance, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.dateEcheance, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.dateEcheance) }}
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.priorite, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.priorite, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.priorite) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.reference, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.reference, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.reference) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.resultatAttendu, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.resultatAttendu, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.resultatAttendu) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ path('app_action_show', {'id': action.id}) }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Enregistrer
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

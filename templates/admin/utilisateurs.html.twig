@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs - Administration{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Gestion des Utilisateurs</h2>
+        <p class="page-subtitle">Comptes d'accès, affectations et rôles applicatifs</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus-fill"></i> Nouvel Utilisateur
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-people-fill"></i> Liste des Utilisateurs ({{ users|length }})</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Matricule</th>
+                        <th>Nom Complet</th>
+                        <th>Email Professionnel</th>
+                        <th>Entité de Rattachement</th>
+                        <th>Rôles / Profils</th>
+                        <th>Statut</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td><strong>{{ u.matricule }}</strong></td>
+                            <td>{{ u.nomComplet }}</td>
+                            <td>{{ u.email }}</td>
+                            <td><span class="badge badge-secondary">{{ u.entite.nomComplet }}</span></td>
+                            <td>
+                                {% for r in u.appRoles %}
+                                    <span class="badge badge-info">{{ r.libelle }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if u.actif %}
+                                    <span class="badge badge-success">Actif</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="{{ path('app_admin_user_edit', {'id': u.id}) }}" class="btn btn-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moteur de Relances & Notifications{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Relances & Notifications</h2>
+        <p class="page-subtitle">Dispositif automatisé et manuel de rappels d'échéances et d'escalades</p>
+    </div>
+    <div>
+        <form action="{{ path('app_relance_trigger_engine') }}" method="post" style="display: inline-block;">
+            <button type="submit" class="btn btn-gold btn-sm">
+                <i class="bi bi-arrow-repeat"></i> Exécuter le Scan Automatique des Échéances
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-bell-fill" style="color: var(--bcc-gold);"></i> Historique des Relances Transmises ({{ relances|length }})</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date d'Envoi</th>
+                        <th>Type de Relance</th>
+                        <th>Destinataire</th>
+                        <th>Cible (Instruction / Action)</th>
+                        <th>Objet</th>
+                        <th>Canal</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in relances %}
+                        <tr>
+                            <td style="font-size: 0.78rem; font-weight: 600;">
+                                {{ r.dateEnvoi ? r.dateEnvoi|date('d/m/Y H:i') : r.datePlanifiee|date('d/m/Y') }}
+                            </td>
+                            <td><span class="badge badge-secondary">{{ r.typeRelance.libelle }}</span></td>
+                            <td>
+                                <strong>{{ r.destinataireUtilisateur ? r.destinataireUtilisateur.nomComplet : r.destinataireEmail }}</strong>
+                                <div style="font-size: 0.72rem; color: var(--text-muted);">{{ r.destinataireEmail }}</div>
+                            </td>
+                            <td>
+                                {% if r.action %}
+                                    <a href="{{ path('app_action_show', {'id': r.action.id}) }}">{{ r.action.libelle }}</a>
+                                {% elseif r.instruction %}
+                                    <a href="{{ path('app_instruction_show', {'id': r.instruction.id}) }}">{{ r.instruction.reference }}</a>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem; max-width: 250px;">{{ r.objet }}</td>
+                            <td><span class="badge badge-info">{{ r.canalNotification.libelle }}</span></td>
+                            <td><span class="badge badge-success">{{ r.statutRelance.libelle }}</span></td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">
+                                Aucune relance transmise.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

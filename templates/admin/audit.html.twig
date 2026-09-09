@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Journal d'Audit & Traçabilité - Administration{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Journal d'Audit & Piste de Contrôle</h2>
+        <p class="page-subtitle">Historique inaltérable de tous les événements, modifications et validations</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-shield-check" style="color: var(--color-purple);"></i> Journal des 100 Dernières Activités</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date & Heure</th>
+                        <th>Type d'Événement</th>
+                        <th>Auteur / Utilisateur</th>
+                        <th>Entité</th>
+                        <th>Cible</th>
+                        <th>Description de l'Événement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in logs %}
+                        <tr>
+                            <td style="font-size: 0.78rem; font-weight: 600; white-space: nowrap;">
+                                {{ l.createdAt|date('d/m/Y H:i:s') }}
+                            </td>
+                            <td><span class="badge badge-secondary">{{ l.typeEvenement.libelle }}</span></td>
+                            <td><strong>{{ l.utilisateur ? l.utilisateur.nomComplet : 'Système' }}</strong></td>
+                            <td>{{ l.entite ? l.entite.code : '-' }}</td>
+                            <td>
+                                {% if l.action %}
+                                    <span class="badge badge-info">Action</span>
+                                    <a href="{{ path('app_action_show', {'id': l.action.id}) }}">{{ l.action.libelle|u.truncate(25, '...') }}</a>
+                                {% elseif l.instruction %}
+                                    <span class="badge badge-primary">Instruction</span>
+                                    <a href="{{ path('app_instruction_show', {'id': l.instruction.id}) }}">{{ l.instruction.reference }}</a>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem;">{{ l.description }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                Aucun journal disponible.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

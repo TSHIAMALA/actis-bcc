@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Organigramme & Entités - Administration{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Entités Organisationnelles</h2>
+        <p class="page-subtitle">Structure hiérarchique : Directions Générales, Directions et Services de la BCC</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_entite_new') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Nouvelle Entité
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-diagram-3-fill"></i> Liste des Entités ({{ entites|length }})</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Code / Sigle</th>
+                        <th>Nom de l'Entité</th>
+                        <th>Type d'Entité</th>
+                        <th>Rattachement Parente</th>
+                        <th>Statut</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in entites %}
+                        <tr>
+                            <td><strong>{{ e.code }}</strong></td>
+                            <td>{{ e.nom }}</td>
+                            <td><span class="badge badge-secondary">{{ e.typeEntite.libelle }}</span></td>
+                            <td>{{ e.parent ? e.parent.nomComplet : '<span class="text-muted">Racine (Aucun)</span>'|raw }}</td>
+                            <td>
+                                {% if e.actif %}
+                                    <span class="badge badge-success">Actif</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="{{ path('app_admin_entite_edit', {'id': e.id}) }}" class="btn btn-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

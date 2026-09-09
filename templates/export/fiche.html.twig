@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche Synthétique - {{ instruction.reference }} - BCC</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif, Arial;
+            color: #111;
+            line-height: 1.4;
+            font-size: 13px;
+            background: #fff;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #0F2544;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 4px;
+            color: #0F2544;
+        }
+        .header h2 {
+            font-size: 14px;
+            margin: 0;
+            color: #C99726;
+            text-transform: uppercase;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .meta-item strong {
+            display: inline-block;
+            width: 140px;
+            color: #0F2544;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0F2544;
+            text-transform: uppercase;
+            border-bottom: 1px solid #0F2544;
+            padding-bottom: 4px;
+            margin: 20px 0 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #CBD5E1;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        table th {
+            background: #F1F5F9;
+            color: #0F2544;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 1px solid #999;
+        }
+        .progress-box {
+            text-align: right;
+            font-weight: bold;
+            font-size: 15px;
+            color: #0F2544;
+        }
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #64748B;
+            border-top: 1px solid #CBD5E1;
+            padding-top: 8px;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+        <button onclick="window.print()" style="padding: 8px 16px; background: #0F2544; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            Imprimer la fiche
+        </button>
+    </div>
+
+    <div class="header">
+        <h1>Banque Centrale du Congo</h1>
+        <h2>Système ACTIS - Fiche de Suivi des Instructions du Gouverneur</h2>
+    </div>
+
+    <div class="meta-grid">
+        <div class="meta-item"><strong>Référence :</strong> {{ instruction.reference }}</div>
+        <div class="meta-item"><strong>Type :</strong> {{ instruction.typeInstruction.libelle }}</div>
+        <div class="meta-item"><strong>Date d'émission :</strong> {{ instruction.dateInstruction|date('d/m/Y') }}</div>
+        <div class="meta-item"><strong>Échéance globale :</strong> {{ instruction.dateEcheance ? instruction.dateEcheance|date('d/m/Y') : 'Non définie' }}</div>
+        <div class="meta-item"><strong>Direction Pilote :</strong> {{ instruction.entitePilote.nomComplet }}</div>
+        <div class="meta-item"><strong>Responsable désigné :</strong> {{ instruction.responsable ? instruction.responsable.nomComplet : 'Non spécifié' }}</div>
+        <div class="meta-item"><strong>Niveau de Priorité :</strong> {{ instruction.priorite.libelle }}</div>
+        <div class="meta-item"><strong>Statut Actuel :</strong> {{ instruction.statut.libelle }}</div>
+    </div>
+
+    <div class="section-title">Objet de l'Instruction / Ordre de Service</div>
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #0F2544;">
+        {{ instruction.objet }}
+    </div>
+    {% if instruction.description %}
+        <div style="background: #FAF5E8; border-left: 3px solid #C99726; padding: 10px 14px; margin-bottom: 16px; font-size: 12px;">
+            {{ instruction.description|nl2br }}
+        </div>
+    {% endif %}
+
+    <div class="section-title">
+        Actions Opérationnelles & État d'Exécution (Avancement Global : {{ instruction.tauxAvancement }}%)
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30px;">#</th>
+                <th>Intitulé de l'Action</th>
+                <th>Entité Responsable</th>
+                <th>Responsable</th>
+                <th>Échéance</th>
+                <th style="text-align: center;">Avancement</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for idx, act in instruction.actions %}
+                <tr>
+                    <td>{{ idx + 1 }}</td>
+                    <td>
+                        <strong>{{ act.libelle }}</strong>
+                        {% if act.resultatAttendu %}<div style="font-size: 10px; color: #555;">Livrable: {{ act.resultatAttendu }}</div>{% endif %}
+                    </td>
+                    <td>{{ act.entiteResponsable.code }}</td>
+                    <td>{{ act.responsable ? act.responsable.nomComplet : '-' }}</td>
+                    <td>{{ act.dateEcheance ? act.dateEcheance|date('d/m/Y') : '-' }}</td>
+                    <td style="text-align: center; font-weight: bold;">{{ act.tauxAvancement }}%</td>
+                    <td><span class="badge">{{ act.statut.libelle }}</span></td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #777;">Aucune action enregistrée.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if instruction.justificatifs|length > 0 %}
+        <div class="section-title">Pièces Justificatives Déposées</div>
+        <ul>
+            {% for j in instruction.justificatifs %}
+                <li><strong>{{ j.nomFichier }}</strong> ({{ j.tailleLisible }}) - Déposé le {{ j.dateDepot|date('d/m/Y') }} par {{ j.deposePar ? j.deposePar.nomComplet : 'Système' }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="footer">
+        <div>Banque Centrale du Congo &bull; ACTIS-BCC</div>
+        <div>Document édité le {{ "now"|date('d/m/Y à H:i') }}</div>
+    </div>
+</body>
+</html>

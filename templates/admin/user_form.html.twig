@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% if isEdit %}Modifier l'utilisateur{% else %}Nouvel Utilisateur{% endif %}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h2 class="page-title">{% if isEdit %}Modifier l'utilisateur : {{ user.nomComplet }}{% else %}Créer un Utilisateur{% endif %}</h2>
+        <p class="page-subtitle">Affectation aux entités et habilitations</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-person-fill-gear"></i> Formulaire Utilisateur</h3>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.matricule, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.matricule, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.matricule) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.prenom) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.nom) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.postnom, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.postnom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.postnom) }}
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.telephone, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.telephone) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.entite, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.entite, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.entite) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.plainPassword, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.plainPassword) }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rôles / Profils d'Habilitation</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--bg-main); padding: 14px; border-radius: var(--radius-md);">
+                    {{ form_widget(form.appRoles) }}
+                </div>
+                {{ form_errors(form.appRoles) }}
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    {{ form_widget(form.actif) }}
+                    {{ form_label(form.actif) }}
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Enregistrer
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
