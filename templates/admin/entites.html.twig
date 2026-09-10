@@ -47,9 +47,25 @@
                                 {% endif %}
                             </td>
                             <td style="text-align: right;">
-                                <a href="{{ path('app_admin_entite_edit', {'id': e.id}) }}" class="btn btn-secondary btn-sm">
-                                    <i class="bi bi-pencil"></i> Modifier
-                                </a>
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a href="{{ path('app_admin_entite_edit', {'id': e.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_admin_entite_toggle_actif', {'id': e.id}) }}" onsubmit="return confirm('Voulez-vous {{ e.actif ? 'désactiver' : 'activer' }} l\'entité {{ e.nom|e('js') }} ?');" style="display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_entite_' ~ e.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-{{ e.actif ? 'warning' : 'success' }}" title="{{ e.actif ? 'Désactiver l\'entité' : 'Activer l\'entité' }}">
+                                            <i class="bi bi-{{ e.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                        </button>
+                                    </form>
+                                    {% if e.actif %}
+                                        <form method="post" action="{{ path('app_admin_entite_delete', {'id': e.id}) }}" onsubmit="return confirm('Confirmez-vous l\'archivage / suppression logique de l\'entité {{ e.nom|e('js') }} ?');" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_entite_' ~ e.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Archiver / Suppression logique">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}

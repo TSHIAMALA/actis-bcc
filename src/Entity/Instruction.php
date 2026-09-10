@@ -77,6 +77,12 @@ class Instruction
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $updatedAt = null;
 
+    #[ORM\Column(name: 'deleted_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
+
+    #[ORM\Column(name: 'motif_suppression', type: Types::TEXT, nullable: true)]
+    private ?string $motifSuppression = null;
+
     #[ORM\OneToMany(mappedBy: 'instruction', targetEntity: Action::class, cascade: ['persist', 'remove'])]
     #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $actions;
@@ -402,6 +408,33 @@ class Instruction
         }
 
         $this->setTauxAvancement($total / $this->actions->count());
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+        return $this;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
+    }
+
+    public function getMotifSuppression(): ?string
+    {
+        return $this->motifSuppression;
+    }
+
+    public function setMotifSuppression(?string $motifSuppression): static
+    {
+        $this->motifSuppression = $motifSuppression;
+        return $this;
     }
 
     public function __toString(): string

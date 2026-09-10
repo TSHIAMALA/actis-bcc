@@ -11,3 +11,8 @@
 
 # Uploads
 /public/uploads/
+
+# Temporary files
+~$*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,395 @@
+<!-- Modal Quick Create Point Focal -->
+<div id="modalQuickPointFocal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1050; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px);">
+    <div class="card" style="width: 100%; max-width: 520px; margin: 0; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); animation: fadeInScale 0.2s ease-out;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, var(--bcc-primary, #0c2340) 0%, #1a3a60 100%); color: #fff; padding: 14px 20px; border-radius: 8px 8px 0 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-person-plus-fill" style="color: var(--bcc-gold, #c5a059); font-size: 1.25rem;"></i>
+                <h3 class="card-title" style="margin: 0; font-size: 1.1rem; color: #fff; font-weight: 600;">Nouveau Point Focal</h3>
+            </div>
+            <button type="button" id="btnCloseModalPointFocal" style="background: none; border: none; font-size: 1.3rem; color: #fff; opacity: 0.8; cursor: pointer; line-height: 1;" title="Fermer">&times;</button>
+        </div>
+        
+        <form id="formQuickPointFocal" style="margin: 0;">
+            <div class="card-body" style="padding: 20px;">
+                <div id="quickPfAlert" style="display: none; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.875rem;"></div>
+
+                <div class="grid-2" style="gap: 12px; margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Prénom <span style="color: var(--danger, #dc3545);">*</span></label>
+                        <input type="text" id="quickPfPrenom" class="form-control" placeholder="Ex: Joseph" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Nom <span style="color: var(--danger, #dc3545);">*</span></label>
+                        <input type="text" id="quickPfNom" class="form-control" placeholder="Ex: KABILA" required>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="gap: 12px; margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Post-nom (optionnel)</label>
+                        <input type="text" id="quickPfPostnom" class="form-control" placeholder="Ex: TSHIBANDA">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Matricule BCC (optionnel)</label>
+                        <input type="text" id="quickPfMatricule" class="form-control" placeholder="Auto-généré si vide">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Email professionnel <span style="color: var(--danger, #dc3545);">*</span></label>
+                    <input type="email" id="quickPfEmail" class="form-control" placeholder="prenom.nom@bcc.cd" required>
+                    <small style="color: var(--text-muted, #6c757d); font-size: 0.75rem;">Utilisé pour les notifications et relances opérationnelles.</small>
+                </div>
+
+                <div class="grid-2" style="gap: 12px; margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Téléphone</label>
+                        <input type="tel" id="quickPfTelephone" class="form-control" placeholder="+243 ...">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600; font-size: 0.85rem;">Entité / Direction <span style="color: var(--danger, #dc3545);">*</span></label>
+                        <select id="quickPfEntite" class="form-select" required>
+                            <option value="">-- Choisir l'entité --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; background: var(--bg-surface-alt, #f8f9fa); border-top: 1px solid var(--border-color); border-radius: 0 0 8px 8px;">
+                <button type="button" id="btnCancelModalPointFocal" class="btn btn-secondary btn-sm">Annuler</button>
+                <button type="submit" id="btnSubmitModalPointFocal" class="btn btn-primary btn-sm">
+                    <span id="quickPfSpinner" style="display: none; margin-right: 6px;"><i class="bi bi-arrow-repeat spin"></i></span>
+                    <i class="bi bi-check-circle" id="quickPfIcon"></i> Enregistrer le Point Focal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.spin {
+    display: inline-block;
+    animation: spin 1s infinite linear;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.pf-filter-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.775rem;
+    color: var(--bcc-navy, #0c2340);
+    background: #F0F4F8;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border-left: 3px solid var(--bcc-gold, #c5a059);
+}
+.pf-filter-info a {
+    color: var(--bcc-navy-light, #183b6b);
+    text-decoration: underline;
+    font-weight: 600;
+    cursor: pointer;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalQuickPointFocal');
+    const openBtn = document.getElementById('btnOpenModalPointFocal');
+    const closeBtn = document.getElementById('btnCloseModalPointFocal');
+    const cancelBtn = document.getElementById('btnCancelModalPointFocal');
+    const form = document.getElementById('formQuickPointFocal');
+    const alertBox = document.getElementById('quickPfAlert');
+    const submitBtn = document.getElementById('btnSubmitModalPointFocal');
+    const spinner = document.getElementById('quickPfSpinner');
+    const icon = document.getElementById('quickPfIcon');
+
+    const entiteSelectAction = document.getElementById('action_entiteResponsable') || document.querySelector('[name*="[entiteResponsable]"]');
+    const responsableSelectAction = document.getElementById('action_responsable') || document.querySelector('[name*="[responsable]"]');
+    const modalEntiteSelect = document.getElementById('quickPfEntite');
+
+    let tsResponsable = null;
+    let currentFilterEntiteId = null;
+    let filterInfoBox = null;
+
+    // ── 1. Create Helper Info Box below Responsable Select ──
+    if (responsableSelectAction && responsableSelectAction.parentNode) {
+        filterInfoBox = document.createElement('div');
+        filterInfoBox.className = 'pf-filter-info';
+        filterInfoBox.style.display = 'none';
+        responsableSelectAction.parentNode.appendChild(filterInfoBox);
+    }
+
+    // ── 2. Pre-parse Existing Options from DOM with custom data-* ──
+    if (responsableSelectAction && typeof TomSelect !== 'undefined') {
+        const initialOptions = [];
+        const initialOptgroups = [];
+        const seenOptgroups = new Set();
+
+        const selectedValue = responsableSelectAction.value;
+
+        responsableSelectAction.querySelectorAll('optgroup').forEach(og => {
+            const label = og.getAttribute('label');
+            if (label && !seenOptgroups.has(label)) {
+                seenOptgroups.add(label);
+                initialOptgroups.push({ value: label, label: label });
+            }
+        });
+
+        responsableSelectAction.querySelectorAll('option').forEach(opt => {
+            if (opt.value) {
+                const parentOg = opt.closest('optgroup');
+                initialOptions.push({
+                    value: opt.value,
+                    text: opt.textContent.trim(),
+                    email: opt.getAttribute('data-email') || '',
+                    matricule: opt.getAttribute('data-matricule') || '',
+                    entiteId: opt.getAttribute('data-entite-id') || '',
+                    optgroup: parentOg ? parentOg.getAttribute('label') : ''
+                });
+            }
+        });
+
+        const parentFormGroup = responsableSelectAction.closest('.form-group');
+        const parentGrid = responsableSelectAction.closest('.grid-2');
+
+        tsResponsable = new TomSelect(responsableSelectAction, {
+            options: initialOptions,
+            optgroups: initialOptgroups,
+            items: selectedValue ? [selectedValue] : [],
+            create: false,
+            allowEmptyOption: true,
+            placeholder: '-- Rechercher un point focal (Nom, Email, Matricule) --',
+            searchField: ['text', 'email', 'matricule', 'optgroup'],
+            optgroupField: 'optgroup',
+            optgroupLabelField: 'label',
+            optgroupValueField: 'value',
+            lockOptgroupOrder: true,
+            render: {
+                option: function(data, escape) {
+                    const email = data.email ? `<span style="font-size: 0.76rem; color: #64748B; margin-left: 8px;"><i class="bi bi-envelope" style="font-size: 0.72rem; margin-right: 3px;"></i>${escape(data.email)}</span>` : '';
+                    const matricule = data.matricule ? `<span class="badge badge-dark" style="font-size: 0.72rem; padding: 2px 6px; margin-left: auto;">${escape(data.matricule)}</span>` : '';
+                    return `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <span><i class="bi bi-person-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 6px;"></i><strong>${escape(data.text)}</strong>${email}</span>
+                        ${matricule}
+                    </div>`;
+                },
+                item: function(data, escape) {
+                    return `<div><i class="bi bi-person-check-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 6px;"></i>${escape(data.text)}</div>`;
+                },
+                optgroup_header: function(data, escape) {
+                    return `<div class="optgroup-header"><i class="bi bi-building" style="margin-right: 6px; color: var(--bcc-gold, #c5a059);"></i>${escape(data.label)}</div>`;
+                }
+            }
+        });
+
+        tsResponsable.on('dropdown_open', function() {
+            if (parentFormGroup) parentFormGroup.classList.add('ts-parent-active');
+            if (parentGrid) parentGrid.classList.add('ts-parent-active');
+        });
+
+        tsResponsable.on('dropdown_close', function() {
+            if (parentFormGroup) parentFormGroup.classList.remove('ts-parent-active');
+            if (parentGrid) parentGrid.classList.remove('ts-parent-active');
+        });
+    }
+
+    // ── 3. Filter Points Focaux by Selected Direction ──
+    function applyDirectionFilter(entiteId, entiteName) {
+        currentFilterEntiteId = entiteId;
+        if (!tsResponsable) return;
+
+        if (!entiteId) {
+            tsResponsable.refreshOptions(false);
+            if (filterInfoBox) filterInfoBox.style.display = 'none';
+            return;
+        }
+
+        if (filterInfoBox) {
+            const sigle = (entiteName && entiteName.includes(' - ')) ? entiteName.split(' - ')[0].trim() : (entiteName || 'Sélectionnée');
+            filterInfoBox.innerHTML = `
+                <span><i class="bi bi-funnel-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 4px;"></i> Direction : <strong>${sigle}</strong></span>
+                <a id="btnShowAllPfs" title="Afficher tous les points focaux"><i class="bi bi-globe"></i> Toutes les directions</a>
+            `;
+            filterInfoBox.style.display = 'flex';
+
+            const btnShowAll = document.getElementById('btnShowAllPfs');
+            if (btnShowAll) {
+                btnShowAll.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentFilterEntiteId = null;
+                    filterInfoBox.innerHTML = `<span><i class="bi bi-globe" style="color: var(--bcc-navy, #0c2340); margin-right: 4px;"></i> Affichage de <strong>toutes les directions</strong></span>`;
+                    tsResponsable.refreshOptions(false);
+                });
+            }
+        }
+
+        // Custom filtering hook for TomSelect: prioritize points focaux of the selected direction
+        tsResponsable.settings.score = function(query) {
+            const defaultScore = tsResponsable.getScoreFunction(query);
+            return function(item) {
+                if (currentFilterEntiteId && item.entiteId && item.entiteId.toString() !== currentFilterEntiteId.toString()) {
+                    if (!query || query.trim().length === 0) {
+                        return 0; // hide in default empty search view
+                    }
+                }
+                return defaultScore(item);
+            };
+        };
+
+        tsResponsable.refreshOptions(false);
+    }
+
+    // Listen to entiteResponsable changes in main form
+    if (entiteSelectAction) {
+        entiteSelectAction.addEventListener('change', function() {
+            const selectedOpt = entiteSelectAction.options[entiteSelectAction.selectedIndex];
+            const entiteId = entiteSelectAction.value;
+            const entiteName = selectedOpt ? selectedOpt.textContent : '';
+            applyDirectionFilter(entiteId, entiteName);
+        });
+
+        if (entiteSelectAction.value) {
+            const selectedOpt = entiteSelectAction.options[entiteSelectAction.selectedIndex];
+            applyDirectionFilter(entiteSelectAction.value, selectedOpt ? selectedOpt.textContent : '');
+        }
+    }
+
+    // ── 4. Sync Entités to Quick Create Modal ──
+    function syncEntitesToModal() {
+        if (!entiteSelectAction || !modalEntiteSelect) return;
+        modalEntiteSelect.innerHTML = '<option value="">-- Choisir l\'entité --</option>';
+        Array.from(entiteSelectAction.options).forEach(opt => {
+            if (opt.value) {
+                const newOpt = document.createElement('option');
+                newOpt.value = opt.value;
+                newOpt.textContent = opt.textContent;
+                modalEntiteSelect.appendChild(newOpt);
+            }
+        });
+        if (entiteSelectAction.value) {
+            modalEntiteSelect.value = entiteSelectAction.value;
+        }
+    }
+
+    function openModal() {
+        syncEntitesToModal();
+        alertBox.style.display = 'none';
+        alertBox.textContent = '';
+        modal.style.display = 'flex';
+        document.getElementById('quickPfPrenom').focus();
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        form.reset();
+    }
+
+    if (openBtn) {
+        openBtn.addEventListener('click', openModal);
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+    }
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // ── 5. AJAX Submission of Quick Point Focal ──
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const payload = {
+            prenom: document.getElementById('quickPfPrenom').value,
+            nom: document.getElementById('quickPfNom').value,
+            postnom: document.getElementById('quickPfPostnom').value,
+            matricule: document.getElementById('quickPfMatricule').value,
+            email: document.getElementById('quickPfEmail').value,
+            telephone: document.getElementById('quickPfTelephone').value,
+            entite_id: modalEntiteSelect.value
+        };
+
+        submitBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+        icon.style.display = 'none';
+        alertBox.style.display = 'none';
+
+        fetch('{{ path('app_api_point_focal_quick_create') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Une erreur est survenue lors de l\'enregistrement.');
+            }
+            return data;
+        })
+        .then(result => {
+            const u = result.user;
+            if (tsResponsable && u) {
+                if (u.entiteNom && !tsResponsable.optgroups[u.entiteNom]) {
+                    tsResponsable.addOptionGroup(u.entiteNom, {
+                        value: u.entiteNom,
+                        label: u.entiteNom
+                    });
+                }
+
+                tsResponsable.addOption({
+                    value: u.id,
+                    text: u.nomComplet,
+                    email: u.email,
+                    matricule: u.matricule,
+                    entiteId: u.entiteId,
+                    optgroup: u.entiteNom
+                });
+
+                tsResponsable.addItem(u.id);
+
+                if (entiteSelectAction && !entiteSelectAction.value && u.entiteId) {
+                    entiteSelectAction.value = u.entiteId;
+                    applyDirectionFilter(u.entiteId, u.entiteNom);
+                }
+            } else if (responsableSelectAction && u) {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.nomComplet;
+                opt.selected = true;
+                responsableSelectAction.appendChild(opt);
+            }
+
+            closeModal();
+        })
+        .catch(err => {
+            alertBox.className = 'alert alert-danger';
+            alertBox.style.background = '#f8d7da';
+            alertBox.style.color = '#842029';
+            alertBox.style.border = '1px solid #f5c2c7';
+            alertBox.style.display = 'block';
+            alertBox.textContent = err.message;
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            spinner.style.display = 'none';
+            icon.style.display = 'inline-block';
+        });
+    });
+});
+</script>

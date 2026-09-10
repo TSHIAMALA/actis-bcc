@@ -3,6 +3,26 @@
 {% block title %}{{ instruction.reference }} - Cockpit 360°{% endblock %}
 
 {% block body %}
+{% if instruction.isDeleted %}
+    <div class="alert alert-danger d-flex justify-content-between align-items-center mb-4" style="border-left: 5px solid var(--color-danger);">
+        <div>
+            <i class="bi bi-trash-fill fs-4 me-2"></i>
+            <strong>Instruction archivée / supprimée logiquement</strong> le {{ instruction.deletedAt|date('d/m/Y à H:i') }}.
+            {% if instruction.motifSuppression %}
+                <div class="mt-1 small"><strong>Motif :</strong> {{ instruction.motifSuppression }}</div>
+            {% endif %}
+        </div>
+        {% if is_granted('ROLE_ADMIN') %}
+            <form method="post" action="{{ path('app_instruction_restore', {'id': instruction.id}) }}" onsubmit="return confirm('Confirmez-vous la restauration de cette instruction ?');" class="m-0">
+                <input type="hidden" name="_token" value="{{ csrf_token('restore_instruction_' ~ instruction.id) }}">
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-arrow-counterclockwise"></i> Restaurer l'Instruction
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}
+
 <!-- Page Header -->
 <div class="page-header">
     <div>
@@ -13,6 +33,9 @@
             {% if instruction.isEnRetard %}
                 <span class="badge badge-danger" style="font-size: 0.85rem;"><i class="bi bi-alarm-fill"></i> En retard</span>
             {% endif %}
+            {% if instruction.isDeleted %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.85rem;"><i class="bi bi-trash"></i> Archivée</span>
+            {% endif %}
         </div>
         <p class="page-subtitle" style="font-size: 1.05rem; font-weight: 600; color: var(--bcc-navy);">
             {{ instruction.objet }}
@@ -22,18 +45,23 @@
         <a href="{{ path('app_export_instruction_fiche', {'id': instruction.id}) }}" target="_blank" class="btn btn-secondary btn-sm" title="Fiche synthétique imprimable pour le Gouverneur">
             <i class="bi bi-printer"></i> Fiche Synthétique
         </a>
-        <a href="{{ path('app_relance_new', {'instruction_id': instruction.id}) }}" class="btn btn-secondary btn-sm" title="Transmettre une relance formelle">
-            <i class="bi bi-bell"></i> Relancer
-        </a>
-        <a href="{{ path('app_prorogation_demande', {'instruction_id': instruction.id}) }}" class="btn btn-secondary btn-sm" title="Demander un report d'échéance">
-            <i class="bi bi-calendar-plus"></i> Prorogation
-        </a>
-        <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-gold btn-sm">
-            <i class="bi bi-plus-circle"></i> Ajouter une Action
-        </a>
-        <a href="{{ path('app_instruction_edit', {'id': instruction.id}) }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-pencil"></i> Modifier
-        </a>
+        {% if not instruction.isDeleted %}
+            <a href="{{ path('app_relance_new', {'instruction_id': instruction.id}) }}" class="btn btn-secondary btn-sm" title="Transmettre une relance formelle">
+                <i class="bi bi-bell"></i> Relancer
+            </a>
+            <a href="{{ path('app_prorogation_demande', {'instruction_id': instruction.id}) }}" class="btn btn-secondary btn-sm" title="Demander un report d'échéance">
+                <i class="bi bi-calendar-plus"></i> Prorogation
+            </a>
+            <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-gold btn-sm">
+                <i class="bi bi-plus-circle"></i> Ajouter une Action
+            </a>
+            <a href="{{ path('app_instruction_edit', {'id': instruction.id}) }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('modalDeleteInstruction').style.display = 'flex'" title="Supprimer logiquement cette instruction">
+                <i class="bi bi-trash"></i> Supprimer
+            </button>
+        {% endif %}
     </div>
 </div>
 
@@ -326,7 +354,17 @@
                 <div style="background: var(--bg-main); padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 12px; border-left: 3px solid var(--bcc-gold);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                         <strong style="color: var(--bcc-navy); font-size: 0.85rem;">{{ comm.utilisateur.nomComplet }} ({{ comm.utilisateur.entite.code }})</strong>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ comm.createdAt|date('d/m/Y à H:i') }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ comm.createdAt|date('d/m/Y à H:i') }}</span>
+                            {% if comm.utilisateur == app.user or is_granted('ROLE_ADMIN') %}
+                                <form method="post" action="{{ path('app_instruction_comment_delete', {'id': instruction.id, 'commentId': comm.id}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');" style="display: inline; margin: 0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comm.id) }}">
+                                    <button type="submit" class="btn btn-link text-danger p-0 border-0" style="font-size: 0.8rem;" title="Supprimer le commentaire">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                     <div style="font-size: 0.88rem; color: var(--text-primary);">
                         {{ comm.commentaire|nl2br }}
@@ -338,6 +376,30 @@
                 </div>
             {% endfor %}
         </div>
+    </div>
+</div>
+
+<!-- Modal Delete / Soft-Delete Instruction -->
+<div id="modalDeleteInstruction" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #FFFFFF; border-radius: var(--radius-lg); max-width: 520px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden;">
+        <div class="card-header bg-danger text-white">
+            <h3 class="card-title text-white mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i> Suppression Logique de l'Instruction</h3>
+            <button type="button" onclick="document.getElementById('modalDeleteInstruction').style.display = 'none'" style="background: none; border: none; font-size: 1.2rem; color: #fff; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ path('app_instruction_delete', {'id': instruction.id}) }}" method="post" style="padding: 24px;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_instruction_' ~ instruction.id) }}">
+            <p class="text-danger small mb-3">
+                <strong>Attention :</strong> L'instruction <strong>{{ instruction.reference }}</strong> ainsi que toutes ses actions associées seront retirées des tableaux de bord et archivées avec traçabilité d'audit.
+            </p>
+            <div class="form-group mb-3">
+                <label class="form-label fw-bold">Motif de la suppression <span class="text-danger">*</span></label>
+                <textarea name="motif_suppression" class="form-control" rows="3" required placeholder="Indiquez obligatoirement la raison (erreur de saisie, décision d'annulation, doublon...)"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalDeleteInstruction').style.display = 'none'">Annuler</button>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Confirmer la suppression</button>
+            </div>
+        </form>
     </div>
 </div>
 

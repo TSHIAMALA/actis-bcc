@@ -309,4 +309,118 @@ class InstructionController extends AbstractController
 
         return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
     }
+
+    #[Route('/{id}/supprimer', name: 'app_instruction_delete', methods: ['POST'])]
+    public function delete(
+        Instruction $instruction,
+        Request $request,
+        EntityManagerInterface $em,
+        InstructionService $instructionService
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_instruction_' . $instruction->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité CSRF invalide.');
+            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+        }
+
+        $motif = trim($request->request->get('motif_suppression', ''));
+        if (empty($motif)) {
+            $this->addFlash('danger', 'Le motif de suppression est obligatoire.');
+            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+        }
+
+        $currentUser = $this->getUser();
+        $instruction->setDeletedAt(new \DateTime());
+        $instruction->setMotifSuppression($motif);
+        $instruction->setUpdatedAt(new \DateTime());
+
+        // Suppression logique en cascade sur les actions associées
+        foreach ($instruction->getActions() as $action) {
+            if (!$action->isDeleted()) {
+                $action->setDeletedAt(new \DateTime());
+                $action->setMotifSuppression('Suppression de l\'instruction parente (' . $instruction->getReference() . ')');
+            }
+        }
+
+        $instructionService->logHistorique(
+            $instruction,
+            TypeEvenement::SUPPRESSION_LOGIQUE,
+            $currentUser,
+            null,
+            null,
+            sprintf('Suppression logique de l\'instruction. Motif : %s', $motif)
+        );
+
+        $em->flush();
+
+        $this->addFlash('success', sprintf('L\'instruction %s a été supprimée logiquement avec succès.', $instruction->getReference()));
+        return $this->redirectToRoute('app_instruction_index');
+    }
+
+    #[Route('/{id}/restaurer', name: 'app_instruction_restore', methods: ['POST'])]
+    public function restore(
+        Instruction $instruction,
+        Request $request,
+        EntityManagerInterface $em,
+        InstructionService $instructionService
+    ): Response {
+        if (!$this->isCsrfTokenValid('restore_instruction_' . $instruction->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité CSRF invalide.');
+            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+        }
+
+        $currentUser = $this->getUser();
+        $instruction->setDeletedAt(null);
+        $instruction->setMotifSuppression(null);
+        $instruction->setUpdatedAt(new \DateTime());
+
+        // Restaurer les actions associées
+        foreach ($instruction->getActions() as $action) {
+            $action->setDeletedAt(null);
+            $action->setMotifSuppression(null);
+        }
+
+        $instructionService->logHistorique(
+            $instruction,
+            TypeEvenement::RESTAURATION,
+            $currentUser,
+            null,
+            null,
+            'Restauration de l\'instruction depuis les archives/corbeille.'
+        );
+
+        $em->flush();
+
+        $this->addFlash('success', sprintf('L\'instruction %s a été restaurée avec succès.', $instruction->getReference()));
+        return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+    }
+
+    #[Route('/{id}/commentaire/{commentId}/supprimer', name: 'app_instruction_comment_delete', methods: ['POST'])]
+    public function deleteComment(
+        Instruction $instruction,
+        int $commentId,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_comment_' . $commentId, $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+        }
+
+        foreach ($instruction->getCommentaires() as $comment) {
+            if ($comment->getId() === $commentId) {
+                // Auteur ou Admin uniquement
+                if ($comment->getAuteur() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+                    $this->addFlash('danger', 'Vous n\'avez pas les droits pour supprimer ce commentaire.');
+                    return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+                }
+
+                $em->remove($comment);
+                $em->flush();
+                $this->addFlash('success', 'Commentaire supprimé.');
+                break;
+            }
+        }
+
+        return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+    }
 }

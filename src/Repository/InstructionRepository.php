@@ -28,6 +28,12 @@ class InstructionRepository extends ServiceEntityRepository
             ->leftJoin('i.actions', 'a')->addSelect('a')
             ->orderBy('i.createdAt', 'DESC');
 
+        if (!empty($filters['show_deleted']) && $filters['show_deleted'] === '1') {
+            $qb->andWhere('i.deletedAt IS NOT NULL');
+        } else {
+            $qb->andWhere('i.deletedAt IS NULL');
+        }
+
         if (!empty($filters['q'])) {
             $qb->andWhere('i.reference LIKE :q OR i.objet LIKE :q OR i.description LIKE :q OR i.emetteur LIKE :q')
                 ->setParameter('q', '%' . trim($filters['q']) . '%');
@@ -83,6 +89,7 @@ class InstructionRepository extends ServiceEntityRepository
         $res = $this->createQueryBuilder('i')
             ->select('s.code, s.libelle, s.couleur, COUNT(i.id) as total')
             ->join('i.statut', 's')
+            ->where('i.deletedAt IS NULL')
             ->groupBy('s.id, s.code, s.libelle, s.couleur')
             ->getQuery()
             ->getResult();
@@ -95,6 +102,7 @@ class InstructionRepository extends ServiceEntityRepository
         $res = $this->createQueryBuilder('i')
             ->select('p.code, p.libelle, COUNT(i.id) as total')
             ->join('i.priorite', 'p')
+            ->where('i.deletedAt IS NULL')
             ->groupBy('p.id, p.code, p.libelle')
             ->orderBy('p.niveau', 'DESC')
             ->getQuery()
@@ -108,6 +116,7 @@ class InstructionRepository extends ServiceEntityRepository
         $res = $this->createQueryBuilder('i')
             ->select('t.code, t.libelle, COUNT(i.id) as total')
             ->join('i.typeInstruction', 't')
+            ->where('i.deletedAt IS NULL')
             ->groupBy('t.id, t.code, t.libelle')
             ->getQuery()
             ->getResult();
@@ -120,7 +129,8 @@ class InstructionRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('i')
             ->select('COUNT(i.id)')
             ->join('i.statut', 's')
-            ->where('i.dateEcheance < :today')
+            ->where('i.deletedAt IS NULL')
+            ->andWhere('i.dateEcheance < :today')
             ->andWhere('s.code NOT IN (:closedStatuses)')
             ->setParameter('today', new \DateTime('today'))
             ->setParameter('closedStatuses', [Statut::CODE_EXECUTEE, Statut::CODE_CLOTUREE, Statut::CODE_ANNULEE])
@@ -136,6 +146,7 @@ class InstructionRepository extends ServiceEntityRepository
             ->leftJoin('i.priorite', 'p')->addSelect('p')
             ->leftJoin('i.entitePilote', 'e')->addSelect('e')
             ->leftJoin('i.responsable', 'r')->addSelect('r')
+            ->where('i.deletedAt IS NULL')
             ->orderBy('i.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

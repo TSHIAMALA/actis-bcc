@@ -68,6 +68,13 @@
                 <option value="1" {% if filters.retard == '1' %}selected{% endif %}>Éléments en retard uniquement</option>
             </select>
         </div>
+        <div>
+            <label class="form-label">Archives / Corbeille</label>
+            <select name="show_deleted" class="form-select">
+                <option value="">Instructions Actives</option>
+                <option value="1" {% if filters.show_deleted|default('') == '1' %}selected{% endif %}>Instructions Archivées / Supprimées</option>
+            </select>
+        </div>
         <div style="display: flex; gap: 8px;">
             <button type="submit" class="btn btn-primary" style="flex: 1;">
                 <i class="bi bi-funnel"></i> Filtrer
@@ -102,11 +109,14 @@
                 </thead>
                 <tbody>
                     {% for inst in instructions %}
-                        <tr {% if inst.isEnRetard %}style="background-color: #FEF2F2;"{% endif %}>
+                        <tr {% if inst.isDeleted %}style="background-color: #FEF2F2; opacity: 0.85;"{% elseif inst.isEnRetard %}style="background-color: #FFFBEB;"{% endif %}>
                             <td>
                                 <a href="{{ path('app_instruction_show', {'id': inst.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
                                     {{ inst.reference }}
                                 </a>
+                                {% if inst.isDeleted %}
+                                    <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;">Archivée</span>
+                                {% endif %}
                             </td>
                             <td><span class="badge badge-secondary">{{ inst.typeInstruction.libelle }}</span></td>
                             <td>
@@ -125,10 +135,10 @@
                             <td><span class="badge {{ inst.statut.badgeClass }}">{{ inst.statut.libelle }}</span></td>
                             <td>
                                 {% if inst.dateEcheance %}
-                                    <span style="font-size: 0.85rem; font-weight: 600; {% if inst.isEnRetard %}color: var(--color-danger);{% endif %}">
+                                    <span style="font-size: 0.85rem; font-weight: 600; {% if inst.isEnRetard and not inst.isDeleted %}color: var(--color-danger);{% endif %}">
                                         {{ inst.dateEcheance|date('d/m/Y') }}
                                     </span>
-                                    {% if inst.isEnRetard %}
+                                    {% if inst.isEnRetard and not inst.isDeleted %}
                                         <div><span class="badge badge-danger" style="font-size: 0.65rem;">En retard</span></div>
                                     {% endif %}
                                 {% else %}
@@ -150,12 +160,26 @@
                                 <a href="{{ path('app_instruction_show', {'id': inst.id}) }}" class="btn btn-secondary btn-sm" title="Ouvrir la fiche 360°">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ path('app_instruction_edit', {'id': inst.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{{ path('app_export_instruction_fiche', {'id': inst.id}) }}" target="_blank" class="btn btn-secondary btn-sm" title="Fiche imprimable / PDF">
-                                    <i class="bi bi-printer"></i>
-                                </a>
+                                {% if not inst.isDeleted %}
+                                    <a href="{{ path('app_action_new', {'instructionId': inst.id}) }}" class="btn btn-gold btn-sm" title="Ajouter une action à cette instruction">
+                                        <i class="bi bi-plus-lg"></i> Action
+                                    </a>
+                                    <a href="{{ path('app_instruction_edit', {'id': inst.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{{ path('app_export_instruction_fiche', {'id': inst.id}) }}" target="_blank" class="btn btn-secondary btn-sm" title="Fiche imprimable / PDF">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                {% else %}
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <form method="post" action="{{ path('app_instruction_restore', {'id': inst.id}) }}" onsubmit="return confirm('Restaurer cette instruction ?');" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('restore_instruction_' ~ inst.id) }}">
+                                            <button type="submit" class="btn btn-outline-success btn-sm" title="Restaurer">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
                             </td>
                         </tr>
                     {% else %}

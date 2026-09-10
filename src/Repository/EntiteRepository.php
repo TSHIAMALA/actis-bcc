@@ -43,7 +43,8 @@ class EntiteRepository extends ServiceEntityRepository
             LEFT JOIN statuts s_a ON a.statut_id = s_a.id
             WHERE e.actif = 1
             GROUP BY e.id, e.code, e.nom, te.libelle, te.ordre_affichage, e.code
-            ORDER BY total_instructions DESC, total_actions DESC, e.nom ASC
+            HAVING total_actions > 0
+            ORDER BY total_actions DESC, taux_moyen_actions DESC, e.nom ASC
         ";
 
         return $conn->executeQuery($sql)->fetchAllAssociative();

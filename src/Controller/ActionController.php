@@ -55,36 +55,48 @@ class ActionController extends AbstractController
         ]);
     }
 
-    #[Route('/nouvelle/{instructionId}', name: 'app_action_new', methods: ['GET', 'POST'])]
+    #[Route('/nouvelle/{instructionId<\d+>?}', name: 'app_action_new', methods: ['GET', 'POST'])]
     public function new(
-        int $instructionId,
+        ?int $instructionId,
         Request $request,
         EntityManagerInterface $em,
         InstructionRepository $instructionRepo,
         InstructionService $instructionService,
         StatutRepository $statutRepo
     ): Response {
-        $instruction = $instructionRepo->find($instructionId);
-        if (!$instruction) {
-            throw $this->createNotFoundException('Instruction non trouvée.');
-        }
+        $instruction = $instructionId ? $instructionRepo->find($instructionId) : null;
+        $includeInstructionSelect = ($instruction === null);
 
         $action = new Action();
-        $action->setInstruction($instruction);
-        $action->setEntiteResponsable($instruction->getEntitePilote());
-        $action->setPriorite($instruction->getPriorite());
         $action->setDateDebut(new \DateTime());
-        $action->setDateEcheance($instruction->getDateEcheance());
 
-        $form = $this->createForm(ActionType::class, $action);
+        if ($instruction) {
+            $action->setInstruction($instruction);
+            $action->setEntiteResponsable($instruction->getEntitePilote());
+            $action->setPriorite($instruction->getPriorite());
+            $action->setDateEcheance($instruction->getDateEcheance());
+        }
+
+        $form = $this->createForm(ActionType::class, $action, [
+            'include_instruction' => $includeInstructionSelect,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $currentUser = $this->getUser();
             $action->setCreatedBy($currentUser);
 
+            $targetInstruction = $action->getInstruction();
+            if (!$targetInstruction) {
+                $this->addFlash('danger', 'Veuillez sélectionner une instruction valide.');
+                return $this->render('action/new.html.twig', [
+                    'instruction' => $instruction,
+                    'form' => $form,
+                ]);
+            }
+
             if (empty($action->getReference())) {
-                $action->setReference($instructionService->generateActionReference($instruction));
+                $action->setReference($instructionService->generateActionReference($targetInstruction));
             }
 
             $statutInitial = $action->getResponsable()
@@ -102,19 +114,18 @@ class ActionController extends AbstractController
                 $currentUser,
                 null,
                 $action->getStatut(),
-                sprintf('Création de l\'action opérationnelle "%s" pour l\'instruction %s.', $action->getLibelle(), $instruction->getReference())
+                sprintf('Création de l\'action opérationnelle "%s" pour l\'instruction %s.', $action->getLibelle(), $targetInstruction->getReference())
             );
 
             // Recalculate instruction progress
-            $instructionService->updateInstructionProgress($instruction, $currentUser);
+            $instructionService->updateInstructionProgress($targetInstruction, $currentUser);
 
             $this->addFlash('success', 'L\'action a été créée avec succès.');
-            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+            return $this->redirectToRoute('app_instruction_show', ['id' => $targetInstruction->getId()]);
         }
 
         return $this->render('action/new.html.twig', [
             'instruction' => $instruction,
-            'action' => $action,
             'form' => $form,
         ]);
     }
@@ -293,5 +304,118 @@ class ActionController extends AbstractController
             'action' => $action,
             'form' => $form,
         ]);
+    }
+
+    #[Route('/{id}/supprimer', name: 'app_action_delete', methods: ['POST'])]
+    public function delete(
+        Action $action,
+        Request $request,
+        EntityManagerInterface $em,
+        InstructionService $instructionService
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_action_' . $action->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+        }
+
+        $motif = trim($request->request->get('motif_suppression', ''));
+        if (empty($motif)) {
+            $this->addFlash('danger', 'Le motif de suppression est obligatoire.');
+            return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+        }
+
+        $instruction = $action->getInstruction();
+        $currentUser = $this->getUser();
+
+        $action->setDeletedAt(new \DateTime());
+        $action->setMotifSuppression($motif);
+        $action->setUpdatedAt(new \DateTime());
+
+        $instructionService->logHistorique(
+            $action,
+            TypeEvenement::SUPPRESSION_LOGIQUE,
+            $currentUser,
+            null,
+            null,
+            sprintf('Suppression logique de l\'action. Motif : %s', $motif)
+        );
+
+        $em->flush();
+
+        // Recalculer le taux de l'instruction
+        if ($instruction) {
+            $instructionService->updateInstructionProgress($instruction, $currentUser);
+        }
+
+        $this->addFlash('success', sprintf('L\'action %s a été supprimée logiquement.', $action->getReference() ?? ''));
+        if ($instruction) {
+            return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+        }
+        return $this->redirectToRoute('app_action_index');
+    }
+
+    #[Route('/{id}/restaurer', name: 'app_action_restore', methods: ['POST'])]
+    public function restore(
+        Action $action,
+        Request $request,
+        EntityManagerInterface $em,
+        InstructionService $instructionService
+    ): Response {
+        if (!$this->isCsrfTokenValid('restore_action_' . $action->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+        }
+
+        $currentUser = $this->getUser();
+        $action->setDeletedAt(null);
+        $action->setMotifSuppression(null);
+        $action->setUpdatedAt(new \DateTime());
+
+        $instructionService->logHistorique(
+            $action,
+            TypeEvenement::RESTAURATION,
+            $currentUser,
+            null,
+            null,
+            'Restauration de l\'action.'
+        );
+
+        $em->flush();
+
+        if ($action->getInstruction()) {
+            $instructionService->updateInstructionProgress($action->getInstruction(), $currentUser);
+        }
+
+        $this->addFlash('success', sprintf('L\'action %s a été restaurée.', $action->getReference() ?? ''));
+        return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+    }
+
+    #[Route('/{id}/commentaire/{commentId}/supprimer', name: 'app_action_comment_delete', methods: ['POST'])]
+    public function deleteComment(
+        Action $action,
+        int $commentId,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete_comment_' . $commentId, $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+        }
+
+        foreach ($action->getCommentaires() as $comment) {
+            if ($comment->getId() === $commentId) {
+                if ($comment->getAuteur() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+                    $this->addFlash('danger', 'Vous n\'avez pas les droits pour supprimer ce commentaire.');
+                    return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
+                }
+
+                $em->remove($comment);
+                $em->flush();
+                $this->addFlash('success', 'Commentaire supprimé.');
+                break;
+            }
+        }
+
+        return $this->redirectToRoute('app_action_show', ['id' => $action->getId()]);
     }
 }

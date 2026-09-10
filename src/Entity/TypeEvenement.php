@@ -20,6 +20,8 @@ class TypeEvenement
     public const RELANCE_ENVOYEE = 'RELANCE_ENVOYEE';
     public const COMMENTAIRE_AJOUTE = 'COMMENTAIRE_AJOUTE';
     public const CLOTURE = 'CLOTURE';
+    public const SUPPRESSION_LOGIQUE = 'SUPPRESSION_LOGIQUE';
+    public const RESTAURATION = 'RESTAURATION';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

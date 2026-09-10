@@ -34,7 +34,12 @@
                     {{ form_errors(form.entiteResponsable) }}
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label', 'style': 'margin-bottom: 0;'}}) }}
+                        <button type="button" id="btnOpenModalPointFocal" class="btn btn-outline-primary btn-sm" style="padding: 2px 8px; font-size: 0.78rem;" title="Ajouter un nouveau point focal s'il n'existe pas dans la liste">
+                            <i class="bi bi-person-plus-fill"></i> + Nouveau
+                        </button>
+                    </div>
                     {{ form_widget(form.responsable, {'attr': {'class': 'form-select'}}) }}
                     {{ form_errors(form.responsable) }}
                 </div>
@@ -87,4 +92,6 @@
         {{ form_end(form) }}
     </div>
 </div>
+
+{% include 'action/_modal_point_focal.html.twig' %}
 {% endblock %}

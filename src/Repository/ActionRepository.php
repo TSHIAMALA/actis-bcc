@@ -28,6 +28,12 @@ class ActionRepository extends ServiceEntityRepository
             ->leftJoin('a.responsable', 'r')->addSelect('r')
             ->orderBy('a.dateEcheance', 'ASC');
 
+        if (!empty($filters['show_deleted']) && $filters['show_deleted'] === '1') {
+            $qb->andWhere('a.deletedAt IS NOT NULL');
+        } else {
+            $qb->andWhere('a.deletedAt IS NULL AND (i.deletedAt IS NULL OR i.id IS NULL)');
+        }
+
         if (!empty($filters['q'])) {
             $qb->andWhere('a.libelle LIKE :q OR a.reference LIKE :q OR a.description LIKE :q OR i.reference LIKE :q')
                 ->setParameter('q', '%' . trim($filters['q']) . '%');
@@ -74,7 +80,8 @@ class ActionRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
             ->join('a.statut', 's')
-            ->where('a.dateEcheance < :today')
+            ->where('a.deletedAt IS NULL')
+            ->andWhere('a.dateEcheance < :today')
             ->andWhere('s.code NOT IN (:closedStatuses)')
             ->setParameter('today', new \DateTime('today'))
             ->setParameter('closedStatuses', [Statut::CODE_EXECUTEE, Statut::CODE_CLOTUREE, Statut::CODE_ANNULEE])
@@ -92,7 +99,8 @@ class ActionRepository extends ServiceEntityRepository
             ->leftJoin('a.statut', 's')->addSelect('s')
             ->leftJoin('a.responsable', 'r')->addSelect('r')
             ->leftJoin('a.entiteResponsable', 'e')->addSelect('e')
-            ->where('a.dateEcheance >= :today AND a.dateEcheance <= :maxDate')
+            ->where('a.deletedAt IS NULL')
+            ->andWhere('a.dateEcheance >= :today AND a.dateEcheance <= :maxDate')
             ->andWhere('s.code NOT IN (:closedStatuses)')
             ->setParameter('today', $today)
             ->setParameter('maxDate', $maxDate)

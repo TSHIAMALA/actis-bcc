@@ -53,9 +53,29 @@
                                 {% endif %}
                             </td>
                             <td style="text-align: right;">
-                                <a href="{{ path('app_admin_user_edit', {'id': u.id}) }}" class="btn btn-secondary btn-sm">
-                                    <i class="bi bi-pencil"></i> Modifier
-                                </a>
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a href="{{ path('app_admin_user_edit', {'id': u.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    {% if u != app.user %}
+                                        <form method="post" action="{{ path('app_admin_user_toggle_actif', {'id': u.id}) }}" onsubmit="return confirm('Voulez-vous {{ u.actif ? 'suspendre' : 'activer' }} le compte de {{ u.nomComplet|e('js') }} ?');" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-{{ u.actif ? 'warning' : 'success' }}" title="{{ u.actif ? 'Suspendre / Désactiver' : 'Activer le compte' }}">
+                                                <i class="bi bi-{{ u.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+
+                                        {% if u.actif %}
+                                            <form method="post" action="{{ path('app_admin_user_delete', {'id': u.id}) }}" onsubmit="return confirm('Confirmez-vous l\'archivage / suppression logique de l\'utilisateur {{ u.nomComplet|e('js') }} ?');" style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Archiver / Suppression logique">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}

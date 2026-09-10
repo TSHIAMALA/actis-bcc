@@ -1,0 +1,335 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Référentiels & Paramètres Système - Administration{% endblock %}
+
+{% block body %}
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title"><i class="bi bi-sliders text-warning"></i> Référentiels & Paramètres Système</h1>
+        <p class="text-muted mb-0">Configuration des typologies, priorités, structures et canaux d'alerte de la Banque Centrale du Congo</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Retour Administration
+        </a>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom p-0">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3" style="gap: 4px;">
+            <li class="nav-item">
+                <a class="nav-link {% if activeTab == 'types_instruction' %}active fw-bold text-primary border-bottom border-primary border-3{% endif %}" href="{{ path('app_admin_referentiels', {'tab': 'types_instruction'}) }}">
+                    <i class="bi bi-journal-bookmark-fill me-1"></i> Types d'Instruction ({{ typesInstruction|length }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if activeTab == 'priorites' %}active fw-bold text-primary border-bottom border-primary border-3{% endif %}" href="{{ path('app_admin_referentiels', {'tab': 'priorites'}) }}">
+                    <i class="bi bi-flag-fill me-1"></i> Priorités ({{ priorites|length }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if activeTab == 'types_entite' %}active fw-bold text-primary border-bottom border-primary border-3{% endif %}" href="{{ path('app_admin_referentiels', {'tab': 'types_entite'}) }}">
+                    <i class="bi bi-diagram-3-fill me-1"></i> Types d'Entité ({{ typesEntite|length }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if activeTab == 'types_relance' %}active fw-bold text-primary border-bottom border-primary border-3{% endif %}" href="{{ path('app_admin_referentiels', {'tab': 'types_relance'}) }}">
+                    <i class="bi bi-bell-fill me-1"></i> Types de Relance ({{ typesRelance|length }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if activeTab == 'canaux' %}active fw-bold text-primary border-bottom border-primary border-3{% endif %}" href="{{ path('app_admin_referentiels', {'tab': 'canaux'}) }}">
+                    <i class="bi bi-broadcast-pin me-1"></i> Canaux Notification ({{ canaux|length }})
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        {# ================= TAB: TYPES D'INSTRUCTION ================= #}
+        {% if activeTab == 'types_instruction' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-journal-text me-2"></i>Types d'Instructions & Ordres du Gouverneur</h5>
+                <a href="{{ path('app_admin_type_instruction_new') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nouveau Type d'Instruction
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ordre</th>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Description</th>
+                            <th style="width: 120px;">Statut</th>
+                            <th class="text-end" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in typesInstruction %}
+                            <tr class="{% if not item.actif %}table-light opacity-75{% endif %}">
+                                <td><span class="badge bg-secondary">{{ item.ordreAffichage }}</span></td>
+                                <td><code>{{ item.code }}</code></td>
+                                <td class="fw-semibold">{{ item.libelle }}</td>
+                                <td class="text-muted small">{{ item.description|default('—') }}</td>
+                                <td>
+                                    {% if item.actif %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-slash-circle me-1"></i>Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_type_instruction_edit', {'id': item.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_type_instruction_toggle', {'id': item.id}) }}" onsubmit="return confirm('Basculer l\'état actif/inactif de ce type ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_type_' ~ item.id) }}">
+                                            <button type="submit" class="btn btn-outline-{{ item.actif ? 'warning' : 'success' }}" title="{{ item.actif ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ item.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">Aucun type d'instruction configuré.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {# ================= TAB: PRIORITÉS ================= #}
+        {% elseif activeTab == 'priorites' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-flag me-2"></i>Niveaux de Priorité & Criticité</h5>
+                <a href="{{ path('app_admin_priorite_new') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nouvelle Priorité
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ordre</th>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Niveau numérique</th>
+                            <th style="width: 120px;">Statut</th>
+                            <th class="text-end" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in priorites %}
+                            <tr class="{% if not item.actif %}table-light opacity-75{% endif %}">
+                                <td><span class="badge bg-secondary">{{ item.ordreAffichage }}</span></td>
+                                <td><code>{{ item.code }}</code></td>
+                                <td>
+                                    <span class="badge {{ item.badgeClass }} px-2 py-1">{{ item.libelle }}</span>
+                                </td>
+                                <td><strong>{{ item.niveau }}</strong> / 10</td>
+                                <td>
+                                    {% if item.actif %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-slash-circle me-1"></i>Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_priorite_edit', {'id': item.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_priorite_toggle', {'id': item.id}) }}" onsubmit="return confirm('Basculer l\'état actif/inactif de cette priorité ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_priorite_' ~ item.id) }}">
+                                            <button type="submit" class="btn btn-outline-{{ item.actif ? 'warning' : 'success' }}" title="{{ item.actif ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ item.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">Aucune priorité configurée.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {# ================= TAB: TYPES D'ENTITÉ ================= #}
+        {% elseif activeTab == 'types_entite' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-diagram-3 me-2"></i>Niveaux & Typologies de l'Organigramme BCC</h5>
+                <a href="{{ path('app_admin_type_entite_new') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nouveau Type d'Entité
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ordre</th>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Niveau hiérarchique</th>
+                            <th>Description</th>
+                            <th style="width: 120px;">Statut</th>
+                            <th class="text-end" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in typesEntite %}
+                            <tr class="{% if not item.actif %}table-light opacity-75{% endif %}">
+                                <td><span class="badge bg-secondary">{{ item.ordreAffichage }}</span></td>
+                                <td><code>{{ item.code }}</code></td>
+                                <td class="fw-semibold">{{ item.libelle }}</td>
+                                <td><span class="badge bg-info-subtle text-info border">Niveau {{ item.niveau }}</span></td>
+                                <td class="text-muted small">{{ item.description|default('—') }}</td>
+                                <td>
+                                    {% if item.actif %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-slash-circle me-1"></i>Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_type_entite_edit', {'id': item.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_type_entite_toggle', {'id': item.id}) }}" onsubmit="return confirm('Basculer l\'état actif/inactif de ce type d\'entité ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_type_entite_' ~ item.id) }}">
+                                            <button type="submit" class="btn btn-outline-{{ item.actif ? 'warning' : 'success' }}" title="{{ item.actif ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ item.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">Aucun type d'entité configuré.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {# ================= TAB: TYPES DE RELANCE ================= #}
+        {% elseif activeTab == 'types_relance' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-bell me-2"></i>Règles & Déclencheurs de Relance Automatisée</h5>
+                <a href="{{ path('app_admin_type_relance_new') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nouveau Type de Relance
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ordre</th>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Description</th>
+                            <th style="width: 120px;">Statut</th>
+                            <th class="text-end" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in typesRelance %}
+                            <tr class="{% if not item.actif %}table-light opacity-75{% endif %}">
+                                <td><span class="badge bg-secondary">{{ item.ordreAffichage }}</span></td>
+                                <td><code>{{ item.code }}</code></td>
+                                <td class="fw-semibold">{{ item.libelle }}</td>
+                                <td class="text-muted small">{{ item.description|default('—') }}</td>
+                                <td>
+                                    {% if item.actif %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-slash-circle me-1"></i>Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_type_relance_edit', {'id': item.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_type_relance_toggle', {'id': item.id}) }}" onsubmit="return confirm('Basculer l\'état actif/inactif de ce type de relance ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_type_relance_' ~ item.id) }}">
+                                            <button type="submit" class="btn btn-outline-{{ item.actif ? 'warning' : 'success' }}" title="{{ item.actif ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ item.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">Aucun type de relance configuré.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {# ================= TAB: CANAUX DE NOTIFICATION ================= #}
+        {% elseif activeTab == 'canaux' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-broadcast-pin me-2"></i>Canaux de Notification & Vecteurs d'Alerte</h5>
+                <a href="{{ path('app_admin_canal_new') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nouveau Canal
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ordre</th>
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th style="width: 120px;">Statut</th>
+                            <th class="text-end" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in canaux %}
+                            <tr class="{% if not item.actif %}table-light opacity-75{% endif %}">
+                                <td><span class="badge bg-secondary">{{ item.ordreAffichage }}</span></td>
+                                <td><code>{{ item.code }}</code></td>
+                                <td class="fw-semibold">{{ item.libelle }}</td>
+                                <td>
+                                    {% if item.actif %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-slash-circle me-1"></i>Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_canal_edit', {'id': item.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_canal_toggle', {'id': item.id}) }}" onsubmit="return confirm('Basculer l\'état actif/inactif de ce canal ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_canal_' ~ item.id) }}">
+                                            <button type="submit" class="btn btn-outline-{{ item.actif ? 'warning' : 'success' }}" title="{{ item.actif ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ item.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">Aucun canal configuré.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

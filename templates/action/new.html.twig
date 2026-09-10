@@ -1,17 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter une action - {{ instruction.reference }}{% endblock %}
+{% block title %}{{ instruction ? 'Ajouter une action - ' ~ instruction.reference : 'Nouvelle Action Opérationnelle' }} - ACTIS-BCC{% endblock %}
 
 {% block body %}
 <div class="page-header">
     <div>
         <h2 class="page-title">Nouvelle Action Opérationnelle</h2>
-        <p class="page-subtitle">Rattachée à l'instruction : <strong>{{ instruction.reference }}</strong> - {{ instruction.objet }}</p>
+        {% if instruction %}
+            <p class="page-subtitle">Rattachée à l'instruction : <strong>{{ instruction.reference }}</strong> - {{ instruction.objet }}</p>
+        {% else %}
+            <p class="page-subtitle">Planification d'une action opérationnelle rattachée à un ordre ou instruction du Gouverneur</p>
+        {% endif %}
     </div>
     <div>
-        <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> Retour à l'instruction
-        </a>
+        {% if instruction %}
+            <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour à l'instruction
+            </a>
+        {% else %}
+            <a href="{{ path('app_action_index') }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour aux actions
+            </a>
+        {% endif %}
     </div>
 </div>
 
@@ -21,6 +31,15 @@
     </div>
     <div class="card-body">
         {{ form_start(form) }}
+            {% if form.instruction is defined %}
+                <div class="form-group mb-3 p-3 bg-light rounded border border-primary border-opacity-25">
+                    {{ form_label(form.instruction, null, {'label_attr': {'class': 'form-label fw-bold text-primary'}}) }}
+                    {{ form_widget(form.instruction, {'attr': {'class': 'form-select select-lg'}}) }}
+                    {{ form_errors(form.instruction) }}
+                    <small class="text-muted">Sélectionnez la décision du Gouverneur à laquelle se rattache cette action.</small>
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 {{ form_label(form.libelle, null, {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.libelle, {'attr': {'class': 'form-control'}}) }}
@@ -34,7 +53,12 @@
                     {{ form_errors(form.entiteResponsable) }}
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label', 'style': 'margin-bottom: 0;'}}) }}
+                        <button type="button" id="btnOpenModalPointFocal" class="btn btn-outline-primary btn-sm" style="padding: 2px 8px; font-size: 0.78rem;" title="Ajouter un nouveau point focal s'il n'existe pas dans la liste">
+                            <i class="bi bi-person-plus-fill"></i> + Nouveau
+                        </button>
+                    </div>
                     {{ form_widget(form.responsable, {'attr': {'class': 'form-select'}}) }}
                     {{ form_errors(form.responsable) }}
                 </div>
@@ -79,12 +103,18 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% if instruction %}
+                    <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
+                {% else %}
+                    <a href="{{ path('app_action_index') }}" class="btn btn-secondary">Annuler</a>
+                {% endif %}
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check2-circle"></i> Créer l'action
+                    <i class="bi bi-check2-circle"></i> Enregistrer l'Action
                 </button>
             </div>
         {{ form_end(form) }}
     </div>
 </div>
+
+{% include 'action/_modal_point_focal.html.twig' %}
 {% endblock %}
