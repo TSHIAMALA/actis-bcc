@@ -1,9 +1,9 @@
 <!-- Modal Quick Create Point Focal -->
 <div id="modalQuickPointFocal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1050; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px);">
     <div class="card" style="width: 100%; max-width: 520px; margin: 0; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); animation: fadeInScale 0.2s ease-out;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, var(--bcc-primary, #0c2340) 0%, #1a3a60 100%); color: #fff; padding: 14px 20px; border-radius: 8px 8px 0 0;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #fff; padding: 14px 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid var(--actis-primary);">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="bi bi-person-plus-fill" style="color: var(--bcc-gold, #c5a059); font-size: 1.25rem;"></i>
+                <i class="bi bi-person-plus-fill" style="color: var(--actis-primary-light); font-size: 1.25rem;"></i>
                 <h3 class="card-title" style="margin: 0; font-size: 1.1rem; color: #fff; font-weight: 600;">Nouveau Point Focal</h3>
             </div>
             <button type="button" id="btnCloseModalPointFocal" style="background: none; border: none; font-size: 1.3rem; color: #fff; opacity: 0.8; cursor: pointer; line-height: 1;" title="Fermer">&times;</button>
@@ -85,14 +85,14 @@
     justify-content: space-between;
     margin-top: 6px;
     font-size: 0.775rem;
-    color: var(--bcc-navy, #0c2340);
-    background: #F0F4F8;
+    color: var(--bcc-navy, #0F172A);
+    background: #F0FDFA;
     padding: 4px 10px;
     border-radius: 4px;
-    border-left: 3px solid var(--bcc-gold, #c5a059);
+    border-left: 3px solid var(--actis-primary);
 }
 .pf-filter-info a {
-    color: var(--bcc-navy-light, #183b6b);
+    color: var(--actis-primary-dark);
     text-decoration: underline;
     font-weight: 600;
     cursor: pointer;
@@ -177,15 +177,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const email = data.email ? `<span style="font-size: 0.76rem; color: #64748B; margin-left: 8px;"><i class="bi bi-envelope" style="font-size: 0.72rem; margin-right: 3px;"></i>${escape(data.email)}</span>` : '';
                     const matricule = data.matricule ? `<span class="badge badge-dark" style="font-size: 0.72rem; padding: 2px 6px; margin-left: auto;">${escape(data.matricule)}</span>` : '';
                     return `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                        <span><i class="bi bi-person-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 6px;"></i><strong>${escape(data.text)}</strong>${email}</span>
+                        <span><i class="bi bi-person-fill" style="color: var(--actis-primary); margin-right: 6px;"></i><strong>${escape(data.text)}</strong>${email}</span>
                         ${matricule}
                     </div>`;
                 },
                 item: function(data, escape) {
-                    return `<div><i class="bi bi-person-check-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 6px;"></i>${escape(data.text)}</div>`;
+                    return `<div><i class="bi bi-person-check-fill" style="color: var(--actis-primary); margin-right: 6px;"></i>${escape(data.text)}</div>`;
                 },
                 optgroup_header: function(data, escape) {
-                    return `<div class="optgroup-header"><i class="bi bi-building" style="margin-right: 6px; color: var(--bcc-gold, #c5a059);"></i>${escape(data.label)}</div>`;
+                    return `<div class="optgroup-header"><i class="bi bi-building" style="margin-right: 6px; color: var(--actis-primary);"></i>${escape(data.label)}</div>`;
                 }
             }
         });
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filterInfoBox) {
             const sigle = (entiteName && entiteName.includes(' - ')) ? entiteName.split(' - ')[0].trim() : (entiteName || 'Sélectionnée');
             filterInfoBox.innerHTML = `
-                <span><i class="bi bi-funnel-fill" style="color: var(--bcc-gold, #c5a059); margin-right: 4px;"></i> Direction : <strong>${sigle}</strong></span>
+                <span><i class="bi bi-funnel-fill" style="color: var(--actis-primary); margin-right: 4px;"></i> Direction : <strong>${sigle}</strong></span>
                 <a id="btnShowAllPfs" title="Afficher tous les points focaux"><i class="bi bi-globe"></i> Toutes les directions</a>
             `;
             filterInfoBox.style.display = 'flex';
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnShowAll.addEventListener('click', function(e) {
                     e.preventDefault();
                     currentFilterEntiteId = null;
-                    filterInfoBox.innerHTML = `<span><i class="bi bi-globe" style="color: var(--bcc-navy, #0c2340); margin-right: 4px;"></i> Affichage de <strong>toutes les directions</strong></span>`;
+                    filterInfoBox.innerHTML = `<span><i class="bi bi-globe" style="color: var(--actis-primary); margin-right: 4px;"></i> Affichage de <strong>toutes les directions</strong></span>`;
                     tsResponsable.refreshOptions(false);
                 });
             }

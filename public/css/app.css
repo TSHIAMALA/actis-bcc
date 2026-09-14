@@ -1,35 +1,54 @@
 /* ===================================================================
-   ACTIS-BCC — Design System "BCC Flex"
+   ACTIS-BCC — Design System "ACTIS Sovereign"
    Banque Centrale du Congo
-   Premium Institutional UI · Glassmorphism · Micro-Animations
+   Premium Institutional UI · Slate & Emerald · Micro-Animations
    =================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* ── Navy Palette ── */
-    --bcc-navy-dark: #071324;
-    --bcc-navy: #0F2544;
-    --bcc-navy-light: #183B6B;
-    --bcc-navy-accent: #204C87;
-    --bcc-navy-surface: #0D1E38;
+    /* ── Primary Teal / Emerald Palette (Action, Décision, Modernité) ── */
+    --actis-primary: #0D9488;
+    --actis-primary-dark: #0F766E;
+    --actis-primary-light: #14B8A6;
+    --actis-primary-pale: #CCFBF1;
+    --actis-primary-glow: rgba(13, 148, 136, 0.35);
 
-    /* ── Gold Palette ── */
-    --bcc-gold: #C99726;
-    --bcc-gold-light: #DFB147;
-    --bcc-gold-pale: #FDF7E7;
-    --bcc-gold-glow: rgba(201, 151, 38, 0.35);
+    /* ── Secondary Accent Palette (Copper — Prestige & Souveraineté BCC) ── */
+    --actis-accent: #B87333;
+    --actis-accent-light: #D4956B;
+    --actis-accent-pale: #FFF7ED;
+    --actis-accent-glow: rgba(184, 115, 51, 0.3);
+
+    /* ── Dark Slate Palette (Sidebar & Surfaces sombres) ── */
+    --slate-950: #0B0F19;
+    --slate-900: #0F172A;
+    --slate-800: #1E293B;
+    --slate-700: #334155;
+    --slate-600: #475569;
+
+    /* ── Aliases pour rétrocompatibilité totale avec les templates existants ── */
+    --bcc-navy-dark: #0B0F19;
+    --bcc-navy: #0F172A;
+    --bcc-navy-light: #1E293B;
+    --bcc-navy-accent: #334155;
+    --bcc-navy-surface: #0F172A;
+
+    --bcc-gold: #B87333;
+    --bcc-gold-light: #D4956B;
+    --bcc-gold-pale: #FFF7ED;
+    --bcc-gold-glow: rgba(184, 115, 51, 0.35);
 
     /* ── Surface & Background ── */
-    --bg-main: #F4F7FB;
+    --bg-main: #F8FAFC;
     --bg-card: #FFFFFF;
-    --bg-card-hover: #FAFCFE;
+    --bg-card-hover: #F1F5F9;
 
     /* ── Typography ── */
-    --text-primary: #111827;
-    --text-secondary: #4B5563;
-    --text-muted: #9CA3AF;
-    --text-light: #F9FAFB;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --text-light: #F8FAFC;
 
     /* ── Borders ── */
     --border-color: #E2E8F0;
@@ -48,17 +67,18 @@
     --color-purple-bg: #F5F3FF;
 
     /* ── Shadows ── */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-    --shadow-card: 0 2px 12px rgba(15, 37, 68, 0.06);
-    --shadow-glow-gold: 0 0 20px rgba(201, 151, 38, 0.25);
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+    --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+    --shadow-glow-gold: 0 0 20px rgba(184, 115, 51, 0.25);
+    --shadow-glow-teal: 0 0 20px rgba(13, 148, 136, 0.25);
 
     /* ── Radii ── */
     --radius-sm: 6px;
     --radius-md: 10px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
     --radius-full: 9999px;
 
     /* ── Layout ── */
@@ -79,7 +99,7 @@
 }
 
 body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
     line-height: 1.5;
@@ -89,20 +109,20 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--bcc-navy);
     font-weight: 700;
     line-height: 1.25;
 }
 
 a {
-    color: var(--bcc-navy-light);
+    color: var(--actis-primary-dark);
     text-decoration: none;
     transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: var(--bcc-gold);
+    color: var(--actis-primary);
 }
 
 /* ===================================================================
@@ -115,13 +135,13 @@ a:hover {
 }
 
 /* ===================================================================
-   SIDEBAR — BCC Flex Style
+   SIDEBAR — ACTIS Sovereign (Light Executive Style)
    =================================================================== */
 
 .sidebar {
     width: var(--sidebar-width);
-    background: linear-gradient(175deg, #081728 0%, var(--bcc-navy) 40%, var(--bcc-navy-light) 100%);
-    color: #FFFFFF;
+    background: #FFFFFF;
+    color: var(--text-primary);
     position: fixed;
     top: 0;
     left: 0;
@@ -131,17 +151,18 @@ a:hover {
     flex-direction: column;
     overflow: hidden;
     transition: width var(--transition-smooth);
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 16px rgba(15, 23, 42, 0.04);
 }
 
-/* Subtle noise texture overlay */
+/* Subtle light gradient background */
 .sidebar::before {
     content: '';
     position: absolute;
     inset: 0;
     background: 
-        radial-gradient(ellipse at 30% 0%, rgba(201, 151, 38, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 100%, rgba(32, 76, 135, 0.15) 0%, transparent 50%);
+        radial-gradient(ellipse at 30% 0%, rgba(13, 148, 136, 0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 100%, rgba(184, 115, 51, 0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
@@ -157,7 +178,7 @@ a:hover {
     display: flex;
     align-items: center;
     gap: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid #F1F5F9;
     position: relative;
     min-height: 72px;
 }
@@ -168,51 +189,13 @@ a:hover {
     border-radius: var(--radius-md);
     object-fit: cover;
     flex-shrink: 0;
-    filter: drop-shadow(0 2px 8px rgba(201, 151, 38, 0.35));
+    filter: drop-shadow(0 2px 8px rgba(13, 148, 136, 0.25));
     transition: all var(--transition-smooth);
 }
 
 .sidebar-brand:hover .brand-logo-img {
-    filter: drop-shadow(0 4px 16px rgba(201, 151, 38, 0.55));
+    filter: drop-shadow(0 4px 14px rgba(13, 148, 136, 0.45));
     transform: scale(1.05);
-}
-
-/* Shine sweep animation on brand logo */
-.brand-logo-img {
-    position: relative;
-}
-
-.sidebar-brand::after {
-    content: '';
-    position: absolute;
-    top: 15px;
-    left: 18px;
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(
-        105deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.15) 45%,
-        rgba(255, 255, 255, 0.25) 50%,
-        rgba(255, 255, 255, 0.15) 55%,
-        transparent 60%
-    );
-    background-size: 250% 100%;
-    background-position: 100% 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sidebar-brand:hover::after {
-    opacity: 1;
-    animation: shine-sweep 0.8s ease forwards;
-}
-
-@keyframes shine-sweep {
-    0% { background-position: 100% 0; }
-    100% { background-position: -50% 0; }
 }
 
 .brand-text {
@@ -222,8 +205,8 @@ a:hover {
 }
 
 .brand-text h1 {
-    color: #FFFFFF;
-    font-size: 1.12rem;
+    color: #0F172A;
+    font-size: 1.15rem;
     letter-spacing: 0.5px;
     margin: 0;
     font-weight: 800;
@@ -231,8 +214,8 @@ a:hover {
 
 .brand-text p {
     font-size: 0.68rem;
-    color: var(--bcc-gold-light);
-    font-weight: 600;
+    color: var(--actis-primary);
+    font-weight: 700;
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -247,9 +230,9 @@ a:hover {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--bcc-navy);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    color: #64748B;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -257,13 +240,13 @@ a:hover {
     font-size: 0.75rem;
     transition: all var(--transition-fast);
     z-index: 210;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar-toggle:hover {
-    background: var(--bcc-gold);
-    color: var(--bcc-navy-dark);
-    border-color: var(--bcc-gold);
+    background: var(--actis-primary);
+    color: #FFFFFF;
+    border-color: var(--actis-primary);
     transform: translateY(-50%) scale(1.1);
 }
 
@@ -273,11 +256,11 @@ a:hover {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar {
@@ -289,7 +272,7 @@ a:hover {
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(148, 163, 184, 0.25);
     border-radius: 10px;
 }
 
@@ -297,7 +280,7 @@ a:hover {
 .nav-section-title {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.3);
+    color: #94A3B8;
     font-weight: 800;
     letter-spacing: 1.4px;
     padding: 18px 14px 7px;
@@ -306,54 +289,55 @@ a:hover {
     transition: opacity var(--transition-smooth);
 }
 
-/* ── Nav Links — Glassmorphism Style ── */
+/* ── Nav Links ── */
 .nav-link {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    color: rgba(255, 255, 255, 0.65);
+    color: #475569;
     border-radius: var(--radius-md);
-    font-size: 0.87rem;
-    font-weight: 500;
+    font-size: 0.88rem;
+    font-weight: 600;
     transition: all var(--transition-fast);
     position: relative;
     overflow: hidden;
     white-space: nowrap;
 }
 
-/* Glassmorphism hover effect */
+/* Hover effect */
 .nav-link:hover {
-    color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    color: var(--actis-primary-dark);
+    background: #F0FDFA;
     transform: translateX(2px);
 }
 
-/* Active state — Premium pill indicator */
-.nav-link.active {
-    color: #FFFFFF;
-    background: linear-gradient(135deg, rgba(201, 151, 38, 0.15) 0%, rgba(32, 76, 135, 0.3) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(201, 151, 38, 0.2);
-    font-weight: 600;
-    box-shadow: 0 2px 12px rgba(201, 151, 38, 0.1);
+.nav-link:hover .icon {
+    color: var(--actis-primary);
+    transform: scale(1.12);
 }
 
-/* Gold bar indicator on active */
+/* Active state — Clean Mint/Teal Pill */
+.nav-link.active {
+    color: var(--actis-primary-dark);
+    background: #E6FFFA;
+    border: 1px solid rgba(13, 148, 136, 0.22);
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(13, 148, 136, 0.1);
+}
+
+/* Emerald bar indicator on active */
 .nav-link.active::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
-    background: linear-gradient(180deg, var(--bcc-gold-light), var(--bcc-gold));
+    width: 3.5px;
+    height: 65%;
+    background: var(--actis-primary);
     border-radius: 0 4px 4px 0;
-    box-shadow: 0 0 8px var(--bcc-gold-glow);
+    box-shadow: 0 0 8px rgba(13, 148, 136, 0.4);
 }
 
 .nav-link .icon {
@@ -362,11 +346,12 @@ a:hover {
     display: inline-flex;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform var(--transition-fast);
+    color: #64748B;
+    transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
-.nav-link:hover .icon {
-    transform: scale(1.12);
+.nav-link.active .icon {
+    color: var(--actis-primary);
 }
 
 .nav-link span {
@@ -378,8 +363,8 @@ a:hover {
 /* ── Nav Badges ── */
 .nav-badge {
     margin-left: auto;
-    background: var(--bcc-gold);
-    color: var(--bcc-navy-dark);
+    background: var(--actis-primary-pale);
+    color: var(--actis-primary-dark);
     font-size: 0.68rem;
     font-weight: 800;
     padding: 2px 7px;
@@ -391,14 +376,9 @@ a:hover {
 }
 
 .nav-badge.danger {
-    background: var(--color-danger);
-    color: #FFFFFF;
+    background: #FEE2E2;
+    color: var(--color-danger);
     animation: badge-pulse 2s ease-in-out infinite;
-}
-
-@keyframes badge-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
 }
 
 /* ── Submenu / Accordion ── */
@@ -413,10 +393,10 @@ a:hover {
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    color: rgba(255, 255, 255, 0.65);
+    color: #475569;
     border-radius: var(--radius-md);
-    font-size: 0.87rem;
-    font-weight: 500;
+    font-size: 0.88rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-fast);
     background: none;
@@ -429,9 +409,12 @@ a:hover {
 }
 
 .nav-group-toggle:hover {
-    color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(8px);
+    color: var(--actis-primary-dark);
+    background: #F0FDFA;
+}
+
+.nav-group-toggle:hover .icon {
+    color: var(--actis-primary);
 }
 
 .nav-group-toggle .icon {
@@ -440,13 +423,15 @@ a:hover {
     display: inline-flex;
     justify-content: center;
     flex-shrink: 0;
+    color: #64748B;
+    transition: color var(--transition-fast);
 }
 
 .nav-group-toggle .nav-chevron {
     margin-left: auto;
     font-size: 0.7rem;
     transition: transform var(--transition-smooth);
-    color: rgba(255, 255, 255, 0.35);
+    color: #94A3B8;
     flex-shrink: 0;
 }
 
@@ -455,7 +440,11 @@ a:hover {
 }
 
 .nav-group.open .nav-group-toggle {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--actis-primary-dark);
+}
+
+.nav-group.open .nav-group-toggle .icon {
+    color: var(--actis-primary);
 }
 
 .nav-submenu {
@@ -472,9 +461,9 @@ a:hover {
 }
 
 .nav-submenu .nav-link {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     padding: 8px 14px 8px 22px;
-    color: rgba(255, 255, 255, 0.55);
+    color: #64748B;
     position: relative;
 }
 
@@ -486,23 +475,22 @@ a:hover {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: #CBD5E1;
     transform: translateY(-50%);
     transition: background var(--transition-fast);
 }
 
 .nav-submenu .nav-link:hover::after,
 .nav-submenu .nav-link.active::after {
-    background: var(--bcc-gold);
-    box-shadow: 0 0 6px var(--bcc-gold-glow);
+    background: var(--actis-primary);
+    box-shadow: 0 0 6px var(--actis-primary-glow);
 }
 
 /* ── Sidebar Footer ── */
 .sidebar-footer {
     padding: 14px 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(8px);
+    border-top: 1px solid #F1F5F9;
+    background: #F8FAFC;
 }
 
 .user-snippet {
@@ -515,20 +503,20 @@ a:hover {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bcc-gold-light), var(--bcc-gold));
-    color: var(--bcc-navy-dark);
+    background: linear-gradient(135deg, var(--actis-primary), var(--actis-primary-dark));
+    color: #FFFFFF;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.8rem;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(201, 151, 38, 0.3);
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
     transition: box-shadow var(--transition-fast);
 }
 
 .user-avatar:hover {
-    box-shadow: var(--shadow-glow-gold);
+    box-shadow: var(--shadow-glow-teal);
 }
 
 .user-info {
@@ -538,7 +526,7 @@ a:hover {
 }
 
 .user-name {
-    color: #FFFFFF;
+    color: #0F172A;
     font-size: 0.82rem;
     font-weight: 700;
     white-space: nowrap;
@@ -547,16 +535,16 @@ a:hover {
 }
 
 .user-role {
-    color: var(--bcc-gold-light);
+    color: var(--actis-primary);
     font-size: 0.7rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .btn-logout {
-    color: rgba(255, 255, 255, 0.5);
+    color: #94A3B8;
     font-size: 1.05rem;
     padding: 6px;
     border-radius: var(--radius-sm);
@@ -569,7 +557,7 @@ a:hover {
 
 .btn-logout:hover {
     color: var(--color-danger);
-    background: rgba(220, 38, 38, 0.1);
+    background: #FEE2E2;
 }
 
 /* ── Sidebar Collapsed State ── */
@@ -727,7 +715,7 @@ a:hover {
 
 .topbar-search input:focus ~ .search-icon,
 .topbar-search:focus-within .search-icon {
-    color: var(--bcc-navy-light);
+    color: var(--actis-primary);
 }
 
 .topbar-actions {
@@ -751,11 +739,11 @@ a:hover {
 }
 
 .topbar-datetime i {
-    color: var(--bcc-gold);
+    color: var(--actis-accent);
 }
 
 .btn-quick-new {
-    background: linear-gradient(135deg, var(--bcc-navy) 0%, var(--bcc-navy-light) 100%);
+    background: linear-gradient(135deg, var(--actis-primary-dark) 0%, var(--actis-primary) 100%);
     color: #FFFFFF !important;
     padding: 8px 18px;
     border-radius: var(--radius-md);
@@ -764,7 +752,7 @@ a:hover {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 2px 8px rgba(15, 37, 68, 0.2);
+    box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
     border: none;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -772,9 +760,9 @@ a:hover {
 }
 
 .btn-quick-new:hover {
-    background: linear-gradient(135deg, var(--bcc-navy-light) 0%, var(--bcc-navy-accent) 100%);
+    background: linear-gradient(135deg, var(--actis-primary) 0%, var(--actis-primary-light) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 37, 68, 0.25);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
     color: #FFFFFF !important;
 }
 
@@ -873,7 +861,7 @@ a:hover {
 }
 
 .kpi-hero-card {
-    background: linear-gradient(135deg, #071324 0%, #0F2544 50%, #183B6B 100%);
+    background: linear-gradient(135deg, #0B0F19 0%, #1E293B 60%, #0F172A 100%);
     color: #FFFFFF;
     border-radius: var(--radius-md);
     padding: 14px 16px;
@@ -883,7 +871,7 @@ a:hover {
     justify-content: space-between;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(201, 151, 38, 0.25);
+    border: 1px solid rgba(13, 148, 136, 0.3);
 }
 
 .kpi-hero-header {
@@ -894,9 +882,9 @@ a:hover {
 }
 
 .kpi-hero-badge {
-    background: rgba(201, 151, 38, 0.2);
-    border: 1px solid var(--bcc-gold);
-    color: var(--bcc-gold-light);
+    background: rgba(13, 148, 136, 0.18);
+    border: 1px solid var(--actis-primary);
+    color: var(--actis-primary-light);
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.6px;
@@ -911,14 +899,14 @@ a:hover {
 
 .kpi-hero-rate {
     font-size: 1.95rem;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 800;
     color: #FFFFFF;
     line-height: 1;
 }
 
 .kpi-hero-rate span {
-    color: var(--bcc-gold);
+    color: var(--actis-primary-light);
     font-size: 1.3rem;
     margin-left: 1px;
 }
@@ -941,8 +929,8 @@ a:hover {
 .kpi-hero-progress-bar {
     height: 100%;
     border-radius: var(--radius-full);
-    background: linear-gradient(90deg, var(--bcc-gold) 0%, #F59E0B 100%);
-    box-shadow: 0 0 8px rgba(201, 151, 38, 0.5);
+    background: linear-gradient(90deg, var(--actis-primary) 0%, var(--actis-primary-light) 100%);
+    box-shadow: 0 0 10px rgba(13, 148, 136, 0.5);
     transition: width 0.8s ease;
 }
 
@@ -965,11 +953,11 @@ a:hover {
 
 .kpi-hero-stat-box i {
     font-size: 1rem;
-    color: var(--bcc-gold);
+    color: var(--actis-accent-light);
 }
 
 .kpi-hero-stat-box .stat-num {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
     color: #FFFFFF;
@@ -1060,7 +1048,7 @@ a:hover {
 
 .kpi-status-num {
     font-size: 1.55rem;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 800;
     color: var(--bcc-navy-dark);
     line-height: 1;
@@ -1098,7 +1086,8 @@ a:hover {
     white-space: nowrap;
 }
 
-.badge-primary { background: #E0E7FF; color: #3730A3; }
+.badge-primary, .badge-teal { background: var(--actis-primary-pale); color: var(--actis-primary-dark); }
+.badge-copper, .badge-gold { background: var(--actis-accent-pale); color: var(--actis-accent); font-weight: 700; }
 .badge-success { background: var(--color-success-bg); color: var(--color-success); }
 .badge-warning { background: var(--color-warning-bg); color: #B45309; }
 .badge-danger { background: var(--color-danger-bg); color: var(--color-danger); }
@@ -1106,7 +1095,6 @@ a:hover {
 .badge-purple { background: var(--color-purple-bg); color: var(--color-purple); }
 .badge-dark { background: #E2E8F0; color: #1E293B; }
 .badge-secondary { background: #F1F5F9; color: #64748B; }
-.badge-gold { background: var(--bcc-gold-pale); color: #8A640E; }
 
 /* ===================================================================
    PROGRESS BAR
@@ -1125,7 +1113,7 @@ a:hover {
     height: 100%;
     border-radius: var(--radius-full);
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(90deg, var(--bcc-navy-light) 0%, var(--bcc-gold) 100%);
+    background: linear-gradient(90deg, var(--actis-primary-dark) 0%, var(--actis-primary) 60%, var(--actis-primary-light) 100%);
 }
 
 .progress-bar-fill.success { background: var(--color-success); }
@@ -1204,8 +1192,8 @@ a:hover {
 
 .form-control:focus, .form-select:focus {
     outline: none;
-    border-color: var(--bcc-navy-light);
-    box-shadow: 0 0 0 3px rgba(24, 59, 107, 0.12);
+    border-color: var(--actis-primary);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 /* ===================================================================
@@ -1228,25 +1216,28 @@ a:hover {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--bcc-navy) 0%, var(--bcc-navy-light) 100%);
+    background: linear-gradient(135deg, var(--actis-primary-dark) 0%, var(--actis-primary) 100%) !important;
     color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--bcc-navy-light) 0%, var(--bcc-navy-accent) 100%);
+    background: linear-gradient(135deg, var(--actis-primary) 0%, var(--actis-primary-light) 100%) !important;
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
     color: #FFFFFF !important;
 }
 
-.btn-gold {
-    background: linear-gradient(135deg, var(--bcc-gold) 0%, #A67616 100%);
+.btn-gold, .btn-copper {
+    background: linear-gradient(135deg, var(--actis-accent) 0%, #9C5824 100%);
     color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(184, 115, 51, 0.25);
 }
 
-.btn-gold:hover {
-    background: linear-gradient(135deg, var(--bcc-gold-light) 0%, var(--bcc-gold) 100%);
+.btn-gold:hover, .btn-copper:hover {
+    background: linear-gradient(135deg, var(--actis-accent-light) 0%, var(--actis-accent) 100%);
     transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(184, 115, 51, 0.35);
     color: #FFFFFF !important;
 }
 
@@ -1374,7 +1365,7 @@ a:hover {
 }
 
 /* ===================================================================
-   LOGIN PAGE — Premium BCC Flex Design
+   LOGIN PAGE — ACTIS Sovereign Design
    =================================================================== */
 
 .login-page {
@@ -1385,7 +1376,7 @@ a:hover {
     padding: 24px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #040D1A 0%, var(--bcc-navy-dark) 30%, var(--bcc-navy) 60%, var(--bcc-navy-light) 100%);
+    background: linear-gradient(135deg, #070B12 0%, #0F172A 40%, #1E293B 70%, #0D9488 150%);
 }
 
 /* Animated geometric background */
@@ -1394,9 +1385,9 @@ a:hover {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 20% 80%, rgba(201, 151, 38, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(32, 76, 135, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(201, 151, 38, 0.04) 0%, transparent 60%);
+        radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(184, 115, 51, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(13, 148, 136, 0.06) 0%, transparent 60%);
     animation: login-bg-shift 12s ease-in-out infinite alternate;
 }
 
@@ -1413,7 +1404,7 @@ a:hover {
     width: 400px;
     height: 400px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(201, 151, 38, 0.06) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.1) 0%, transparent 70%);
     top: -100px;
     right: -100px;
     animation: orb-float 8s ease-in-out infinite alternate;
@@ -1450,7 +1441,7 @@ a:hover {
 }
 
 .login-header {
-    background: linear-gradient(135deg, var(--bcc-navy-dark) 0%, var(--bcc-navy) 100%);
+    background: linear-gradient(135deg, #0B0F19 0%, #1E293B 100%);
     padding: 32px 28px 26px;
     text-align: center;
     color: #FFFFFF;
@@ -1465,7 +1456,7 @@ a:hover {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--bcc-gold), var(--bcc-gold-light), var(--bcc-gold));
+    background: linear-gradient(90deg, var(--actis-primary), var(--actis-accent), var(--actis-primary));
 }
 
 .login-logo {
@@ -1486,7 +1477,7 @@ a:hover {
 }
 
 .login-tagline {
-    color: var(--bcc-gold-light);
+    color: var(--actis-primary-light);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -1538,7 +1529,7 @@ a:hover {
 
 .login-input-wrapper input:focus + i,
 .login-input-wrapper:focus-within i {
-    color: var(--bcc-navy-light);
+    color: var(--actis-primary);
 }
 
 .login-btn {
@@ -1546,7 +1537,7 @@ a:hover {
     padding: 12px;
     margin-top: 10px;
     font-size: 0.95rem;
-    background: linear-gradient(135deg, var(--bcc-navy) 0%, var(--bcc-navy-light) 100%);
+    background: linear-gradient(135deg, var(--actis-primary-dark) 0%, var(--actis-primary) 100%);
     color: #FFFFFF !important;
     border: none;
     border-radius: var(--radius-md);
@@ -1559,12 +1550,13 @@ a:hover {
     transition: all var(--transition-fast);
     font-family: inherit;
     animation: login-field-enter 0.4s ease-out 0.6s backwards;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
 }
 
 .login-btn:hover {
-    background: linear-gradient(135deg, var(--bcc-navy-light) 0%, var(--bcc-navy-accent) 100%);
+    background: linear-gradient(135deg, var(--actis-primary) 0%, var(--actis-primary-light) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(15, 37, 68, 0.3);
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
 }
 
 /* Demo accounts section */
@@ -1590,7 +1582,7 @@ a:hover {
 }
 
 .login-demo-title i {
-    color: var(--bcc-gold);
+    color: var(--actis-accent);
 }
 
 .login-demo-grid {
@@ -1618,15 +1610,15 @@ a:hover {
 
 .login-demo-btn:hover {
     background: var(--bg-main);
-    border-color: var(--bcc-navy-light);
-    color: var(--bcc-navy);
+    border-color: var(--actis-primary);
+    color: var(--actis-primary-dark);
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
 
 .login-demo-btn i {
     font-size: 0.85rem;
-    color: var(--bcc-navy-light);
+    color: var(--actis-primary);
 }
 
 .login-footer {
@@ -1814,7 +1806,7 @@ a:hover {
 }
 
 /* ===================================================================
-   TOM-SELECT (Custom BCC Searchable Dropdowns)
+   TOM-SELECT (Custom ACTIS Searchable Dropdowns)
    =================================================================== */
 .ts-wrapper {
     position: relative !important;
@@ -1842,8 +1834,8 @@ a:hover {
 }
 
 .ts-wrapper.focus .ts-control {
-    border-color: var(--bcc-navy-light) !important;
-    box-shadow: 0 0 0 3px rgba(24, 59, 107, 0.12) !important;
+    border-color: var(--actis-primary) !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
 }
 
 /* Ensure parent grid and form-group have higher stacking context when open */
@@ -1864,7 +1856,7 @@ a:hover {
     width: 100% !important;
     border-radius: var(--radius-md) !important;
     border: 1px solid var(--border-color) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18), 0 5px 15px rgba(0, 0, 0, 0.08) !important;
     font-size: 0.88rem !important;
     z-index: 999999 !important;
     background: #FFFFFF !important;
@@ -1875,7 +1867,7 @@ a:hover {
 
 .ts-dropdown .optgroup-header {
     background: #F1F5F9 !important;
-    color: var(--bcc-navy) !important;
+    color: var(--text-primary) !important;
     font-weight: 700 !important;
     font-size: 0.76rem !important;
     text-transform: uppercase !important;
@@ -1899,12 +1891,12 @@ a:hover {
 }
 
 .ts-dropdown .option.active, .ts-dropdown .option:hover {
-    background: #EFF6FF !important;
-    color: var(--bcc-navy) !important;
+    background: #F0FDFA !important;
+    color: var(--actis-primary-dark) !important;
 }
 
 .ts-dropdown .option.selected {
-    background: var(--bcc-navy) !important;
+    background: var(--actis-primary) !important;
     color: #FFFFFF !important;
     font-weight: 600 !important;
 }

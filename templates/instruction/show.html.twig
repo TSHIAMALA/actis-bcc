@@ -203,7 +203,7 @@
                                 </a>
                                 {% if act.resultatAttendu %}
                                     <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
-                                        <em>Attendu :</em> {{ act.resultatAttendu|u.truncate(70, '...') }}
+                                        <em>Attendu :</em> {{ act.resultatAttendu|length > 70 ? act.resultatAttendu|slice(0, 70) ~ '...' : act.resultatAttendu }}
                                     </div>
                                 {% endif %}
                             </td>

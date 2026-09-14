@@ -39,7 +39,7 @@
                             <td>
                                 {% if l.action %}
                                     <span class="badge badge-info">Action</span>
-                                    <a href="{{ path('app_action_show', {'id': l.action.id}) }}">{{ l.action.libelle|u.truncate(25, '...') }}</a>
+                                    <a href="{{ path('app_action_show', {'id': l.action.id}) }}">{{ l.action.libelle|length > 25 ? l.action.libelle|slice(0, 25) ~ '...' : l.action.libelle }}</a>
                                 {% elseif l.instruction %}
                                     <span class="badge badge-primary">Instruction</span>
                                     <a href="{{ path('app_instruction_show', {'id': l.instruction.id}) }}">{{ l.instruction.reference }}</a>

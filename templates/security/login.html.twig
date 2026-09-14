@@ -3,14 +3,20 @@
 {% block title %}Connexion - ACTIS-BCC{% endblock %}
 
 {% block login_body %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, var(--bcc-navy-dark) 0%, var(--bcc-navy) 50%, var(--bcc-navy-light) 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div style="width: 100%; max-width: 480px; background: #FFFFFF; border-radius: var(--radius-lg); box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+<div style="min-height: 100vh; background: radial-gradient(circle at 50% 20%, #1E293B 0%, #0F172A 60%, #070B12 100%); display: flex; align-items: center; justify-content: center; padding: 24px;">
+    <div style="width: 100%; max-width: 460px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08); overflow: hidden;">
         <!-- Header -->
-        <div style="background: var(--bcc-navy); padding: 32px 28px 24px; text-align: center; color: #FFFFFF; border-bottom: 3px solid var(--bcc-gold);">
-            <img src="{{ asset('images/logo.png') }}" alt="ACTIS - BCC" style="width: 220px; height: auto; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));">
-            <p style="color: var(--bcc-gold-light); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.6px; margin: 0;">
+        <div style="background: linear-gradient(180deg, #0B0F19 0%, #0F172A 100%); padding: 28px 24px 22px; text-align: center; color: #FFFFFF; border-bottom: 3px solid var(--actis-primary); position: relative;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                <img src="{{ asset('images/icon.png') }}" alt="ACTIS - BCC" style="width: 60px; height: 60px; border-radius: 14px; object-fit: cover; filter: drop-shadow(0 4px 14px rgba(13, 148, 136, 0.45)); border: 1px solid rgba(255, 255, 255, 0.15);">
+            </div>
+            <h1 style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0 0 3px; letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">ACTIS-BCC</h1>
+            <p style="color: var(--actis-primary-light); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 1.2px; margin: 0; font-weight: 700;">
                 De l'instruction à l'impact
             </p>
+            <div style="font-size: 0.72rem; color: rgba(255, 255, 255, 0.45); margin-top: 4px; font-weight: 500;">
+                Banque Centrale du Congo
+            </div>
         </div>
 
         <div style="padding: 28px;">
@@ -49,7 +55,7 @@
             <!-- Demo quick fill accounts -->
             <div style="margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
                 <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; text-align: center;">
-                    <i class="bi bi-lightning-charge-fill" style="color: var(--bcc-gold);"></i> Comptes de démonstration (Mot de passe: <code>password</code>)
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--actis-accent);"></i> Comptes de démonstration (Mot de passe: <code>password</code>)
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('admin.actis@bcc.local', 'password')" style="font-size: 0.75rem;">
