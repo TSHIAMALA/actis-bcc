@@ -26,8 +26,22 @@ class DashboardController extends AbstractController
         $kpis = $statsService->getDashboardKPIs();
         $chartsData = $statsService->getChartsData();
         $performanceDirections = $entiteRepo->getPerformanceDirections();
+        $allEntites = $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']);
         $recentInstructions = $instructionRepo->getRecent(5);
-        $upcomingEcheances = $actionRepo->getUpcomingEcheances(7);
+        $upcomingEcheances = $actionRepo->getUpcomingEcheances(14);
+
+        // Actions prioritaires pour le tableau principal
+        $priorityActions = $actionRepo->createQueryBuilder('a')
+            ->leftJoin('a.instruction', 'i')->addSelect('i')
+            ->leftJoin('a.statut', 's')->addSelect('s')
+            ->leftJoin('a.priorite', 'p')->addSelect('p')
+            ->leftJoin('a.entiteResponsable', 'e')->addSelect('e')
+            ->leftJoin('a.responsable', 'r')->addSelect('r')
+            ->where('a.deletedAt IS NULL')
+            ->orderBy('a.dateEcheance', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
 
         // Actions user specific
         $user = $this->getUser();
@@ -39,9 +53,11 @@ class DashboardController extends AbstractController
         return $this->render('dashboard/index.html.twig', [
             'kpis' => $kpis,
             'charts' => $chartsData,
+            'allEntites' => $allEntites,
             'performanceDirections' => $performanceDirections,
             'recentInstructions' => $recentInstructions,
             'upcomingEcheances' => $upcomingEcheances,
+            'priorityActions' => $priorityActions,
             'myPendingActions' => array_slice($myPendingActions, 0, 5),
         ]);
     }

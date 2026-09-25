@@ -1,92 +1,763 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Connexion - ACTIS-BCC{% endblock %}
+{% block title %}Bienvenue sur ACTIS - ACTIS-BCC | Banque Centrale du Congo{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── Auth Page Fullscreen Modern Layout ── */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.auth-fullscreen-container {
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 100px 5% 40px 6%;
+    box-sizing: border-box;
+    background-image: linear-gradient(135deg, rgba(6, 17, 34, 0.45) 0%, rgba(6, 17, 34, 0.18) 40%, rgba(6, 17, 34, 0.72) 100%), url('{{ asset('images/bcc_building.jpg') }}');
+    background-size: cover;
+    background-position: center left;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Top Branding Bar */
+.auth-top-header {
+    position: absolute;
+    top: 28px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+}
+
+.auth-bcc-motto {
+    color: #FFFFFF;
+}
+
+.auth-motto-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    color: #FFFFFF;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    line-height: 1.2;
+}
+
+.auth-motto-sub {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 2.2px;
+    margin-top: 4px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Language Selector Pill */
+.auth-lang-pill {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #0F172A;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    user-select: none;
+}
+
+.drc-flag-svg {
+    width: 22px;
+    height: 15px;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ── Left Hero Section (Brand & Pillars) ── */
+.auth-hero-left {
+    max-width: 580px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-bottom: 40px;
+}
+
+.auth-hero-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.auth-hero-logo-mark {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45));
+}
+
+.auth-hero-title {
+    font-size: 3.4rem;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin: 0;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+.auth-hero-fullname {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.auth-hero-slogan-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 440px;
+    margin-top: 12px;
+}
+
+.auth-hero-slogan-line::before,
+.auth-hero-slogan-line::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: #E5A93C;
+}
+
+.auth-hero-slogan-text {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #E5A93C;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* 4 Value Pillars Grid */
+.auth-hero-pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 540px;
+}
+
+.auth-pillar-card {
+    background: rgba(8, 22, 43, 0.55);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.auth-pillar-card:hover {
+    transform: translateY(-4px);
+    background: rgba(8, 22, 43, 0.75);
+    border-color: #E5A93C;
+}
+
+.auth-pillar-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #E5A93C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #E5A93C;
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    background: rgba(229, 169, 60, 0.12);
+}
+
+.auth-pillar-title {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.auth-pillar-desc {
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 3px;
+    line-height: 1.2;
+}
+
+/* Bottom Navy & Gold Wave Overlay */
+.auth-bottom-wave-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 480px;
+    height: 180px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* ── Right Login Form Card ── */
+.auth-card-container {
+    width: 100%;
+    max-width: 450px;
+    background: #FFFFFF;
+    border-radius: 28px;
+    padding: 38px 36px 32px;
+    box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+.auth-card-heading {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0A1931;
+    margin: 0 0 6px;
+    letter-spacing: -0.4px;
+    text-align: center;
+}
+
+.auth-card-subheading {
+    font-size: 0.82rem;
+    color: #64748B;
+    line-height: 1.45;
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+/* Form inputs */
+.auth-input-group {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.auth-input-group .auth-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748B;
+    font-size: 1.1rem;
+}
+
+.auth-form-input {
+    width: 100%;
+    height: 48px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 0 44px;
+    font-size: 0.9rem;
+    color: #0F172A;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.auth-form-input:focus {
+    outline: none;
+    background: #FFFFFF;
+    border-color: #0A2540;
+    box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08);
+}
+
+.auth-toggle-pwd {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.auth-toggle-pwd:hover {
+    color: #0F172A;
+}
+
+/* Options Row */
+.auth-options-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 18px;
+    color: #475569;
+}
+
+.auth-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.auth-checkbox-label input {
+    accent-color: #0A2540;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.auth-forgot-link {
+    color: #2563EB;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Primary Button */
+.auth-btn-primary {
+    width: 100%;
+    height: 48px;
+    background: #0A2540;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(10, 37, 64, 0.25);
+    font-family: inherit;
+}
+
+.auth-btn-primary:hover {
+    background: #081a30;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(10, 37, 64, 0.35);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 16px 0;
+    color: #94A3B8;
+    font-size: 0.78rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E2E8F0;
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+/* Directory Button */
+.auth-btn-directory {
+    width: 100%;
+    height: 46px;
+    background: #FFFFFF;
+    color: #0A2540;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.auth-btn-directory:hover {
+    background: #F8FAFC;
+    border-color: #0A2540;
+}
+
+/* Security Callout Box */
+.auth-security-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-top: 20px;
+}
+
+.auth-security-icon {
+    font-size: 1.3rem;
+    color: #1E3A8A;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.auth-security-content {
+    flex: 1;
+}
+
+.auth-security-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 2px;
+}
+
+.auth-security-text {
+    font-size: 0.72rem;
+    color: #475569;
+    line-height: 1.35;
+    margin: 0;
+}
+
+/* Demo Drawer */
+.auth-demo-drawer {
+    margin-top: 14px;
+    text-align: center;
+}
+
+.auth-demo-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #64748B;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.auth-demo-toggle-btn:hover {
+    color: #0A2540;
+}
+
+.auth-demo-accounts-grid {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.auth-demo-accounts-grid.open {
+    display: grid;
+}
+
+.demo-pill-btn {
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.demo-pill-btn:hover {
+    background: #E2E8F0;
+    color: #0A2540;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .auth-fullscreen-container {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 120px 20px 50px;
+    }
+    .auth-hero-left {
+        align-items: center;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .auth-hero-brand {
+        align-items: center;
+    }
+    .auth-bottom-wave-overlay {
+        display: none;
+    }
+    .auth-top-header {
+        left: 20px;
+        right: 20px;
+        top: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .auth-hero-pillars-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}
 
 {% block login_body %}
-<div style="min-height: 100vh; background: radial-gradient(circle at 50% 20%, #1E293B 0%, #0F172A 60%, #070B12 100%); display: flex; align-items: center; justify-content: center; padding: 24px;">
-    <div style="width: 100%; max-width: 460px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08); overflow: hidden;">
-        <!-- Header -->
-        <div style="background: linear-gradient(180deg, #0B0F19 0%, #0F172A 100%); padding: 28px 24px 22px; text-align: center; color: #FFFFFF; border-bottom: 3px solid var(--actis-primary); position: relative;">
-            <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                <img src="{{ asset('images/icon.png') }}" alt="ACTIS - BCC" style="width: 60px; height: 60px; border-radius: 14px; object-fit: cover; filter: drop-shadow(0 4px 14px rgba(13, 148, 136, 0.45)); border: 1px solid rgba(255, 255, 255, 0.15);">
+<div class="auth-fullscreen-container">
+    <!-- Top Header -->
+    <header class="auth-top-header">
+        <div class="auth-bcc-motto">
+            <div class="auth-motto-title">BANQUE CENTRALE DU CONGO</div>
+            <div class="auth-motto-sub">STABILITÉ &bull; CONFIANCE &bull; DÉVELOPPEMENT</div>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="auth-lang-pill" title="Langue: Français">
+            <!-- DRC Flag SVG -->
+            <svg class="drc-flag-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="600" fill="#007FFF"/>
+                <!-- Diagonal Band -->
+                <polygon points="0,520 0,600 120,600 800,80 800,0 680,0" fill="#FCD116"/>
+                <polygon points="0,550 0,600 60,600 800,50 800,0 740,0" fill="#CE1021"/>
+                <!-- Star -->
+                <polygon points="120,50 144,124 222,124 159,170 183,244 120,198 57,244 81,170 18,124 96,124" fill="#FCD116"/>
+            </svg>
+            <span>Français</span>
+            <i class="bi bi-chevron-down" style="font-size: 0.7rem; color: #64748B;"></i>
+        </div>
+    </header>
+
+    <!-- Left Hero Section: ACTIS Branding + 4 Pillars -->
+    <div class="auth-hero-left">
+        <div class="auth-hero-brand">
+            <div class="auth-hero-logo-mark">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                    <path d="M50 8 L90 85 H70 L50 42 L30 85 H10 L50 8Z" fill="#1D8CF8" />
+                    <path d="M50 24 L78 80 H64 L50 50 L36 80 H22 L50 24Z" fill="#0D47A1" />
+                    <!-- Rising Golden Trend Arrow -->
+                    <path d="M28 78 L45 58 L58 66 L78 32" stroke="#E5A93C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M68 32 H78 V42" stroke="#E5A93C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Mini bars inside -->
+                    <rect x="34" y="66" width="5" height="10" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                    <rect x="44" y="58" width="5" height="18" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                    <rect x="54" y="50" width="5" height="26" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                </svg>
             </div>
-            <h1 style="font-size: 1.55rem; font-weight: 800; color: #FFFFFF; margin: 0 0 3px; letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">ACTIS-BCC</h1>
-            <p style="color: var(--actis-primary-light); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 1.2px; margin: 0; font-weight: 700;">
-                De l'instruction à l'impact
-            </p>
-            <div style="font-size: 0.72rem; color: rgba(255, 255, 255, 0.45); margin-top: 4px; font-weight: 500;">
-                Banque Centrale du Congo
+            <h1 class="auth-hero-title">ACTIS</h1>
+            <div class="auth-hero-fullname">Action &amp; Instruction Tracking Information System</div>
+            <div class="auth-hero-slogan-line">
+                <span class="auth-hero-slogan-text">De l'instruction à l'impact</span>
             </div>
         </div>
 
-        <div style="padding: 28px;">
-            {% if error %}
-                <div class="alert alert-danger" style="margin-bottom: 20px;">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+        <!-- 4 Value Pillars -->
+        <div class="auth-hero-pillars-grid">
+            <!-- Pillar 1: Instructions -->
+            <div class="auth-pillar-card">
+                <div class="auth-pillar-icon-box">
+                    <i class="bi bi-file-earmark-text"></i>
                 </div>
-            {% endif %}
+                <div class="auth-pillar-title">INSTRUCTIONS</div>
+                <div class="auth-pillar-desc">Centraliser<br>et suivre</div>
+            </div>
 
-            <form method="post" action="{{ path('app_login') }}">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-                <div class="form-group">
-                    <label class="form-label" for="username">Identifiant (Email ou Matricule)</label>
-                    <div style="position: relative;">
-                        <i class="bi bi-person" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;"></i>
-                        <input type="text" id="username" name="_username" value="{{ last_username }}" required autofocus class="form-control" style="padding-left: 42px;" placeholder="Ex: admin.actis@bcc.local ou ACTIS001">
-                    </div>
+            <!-- Pillar 2: Actions -->
+            <div class="auth-pillar-card">
+                <div class="auth-pillar-icon-box">
+                    <i class="bi bi-check2-square"></i>
                 </div>
+                <div class="auth-pillar-title">ACTIONS</div>
+                <div class="auth-pillar-desc">Piloter<br>l'exécution</div>
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="password">Mot de passe</label>
-                    <div style="position: relative;">
-                        <i class="bi bi-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;"></i>
-                        <input type="password" id="password" name="_password" required class="form-control" style="padding-left: 42px;" placeholder="••••••••">
-                    </div>
+            <!-- Pillar 3: Suivi -->
+            <div class="auth-pillar-card">
+                <div class="auth-pillar-icon-box">
+                    <i class="bi bi-bar-chart-line"></i>
                 </div>
+                <div class="auth-pillar-title">SUIVI</div>
+                <div class="auth-pillar-desc">Mesurer<br>les progrès</div>
+            </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 0.95rem;">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Se connecter au Cockpit</span>
+            <!-- Pillar 4: Résultats -->
+            <div class="auth-pillar-card">
+                <div class="auth-pillar-icon-box">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+                <div class="auth-pillar-title">RÉSULTATS</div>
+                <div class="auth-pillar-desc">Transformer<br>en impact</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Curved Gold & Navy Wave Graphic at Bottom Left -->
+    <div class="auth-bottom-wave-overlay">
+        <svg viewBox="0 0 480 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+            <!-- Deep Navy Wave with Architectural Wireframe Inside -->
+            <path d="M0 40 C 180 80, 260 140, 480 180 L0 180 Z" fill="#08162B" opacity="0.95"/>
+            <!-- Building Wireframe lines -->
+            <rect x="20" y="90" width="30" height="70" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+            <rect x="55" y="70" width="40" height="90" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"/>
+            <rect x="100" y="110" width="25" height="50" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+            <!-- Golden Wave Ribbon -->
+            <path d="M0 35 C 180 75, 260 135, 480 175 L480 180 C 260 140, 180 80, 0 40 Z" fill="#C29342"/>
+        </svg>
+    </div>
+
+    <!-- Right Login Card: "Bienvenue sur ACTIS" -->
+    <div class="auth-card-container">
+        <!-- Heading -->
+        <h2 class="auth-card-heading">Bienvenue sur ACTIS</h2>
+        <p class="auth-card-subheading">Connectez-vous pour accéder à votre espace de suivi des Ordres de Service et Instructions.</p>
+
+        {% if error %}
+            <div class="alert alert-danger" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; font-size: 0.84rem;">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+            </div>
+        {% endif %}
+
+        <!-- Authentication Form -->
+        <form method="post" action="{{ path('app_login') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <!-- Username Input -->
+            <div class="auth-input-group">
+                <i class="bi bi-person auth-input-icon"></i>
+                <input type="text" id="username" name="_username" value="{{ last_username }}" required autofocus class="auth-form-input" placeholder="Nom d'utilisateur ou email">
+            </div>
+
+            <!-- Password Input -->
+            <div class="auth-input-group">
+                <i class="bi bi-lock auth-input-icon"></i>
+                <input type="password" id="password" name="_password" required class="auth-form-input" placeholder="Mot de passe">
+                <button type="button" class="auth-toggle-pwd" id="togglePasswordBtn" title="Afficher / Masquer le mot de passe" onclick="togglePasswordVisibility()">
+                    <i class="bi bi-eye" id="togglePwdIcon"></i>
                 </button>
-            </form>
+            </div>
 
-            <!-- Demo quick fill accounts -->
-            <div style="margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
-                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; text-align: center;">
-                    <i class="bi bi-lightning-charge-fill" style="color: var(--actis-accent);"></i> Comptes de démonstration (Mot de passe: <code>password</code>)
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('admin.actis@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-shield-lock"></i> Admin (DSI)
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('paul.kabeya@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-briefcase"></i> Cabinet / Secr.
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('marie.mukendi@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-person-badge"></i> Dir. Générale (DG)
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('jean.tshibanda@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-building"></i> Directeur (DOPM)
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('patrick.ilunga@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-person-check"></i> Resp. Marchés (SM)
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="setCredentials('david.kasongo@bcc.local', 'password')" style="font-size: 0.75rem;">
-                        <i class="bi bi-eye"></i> Consultation (DRH)
-                    </button>
-                </div>
+            <!-- Options: Remember & Forgot -->
+            <div class="auth-options-row">
+                <label class="auth-checkbox-label">
+                    <input type="checkbox" name="_remember_me" id="rememberMe">
+                    <span>Se souvenir de moi</span>
+                </label>
+                <a href="#" class="auth-forgot-link" onclick="alert('Veuillez contacter l\'administrateur système de la DSI.'); return false;">Mot de passe oublié ?</a>
+            </div>
+
+            <!-- Connect Submit Button -->
+            <button type="submit" class="auth-btn-primary">
+                <span>Se connecter</span>
+                <i class="bi bi-arrow-right"></i>
+            </button>
+
+            <!-- Divider "ou" -->
+            <div class="auth-divider">
+                <span>ou</span>
+            </div>
+
+            <!-- Directory SSO Button -->
+            <button type="button" class="auth-btn-directory" onclick="setCredentials('admin.actis@bcc.local', 'password'); document.forms[0].submit();">
+                <i class="bi bi-bank" style="font-size: 1.05rem;"></i>
+                <span>Se connecter avec l'annuaire BCC</span>
+            </button>
+        </form>
+
+        <!-- Security Badge Callout -->
+        <div class="auth-security-callout">
+            <i class="bi bi-shield-check auth-security-icon"></i>
+            <div class="auth-security-content">
+                <h4 class="auth-security-title">Accès sécurisé</h4>
+                <p class="auth-security-text">Vos données sont protégées et réservées aux utilisateurs autorisés de la Banque Centrale du Congo.</p>
             </div>
         </div>
 
-        <div style="background: #F8FAFC; padding: 14px; text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-color);">
-            Banque Centrale du Congo &bull; Système Sécurisé de Gouvernance
+        <!-- Collapsible Demo Accounts -->
+        <div class="auth-demo-drawer">
+            <button type="button" class="auth-demo-toggle-btn" onclick="toggleDemoAccounts()">
+                <i class="bi bi-key"></i>
+                <span>Comptes de test (cliquez pour pré-remplir)</span>
+                <i class="bi bi-chevron-down" id="demoChevron"></i>
+            </button>
+            <div class="auth-demo-accounts-grid" id="demoAccountsGrid">
+                <button type="button" class="demo-pill-btn" onclick="setCredentials('admin.actis@bcc.local', 'password')">
+                    👑 Admin (DSI)
+                </button>
+                <button type="button" class="demo-pill-btn" onclick="setCredentials('paul.kabeya@bcc.local', 'password')">
+                    🏛️ Cabinet Gouverneur
+                </button>
+                <button type="button" class="demo-pill-btn" onclick="setCredentials('marie.mukendi@bcc.local', 'password')">
+                    📑 Dir. Générale (DGAS)
+                </button>
+                <button type="button" class="demo-pill-btn" onclick="setCredentials('jean.tshibanda@bcc.local', 'password')">
+                    ⚙️ Opérationnel (DGSI)
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+function togglePasswordVisibility() {
+    const pwdInput = document.getElementById('password');
+    const icon = document.getElementById('togglePwdIcon');
+    if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        pwdInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+function toggleDemoAccounts() {
+    const grid = document.getElementById('demoAccountsGrid');
+    const chevron = document.getElementById('demoChevron');
+    grid.classList.toggle('open');
+    if (grid.classList.contains('open')) {
+        chevron.classList.replace('bi-chevron-down', 'bi-chevron-up');
+    } else {
+        chevron.classList.replace('bi-chevron-up', 'bi-chevron-down');
+    }
+}
+
 function setCredentials(email, pass) {
     document.getElementById('username').value = email;
     document.getElementById('password').value = pass;

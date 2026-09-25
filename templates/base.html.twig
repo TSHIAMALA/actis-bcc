@@ -32,119 +32,185 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <div class="app-wrapper">
-            <!-- Sidebar — ACTIS Sovereign -->
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-brand">
-                    <img src="{{ asset('images/icon.png') }}" alt="ACTIS-BCC" class="brand-logo-img">
-                    <div class="brand-text">
-                        <h1>ACTIS-BCC</h1>
-                        <p>Suivi des Instructions</p>
-                    </div>
-                    <!-- Collapse Toggle Button -->
-                    <button class="sidebar-toggle" id="sidebarToggle" title="Réduire / Étendre">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
+            <!-- Sidebar — ACTIS Sovereign Navy -->
+            <aside class="sidebar actis-sidebar" id="sidebar">
+                <!-- Sidebar Brand / Logo -->
+                <div class="sidebar-brand-container">
+                    <a href="{{ path('app_dashboard') }}" class="actis-brand-logo">
+                        <div class="actis-logo-mark">
+                            <svg viewBox="0 0 100 100" class="logo-triangle-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M50 8 L90 85 H70 L50 42 L30 85 H10 L50 8Z" fill="#1D8CF8" />
+                                <path d="M50 24 L78 80 H64 L50 50 L36 80 H22 L50 24Z" fill="#0D47A1" />
+                                <!-- Rising Golden Trend Arrow -->
+                                <path d="M28 78 L45 58 L58 66 L78 32" stroke="#E5A93C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M68 32 H78 V42" stroke="#E5A93C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Mini bars inside -->
+                                <rect x="34" y="66" width="5" height="10" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                                <rect x="44" y="58" width="5" height="18" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                                <rect x="54" y="50" width="5" height="26" rx="1.5" fill="#E5A93C" opacity="0.9"/>
+                            </svg>
+                        </div>
+                        <div class="actis-brand-title">ACTIS</div>
+                        <div class="actis-brand-slogan">DE L'INSTRUCTION À L'IMPACT</div>
+                    </a>
                 </div>
 
+                <!-- Navigation items -->
                 <nav class="sidebar-nav">
-                    <!-- Section: Pilotage -->
-                    <div class="nav-section-title">Pilotage Exécutif</div>
-                    <a href="{{ path('app_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="bi bi-speedometer2 icon"></i>
+                    <a href="{{ path('app_dashboard') }}" class="actis-nav-item {% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
+                        <i class="bi bi-house-door-fill nav-icon"></i>
                         <span>Tableau de bord</span>
                     </a>
 
-                    <!-- Section: Gestion Opérationnelle -->
-                    <div class="nav-section-title">Gestion Opérationnelle</div>
-                    <a href="{{ path('app_instruction_index') }}" class="nav-link {% if 'app_instruction' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="bi bi-journal-bookmark-fill icon"></i>
-                        <span>Instructions & OS</span>
+                    <a href="{{ path('app_instruction_index') }}" class="actis-nav-item {% if 'app_instruction' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-file-earmark-text nav-icon"></i>
+                        <span>Instructions</span>
                     </a>
-                    <a href="{{ path('app_action_index') }}" class="nav-link {% if 'app_action' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="bi bi-check2-square icon"></i>
-                        <span>Actions de suivi</span>
+
+                    <a href="{{ path('app_action_index') }}" class="actis-nav-item {% if 'app_action' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-check2-square nav-icon"></i>
+                        <span>Actions</span>
                     </a>
-                    <a href="{{ path('app_prorogation_index') }}" class="nav-link {% if 'app_prorogation' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="bi bi-calendar-range icon"></i>
-                        <span>Prorogations</span>
+
+                    <a href="{{ path('app_action_index', {'retard': '1'}) }}" class="actis-nav-item {% if 'app_prorogation' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-calendar3 nav-icon"></i>
+                        <span>Échéances</span>
                     </a>
-                    <a href="{{ path('app_relance_index') }}" class="nav-link {% if 'app_relance' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="bi bi-bell-fill icon"></i>
-                        <span>Relances & Alertes</span>
+
+                    <a href="{{ path('app_admin_entites') }}" class="actis-nav-item {% if 'app_admin_entite' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-diagram-3 nav-icon"></i>
+                        <span>Entités</span>
+                    </a>
+
+                    <a href="{{ path('app_relance_index') }}" class="actis-nav-item {% if 'app_relance' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="bi bi-send nav-icon"></i>
+                        <span>Relances</span>
+                    </a>
+
+                    <a href="{{ path('app_export_instructions_csv') }}" class="actis-nav-item">
+                        <i class="bi bi-bar-chart-line nav-icon"></i>
+                        <span>Rapports</span>
                     </a>
 
                     {% if is_granted('ROLE_ADMIN') %}
-                        <!-- Section: Administration — Submenu Accordion -->
-                        <div class="nav-section-title">Administration</div>
-                        <div class="nav-group {% if 'app_admin' in app.request.attributes.get('_route') %}open{% endif %}" id="navGroupAdmin">
-                            <button class="nav-group-toggle" onclick="toggleNavGroup('navGroupAdmin')">
-                                <i class="bi bi-gear-wide-connected icon"></i>
+                        <div class="actis-nav-group {% if 'app_admin' in app.request.attributes.get('_route') %}open{% endif %}" id="navGroupAdmin">
+                            <button class="actis-nav-item actis-nav-dropdown-btn" onclick="toggleNavGroup('navGroupAdmin')" type="button">
+                                <i class="bi bi-gear nav-icon"></i>
                                 <span>Administration</span>
-                                <i class="bi bi-chevron-right nav-chevron"></i>
+                                <i class="bi bi-chevron-down nav-dropdown-chevron"></i>
                             </button>
-                            <div class="nav-submenu">
-                                <a href="{{ path('app_admin_index') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_index' %}active{% endif %}">
-                                    <span>Vue d'ensemble</span>
+                            <div class="actis-submenu">
+                                <a href="{{ path('app_admin_index') }}" class="submenu-item {% if app.request.attributes.get('_route') == 'app_admin_index' %}active{% endif %}">
+                                    Vue d'ensemble
                                 </a>
-                                <a href="{{ path('app_admin_referentiels') }}" class="nav-link {% if 'app_admin_type' in app.request.attributes.get('_route') or 'app_admin_priorite' in app.request.attributes.get('_route') or 'app_admin_canal' in app.request.attributes.get('_route') or app.request.attributes.get('_route') == 'app_admin_referentiels' %}active{% endif %}">
-                                    <span>Référentiels & Types</span>
+                                <a href="{{ path('app_admin_referentiels') }}" class="submenu-item {% if 'app_admin_type' in app.request.attributes.get('_route') or 'app_admin_priorite' in app.request.attributes.get('_route') or 'app_admin_canal' in app.request.attributes.get('_route') or app.request.attributes.get('_route') == 'app_admin_referentiels' %}active{% endif %}">
+                                    Référentiels & Types
                                 </a>
-                                <a href="{{ path('app_admin_utilisateurs') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_utilisateurs' or app.request.attributes.get('_route') == 'app_admin_user_new' or app.request.attributes.get('_route') == 'app_admin_user_edit' %}active{% endif %}">
-                                    <span>Utilisateurs & Rôles</span>
+                                <a href="{{ path('app_admin_utilisateurs') }}" class="submenu-item {% if 'app_admin_utilisateurs' in app.request.attributes.get('_route') %}active{% endif %}">
+                                    Utilisateurs & Rôles
                                 </a>
-                                <a href="{{ path('app_admin_entites') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_entites' or app.request.attributes.get('_route') == 'app_admin_entite_new' or app.request.attributes.get('_route') == 'app_admin_entite_edit' %}active{% endif %}">
-                                    <span>Organigramme Entités</span>
+                                <a href="{{ path('app_admin_entites') }}" class="submenu-item {% if 'app_admin_entites' in app.request.attributes.get('_route') %}active{% endif %}">
+                                    Organigramme Entités
                                 </a>
-                                <a href="{{ path('app_admin_audit') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_audit' %}active{% endif %}">
-                                    <span>Journal d'audit</span>
+                                <a href="{{ path('app_admin_audit') }}" class="submenu-item {% if app.request.attributes.get('_route') == 'app_admin_audit' %}active{% endif %}">
+                                    Journal d'audit
                                 </a>
                             </div>
                         </div>
                     {% endif %}
                 </nav>
 
-                <div class="sidebar-footer">
-                    <div class="user-snippet">
-                        <div class="user-avatar">
-                            {{ app.user.prenom|slice(0, 1)|upper }}{{ app.user.nom|slice(0, 1)|upper }}
-                        </div>
-                        <div class="user-info">
-                            <div class="user-name">{{ app.user.nomComplet }}</div>
-                            <div class="user-role">{{ app.user.entite ? app.user.entite.code : 'BCC' }} &bull; {{ app.user.primaryRoleLabel }}</div>
-                        </div>
-                        <a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
-                            <i class="bi bi-box-arrow-right"></i>
-                        </a>
+                <!-- Sidebar Footer with BCC architectural illustration -->
+                <div class="sidebar-bcc-footer">
+                    <div class="bcc-building-art">
+                        <svg viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="building-svg">
+                            <!-- Building Wireframe -->
+                            <rect x="20" y="28" width="40" height="52" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" fill="rgba(15,35,70,0.3)"/>
+                            <rect x="25" y="34" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="35" y="34" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="45" y="34" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="25" y="46" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="35" y="46" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="45" y="46" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="25" y="58" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="35" y="58" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="45" y="58" width="6" height="8" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+
+                            <!-- Main Tower -->
+                            <rect x="65" y="10" width="50" height="70" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" fill="rgba(15,35,70,0.4)"/>
+                            <line x1="65" y1="22" x2="115" y2="22" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="65" y1="34" x2="115" y2="34" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="65" y1="46" x2="115" y2="46" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="65" y1="58" x2="115" y2="58" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="65" y1="70" x2="115" y2="70" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="77" y1="10" x2="77" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="90" y1="10" x2="90" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+                            <line x1="103" y1="10" x2="103" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+
+                            <!-- Right Wing -->
+                            <rect x="120" y="38" width="30" height="42" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" fill="rgba(15,35,70,0.3)"/>
+                            <rect x="125" y="44" width="5" height="7" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="135" y="44" width="5" height="7" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="125" y="56" width="5" height="7" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+                            <rect x="135" y="56" width="5" height="7" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+
+                            <line x1="10" y1="80" x2="155" y2="80" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>
+                        </svg>
                     </div>
+                    <div class="bcc-footer-name">BANQUE CENTRALE DU CONGO</div>
+                    <div class="bcc-footer-slogan">DE L'INSTRUCTION À L'IMPACT</div>
                 </div>
             </aside>
 
             <!-- Main Page Content -->
             <div class="main-wrapper">
-                <!-- Topbar — Frost Glass -->
-                <header class="topbar">
-                    <div class="topbar-left">
-                        <button class="mobile-toggle" id="mobileToggle" title="Menu">
+                <!-- Topbar Header -->
+                <header class="bcc-topbar">
+                    <div class="topbar-brand-motto">
+                        <button class="mobile-toggle" id="mobileToggle" title="Menu" type="button">
                             <i class="bi bi-list"></i>
                         </button>
-                        <form action="{{ path('app_instruction_index') }}" method="get" class="topbar-search">
+                        <div class="motto-text-group">
+                            <div class="motto-main">BANQUE CENTRALE DU CONGO</div>
+                            <div class="motto-sub">STABILITÉ &bull; CONFIANCE &bull; DÉVELOPPEMENT</div>
+                        </div>
+                    </div>
+
+                    <div class="topbar-search-wrapper">
+                        <form action="{{ path('app_instruction_index') }}" method="get" class="bcc-search-box">
                             <i class="bi bi-search search-icon"></i>
-                            <input type="text" name="q" placeholder="Rechercher une référence, objet, mot-clé..." value="{{ app.request.query.get('q') }}">
+                            <input type="text" name="q" placeholder="Rechercher une instruction, une action, une entité..." value="{{ app.request.query.get('q') }}">
                         </form>
                     </div>
 
-                    <div class="topbar-actions">
-                        <div class="topbar-datetime" id="topbarDatetime">
-                            <i class="bi bi-calendar3"></i>
-                            <span id="datetimeDisplay"></span>
+                    <div class="topbar-user-section">
+                        <!-- Notification Bell with red badge -->
+                        <a href="{{ path('app_relance_index') }}" class="bcc-bell-btn" title="Notifications et relances">
+                            <i class="bi bi-bell"></i>
+                            <span class="bell-badge-count">3</span>
+                        </a>
+
+                        <!-- User Profile pill -->
+                        <div class="bcc-user-profile-menu">
+                            <div class="user-avatar-circle">
+                                {{ app.user.prenom|slice(0, 1)|upper }}{{ app.user.nom|slice(0, 1)|upper }}
+                            </div>
+                            <div class="user-profile-meta">
+                                <span class="user-full-name">{{ app.user.nomComplet }}</span>
+                                <span class="user-entity-dept">{{ app.user.entite ? app.user.entite.nom : "Cellule d'Innovation" }}</span>
+                            </div>
+                            <i class="bi bi-chevron-down user-chevron"></i>
+
+                            <!-- Dropdown options -->
+                            <div class="user-dropdown-popover">
+                                <a href="{{ path('app_action_index', {'my_actions': '1'}) }}" class="dropdown-item">
+                                    <i class="bi bi-check2-circle"></i> Mes actions
+                                </a>
+                                <a href="{{ path('app_logout') }}" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                                </a>
+                            </div>
                         </div>
-                        <a href="{{ path('app_instruction_new') }}" class="btn-quick-new">
-                            <i class="bi bi-plus-lg"></i>
-                            <span>Nouvelle Instruction</span>
-                        </a>
-                        <a href="{{ path('app_export_instructions_csv') }}" class="btn btn-secondary btn-sm" title="Exporter toutes les instructions en CSV">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> Exporter
-                        </a>
                     </div>
                 </header>
 
