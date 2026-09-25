@@ -2272,16 +2272,40 @@ a:hover {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    min-width: 170px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    min-width: 200px;
     display: none;
     flex-direction: column;
     padding: 6px;
-    z-index: 100;
+    z-index: 9999;
 }
 
+.user-dropdown-popover.show,
 .bcc-user-profile-menu:hover .user-dropdown-popover {
     display: flex;
+}
+
+.dropdown-header-info {
+    padding: 8px 12px 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-header-info strong {
+    font-size: 0.84rem;
+    color: #0F172A;
+}
+
+.dropdown-header-info small {
+    font-size: 0.72rem;
+    color: #64748B;
+    margin-top: 1px;
+}
+
+.dropdown-divider-line {
+    margin: 4px 0;
+    border: none;
+    border-top: 1px solid #F1F5F9;
 }
 
 .user-dropdown-popover .dropdown-item {
@@ -2298,6 +2322,42 @@ a:hover {
 
 .user-dropdown-popover .dropdown-item:hover {
     background: #F1F5F9;
+}
+
+.user-dropdown-popover .dropdown-item.text-danger {
+    color: #DC2626;
+}
+
+.user-dropdown-popover .dropdown-item.text-danger:hover {
+    background: #FEF2F2;
+}
+
+/* Direct 1-Click Logout Button */
+.bcc-direct-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.bcc-direct-logout-btn:hover {
+    background: #DC2626;
+    color: #FFFFFF;
+    border-color: #DC2626;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.bcc-direct-logout-btn i {
+    font-size: 0.95rem;
 }
 
 /* ── Dashboard Page Container ── */

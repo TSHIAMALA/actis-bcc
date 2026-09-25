@@ -190,8 +190,8 @@
                             <span class="bell-badge-count">3</span>
                         </a>
 
-                        <!-- User Profile pill -->
-                        <div class="bcc-user-profile-menu">
+                        <!-- User Profile pill (Clickable) -->
+                        <div class="bcc-user-profile-menu" id="userProfileMenu" onclick="toggleUserMenu(event)">
                             <div class="user-avatar-circle">
                                 {{ app.user.prenom|slice(0, 1)|upper }}{{ app.user.nom|slice(0, 1)|upper }}
                             </div>
@@ -202,15 +202,30 @@
                             <i class="bi bi-chevron-down user-chevron"></i>
 
                             <!-- Dropdown options -->
-                            <div class="user-dropdown-popover">
+                            <div class="user-dropdown-popover" id="userDropdownPopover" onclick="event.stopPropagation()">
+                                <div class="dropdown-header-info">
+                                    <strong>{{ app.user.nomComplet }}</strong>
+                                    <small>{{ app.user.email }}</small>
+                                </div>
+                                <hr class="dropdown-divider-line">
                                 <a href="{{ path('app_action_index', {'my_actions': '1'}) }}" class="dropdown-item">
                                     <i class="bi bi-check2-circle"></i> Mes actions
                                 </a>
-                                <a href="{{ path('app_logout') }}" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                                <a href="{{ path('app_instruction_index') }}" class="dropdown-item">
+                                    <i class="bi bi-journal-text"></i> Instructions
+                                </a>
+                                <hr class="dropdown-divider-line">
+                                <a href="{{ path('app_logout') }}" class="dropdown-item text-danger font-bold">
+                                    <i class="bi bi-box-arrow-right"></i> Se déconnecter
                                 </a>
                             </div>
                         </div>
+
+                        <!-- Direct 1-Click Logout Button -->
+                        <a href="{{ path('app_logout') }}" class="bcc-direct-logout-btn" title="Se déconnecter de l'application">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="logout-text">Déconnexion</span>
+                        </a>
                     </div>
                 </header>
 
@@ -270,32 +285,25 @@
             });
         }
 
-        // ── Nav Group Accordion Toggle ──
-        function toggleNavGroup(groupId) {
-            const group = document.getElementById(groupId);
-            if (group) {
-                group.classList.toggle('open');
+        // ── User Dropdown Menu Toggle ──
+        function toggleUserMenu(e) {
+            e.stopPropagation();
+            const popover = document.getElementById('userDropdownPopover');
+            if (popover) {
+                popover.classList.toggle('show');
             }
         }
 
-        // ── Live DateTime ──
-        function updateDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'short', 
-                day: '2-digit', 
-                month: 'short', 
-                year: 'numeric',
-                hour: '2-digit', 
-                minute: '2-digit'
-            };
-            const display = document.getElementById('datetimeDisplay');
-            if (display) {
-                display.textContent = now.toLocaleDateString('fr-FR', options);
+        // Close user dropdown on outside click
+        document.addEventListener('click', function(e) {
+            const popover = document.getElementById('userDropdownPopover');
+            const menu = document.getElementById('userProfileMenu');
+            if (popover && popover.classList.contains('show')) {
+                if (menu && !menu.contains(e.target)) {
+                    popover.classList.remove('show');
+                }
             }
-        }
-        updateDateTime();
-        setInterval(updateDateTime, 30000);
+        });
         </script>
     {% else %}
         {% block login_body %}{% endblock %}
