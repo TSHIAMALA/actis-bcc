@@ -1,34 +1,145 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des Utilisateurs - Administration{% endblock %}
+{% block title %}Gestion des Utilisateurs - Administration - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+.admin-subpage-header {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 50%, #1a3a60 100%);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 8px 24px rgba(9, 26, 47, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+.user-avatar-sm {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1e3a5f, #0f2744);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.user-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+.user-toolbar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.user-search-input {
+    padding: 0.45rem 0.85rem 0.45rem 2.2rem;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #ffffff;
+    outline: none;
+    min-width: 260px;
+}
+.user-search-input:focus {
+    border-color: var(--actis-primary, #0d9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.role-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: #ede9fe;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+.role-badge.role-admin {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+.role-badge.role-cabinet {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="page-header">
-    <div>
-        <h2 class="page-title">Gestion des Utilisateurs</h2>
-        <p class="page-subtitle">Comptes d'accès, affectations et rôles applicatifs</p>
-    </div>
-    <div>
-        <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-person-plus-fill"></i> Nouvel Utilisateur
-        </a>
-    </div>
-</div>
+<div class="container-fluid px-4 py-3">
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="bi bi-people-fill"></i> Liste des Utilisateurs ({{ users|length }})</h3>
+    <!-- Top Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_index') }}">Administration</a></li>
+            <li class="breadcrumb-item active">Utilisateurs & Habilitations</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="admin-subpage-header">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge" style="background: rgba(255,255,255,0.15); color: #d4e3f5; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="bi bi-shield-lock me-1"></i> Habilitations & Sécurité RBAC
+                </span>
+            </div>
+            <h2 class="fw-bold text-white mb-1">Gestion des Utilisateurs & Rôles</h2>
+            <p class="text-white-50 small mb-0">Comptes d'accès des agents et conseillers de la Banque Centrale du Congo, affectations et privilèges.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_admin_index') }}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Tableau Admin
+            </a>
+            <a href="{{ path('app_admin_user_new') }}" class="btn btn-light btn-sm fw-semibold">
+                <i class="bi bi-person-plus-fill me-1 text-primary"></i> Nouvel Utilisateur
+            </a>
+        </div>
     </div>
-    <div class="card-body" style="padding: 0;">
+
+    <!-- Table Card -->
+    <div class="user-table-card">
+        <!-- Toolbar -->
+        <div class="user-toolbar">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="fw-bold mb-0 text-dark" style="font-size: 1rem;">
+                    <i class="bi bi-people-fill text-primary me-2"></i>Liste des Utilisateurs
+                </h5>
+                <span class="badge bg-light text-muted border">{{ users|length }} comptes enregistrés</span>
+            </div>
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute text-muted" style="left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                <input type="text" id="userSearchBox" class="user-search-input" placeholder="Rechercher par nom, matricule, email..." onkeyup="filterUsersTable()">
+            </div>
+        </div>
+
         <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
+            <table class="table table-hover align-middle mb-0" id="usersTable">
+                <thead class="table-light">
+                    <tr style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569;">
+                        <th>Utilisateur</th>
                         <th>Matricule</th>
-                        <th>Nom Complet</th>
                         <th>Email Professionnel</th>
                         <th>Entité de Rattachement</th>
-                        <th>Rôles / Profils</th>
+                        <th>Rôles & Privilèges</th>
                         <th>Statut</th>
                         <th style="text-align: right;">Actions</th>
                     </tr>
@@ -36,25 +147,75 @@
                 <tbody>
                     {% for u in users %}
                         <tr>
-                            <td><strong>{{ u.matricule }}</strong></td>
-                            <td>{{ u.nomComplet }}</td>
-                            <td>{{ u.email }}</td>
-                            <td><span class="badge badge-secondary">{{ u.entite.nomComplet }}</span></td>
+                            <!-- User Name & Avatar -->
                             <td>
-                                {% for r in u.appRoles %}
-                                    <span class="badge badge-info">{{ r.libelle }}</span>
-                                {% endfor %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="user-avatar-sm">
+                                        {{ u.prenom ? u.prenom|slice(0,1)|upper : '' }}{{ u.nom ? u.nom|slice(0,1)|upper : '' }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ u.nomComplet }}</div>
+                                        <div class="text-muted small" style="font-size: 0.75rem;">{{ u.telephone ?: 'Aucun tél' }}</div>
+                                    </div>
+                                </div>
                             </td>
+
+                            <!-- Matricule -->
                             <td>
-                                {% if u.actif %}
-                                    <span class="badge badge-success">Actif</span>
+                                <span class="badge bg-light text-dark border fw-bold">{{ u.matricule }}</span>
+                            </td>
+
+                            <!-- Email -->
+                            <td>
+                                <a href="mailto:{{ u.email }}" class="text-decoration-none text-secondary small fw-medium">
+                                    <i class="bi bi-envelope me-1 text-muted"></i>{{ u.email }}
+                                </a>
+                            </td>
+
+                            <!-- Entity -->
+                            <td>
+                                {% if u.entite %}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                        <i class="bi bi-building me-1"></i>{{ u.entite.code }}
+                                    </span>
+                                    <div class="text-muted small text-truncate mt-1" style="max-width: 180px;" title="{{ u.entite.nom }}">
+                                        {{ u.entite.nom }}
+                                    </div>
                                 {% else %}
-                                    <span class="badge badge-danger">Inactif</span>
+                                    <span class="text-muted small fst-italic">Non rattaché</span>
                                 {% endif %}
                             </td>
+
+                            <!-- Roles -->
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for r in u.appRoles %}
+                                        <span class="role-badge {% if 'ADMIN' in r.code %}role-admin{% elseif 'CABINET' in r.code %}role-cabinet{% endif %}">
+                                            {{ r.libelle }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small">Utilisateur standard</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if u.actif %}
+                                    <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-check-circle-fill"></i> Actif
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-slash-circle"></i> Suspendu
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
                             <td style="text-align: right;">
-                                <div class="d-flex justify-content-end gap-1">
-                                    <a href="{{ path('app_admin_user_edit', {'id': u.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <a href="{{ path('app_admin_user_edit', {'id': u.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier le compte">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     
@@ -62,7 +223,7 @@
                                         <form method="post" action="{{ path('app_admin_user_toggle_actif', {'id': u.id}) }}" onsubmit="return confirm('Voulez-vous {{ u.actif ? 'suspendre' : 'activer' }} le compte de {{ u.nomComplet|e('js') }} ?');" style="display: inline;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
                                             <button type="submit" class="btn btn-sm btn-outline-{{ u.actif ? 'warning' : 'success' }}" title="{{ u.actif ? 'Suspendre / Désactiver' : 'Activer le compte' }}">
-                                                <i class="bi bi-{{ u.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                                <i class="bi bi-{{ u.actif ? 'pause-circle-fill' : 'play-circle-fill' }}"></i>
                                             </button>
                                         </form>
 
@@ -84,4 +245,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function filterUsersTable() {
+    const input = document.getElementById('userSearchBox');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('usersTable');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const rowText = tr[i].textContent || tr[i].innerText;
+        if (rowText.toLowerCase().indexOf(filter) > -1) {
+            tr[i].style.display = '';
+        } else {
+            tr[i].style.display = 'none';
+        }
+    }
+}
+</script>
 {% endblock %}

@@ -1,29 +1,120 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Organigramme & Entités - Administration{% endblock %}
+{% block title %}Organigramme & Entités - Administration - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+.admin-subpage-header {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 50%, #1a3a60 100%);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 8px 24px rgba(9, 26, 47, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+.entity-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+.entity-toolbar {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.entity-search-input {
+    padding: 0.45rem 0.85rem 0.45rem 2.2rem;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #ffffff;
+    outline: none;
+    min-width: 260px;
+}
+.entity-search-input:focus {
+    border-color: var(--actis-primary, #0d9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.entity-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: #e0f2fe;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="page-header">
-    <div>
-        <h2 class="page-title">Entités Organisationnelles</h2>
-        <p class="page-subtitle">Structure hiérarchique : Directions Générales, Directions et Services de la BCC</p>
-    </div>
-    <div>
-        <a href="{{ path('app_admin_entite_new') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle"></i> Nouvelle Entité
-        </a>
-    </div>
-</div>
+<div class="container-fluid px-4 py-3">
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="bi bi-diagram-3-fill"></i> Liste des Entités ({{ entites|length }})</h3>
+    <!-- Top Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_index') }}">Administration</a></li>
+            <li class="breadcrumb-item active">Organigramme & Entités</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="admin-subpage-header">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge" style="background: rgba(255,255,255,0.15); color: #d4e3f5; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="bi bi-diagram-3 me-1"></i> Structure Institutionnelle
+                </span>
+            </div>
+            <h2 class="fw-bold text-white mb-1">Organigramme & Entités BCC</h2>
+            <p class="text-white-50 small mb-0">Hiérarchie des Directions Générales, Départements et Services opérationnels de la Banque Centrale du Congo.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_admin_index') }}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Tableau Admin
+            </a>
+            <a href="{{ path('app_admin_entite_new') }}" class="btn btn-light btn-sm fw-semibold">
+                <i class="bi bi-plus-circle me-1 text-primary"></i> Nouvelle Entité
+            </a>
+        </div>
     </div>
-    <div class="card-body" style="padding: 0;">
+
+    <!-- Table Card -->
+    <div class="entity-table-card">
+        <!-- Toolbar -->
+        <div class="entity-toolbar">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="fw-bold mb-0 text-dark" style="font-size: 1rem;">
+                    <i class="bi bi-building text-primary me-2"></i>Liste des Entités Organisationnelles
+                </h5>
+                <span class="badge bg-light text-muted border">{{ entites|length }} entités configurées</span>
+            </div>
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute text-muted" style="left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                <input type="text" id="entitySearchBox" class="entity-search-input" placeholder="Filtrer par code, nom, type..." onkeyup="filterEntitiesTable()">
+            </div>
+        </div>
+
         <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
+            <table class="table table-hover align-middle mb-0" id="entitiesTable">
+                <thead class="table-light">
+                    <tr style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569;">
                         <th>Code / Sigle</th>
                         <th>Nom de l'Entité</th>
                         <th>Type d'Entité</th>
@@ -35,28 +126,77 @@
                 <tbody>
                     {% for e in entites %}
                         <tr>
-                            <td><strong>{{ e.code }}</strong></td>
-                            <td>{{ e.nom }}</td>
-                            <td><span class="badge badge-secondary">{{ e.typeEntite.libelle }}</span></td>
-                            <td>{{ e.parent ? e.parent.nomComplet : '<span class="text-muted">Racine (Aucun)</span>'|raw }}</td>
+                            <!-- Code / Sigle -->
                             <td>
-                                {% if e.actif %}
-                                    <span class="badge badge-success">Actif</span>
-                                {% else %}
-                                    <span class="badge badge-danger">Inactif</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="entity-icon-box">
+                                        <i class="bi bi-bank"></i>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-primary text-white fw-bold" style="font-size: 0.82rem; letter-spacing: 0.03em;">
+                                            {{ e.code }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Entity Name -->
+                            <td>
+                                <div class="fw-bold text-dark">{{ e.nom }}</div>
+                                {% if e.description %}
+                                    <div class="text-muted small text-truncate" style="max-width: 250px;" title="{{ e.description }}">
+                                        {{ e.description }}
+                                    </div>
                                 {% endif %}
                             </td>
+
+                            <!-- Entity Type -->
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border">
+                                    {{ e.typeEntite.libelle }}
+                                </span>
+                            </td>
+
+                            <!-- Parent Entity -->
+                            <td>
+                                {% if e.parent %}
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="bi bi-diagram-2 me-1 text-muted"></i>{{ e.parent.nomComplet }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                        <i class="bi bi-star-fill me-1"></i>Racine (BCC)
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if e.actif %}
+                                    <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-check-circle-fill"></i> Actif
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-slash-circle"></i> Inactif
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
                             <td style="text-align: right;">
-                                <div class="d-flex justify-content-end gap-1">
-                                    <a href="{{ path('app_admin_entite_edit', {'id': e.id}) }}" class="btn btn-secondary btn-sm" title="Modifier">
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <a href="{{ path('app_admin_entite_edit', {'id': e.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier l'entité">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+
                                     <form method="post" action="{{ path('app_admin_entite_toggle_actif', {'id': e.id}) }}" onsubmit="return confirm('Voulez-vous {{ e.actif ? 'désactiver' : 'activer' }} l\'entité {{ e.nom|e('js') }} ?');" style="display: inline;">
                                         <input type="hidden" name="_token" value="{{ csrf_token('toggle_entite_' ~ e.id) }}">
                                         <button type="submit" class="btn btn-sm btn-outline-{{ e.actif ? 'warning' : 'success' }}" title="{{ e.actif ? 'Désactiver l\'entité' : 'Activer l\'entité' }}">
-                                            <i class="bi bi-{{ e.actif ? 'pause-circle' : 'play-circle' }}"></i>
+                                            <i class="bi bi-{{ e.actif ? 'pause-circle-fill' : 'play-circle-fill' }}"></i>
                                         </button>
                                     </form>
+
                                     {% if e.actif %}
                                         <form method="post" action="{{ path('app_admin_entite_delete', {'id': e.id}) }}" onsubmit="return confirm('Confirmez-vous l\'archivage / suppression logique de l\'entité {{ e.nom|e('js') }} ?');" style="display: inline;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete_entite_' ~ e.id) }}">
@@ -74,4 +214,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function filterEntitiesTable() {
+    const input = document.getElementById('entitySearchBox');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('entitiesTable');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const rowText = tr[i].textContent || tr[i].innerText;
+        if (rowText.toLowerCase().indexOf(filter) > -1) {
+            tr[i].style.display = '';
+        } else {
+            tr[i].style.display = 'none';
+        }
+    }
+}
+</script>
 {% endblock %}

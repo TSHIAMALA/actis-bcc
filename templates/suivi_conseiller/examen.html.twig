@@ -1,0 +1,380 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Évaluation & Avis Conseiller - {{ action.libelle }} - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+.exam-layout-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 1.5rem;
+}
+@media (max-width: 992px) {
+    .exam-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.statut-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+@media (max-width: 576px) {
+    .statut-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.exam-header-card {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 45%, #1b3d64 100%);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(9, 26, 47, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+.advisor-badge-pill {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 30px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.panel-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+.panel-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.statut-radio-btn {
+    cursor: pointer;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+}
+.statut-radio-btn:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+.btn-check:checked + .statut-radio-btn {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+.btn-check:checked + .statut-radio-btn.border-approuve {
+    border-color: #10b981;
+    background: #ecfdf5;
+    box-shadow: 0 0 0 1px #10b981;
+}
+.btn-check:checked + .statut-radio-btn.border-reserves {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    box-shadow: 0 0 0 1px #f59e0b;
+}
+.btn-check:checked + .statut-radio-btn.border-rejete {
+    border-color: #ef4444;
+    background: #fef2f2;
+    box-shadow: 0 0 0 1px #ef4444;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4 py-3">
+
+    <!-- Top Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_suivi_conseiller_index') }}">Suivi Conseillers</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_instruction_show', {'id': instruction.id}) }}">{{ instruction.reference }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Évaluation de l'action</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="exam-header-card">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="advisor-badge-pill">
+                    <i class="bi bi-person-badge-fill text-info"></i>
+                    <span>Conseiller : <strong>{{ suivi.conseiller.utilisateur ? suivi.conseiller.utilisateur.nomComplet : 'N/A' }}</strong></span>
+                </span>
+                <span class="advisor-badge-pill">
+                    <i class="bi bi-briefcase-fill text-warning"></i>
+                    <span>Domaine : <strong>{{ suivi.conseiller.domaineCompetence }}</strong></span>
+                </span>
+                <span class="badge {{ suivi.statutBadgeClass }} py-2 px-3">
+                    <i class="bi {{ suivi.statutIcon }} me-1"></i> {{ suivi.statutLibelle }}
+                </span>
+            </div>
+            <h2 class="fw-bold text-white mb-2">{{ action.libelle }}</h2>
+            <div class="text-white-50 small">
+                <span>Instruction : <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="text-white fw-semibold text-decoration-underline">{{ instruction.reference }} — {{ instruction.objet }}</a></span>
+            </div>
+        </div>
+        <div>
+            <a href="{{ path('app_suivi_conseiller_index') }}" class="btn btn-outline-light btn-sm me-2">
+                <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-light btn-sm fw-semibold">
+                <i class="bi bi-eye-fill me-1 text-primary"></i> Voir Instruction
+            </a>
+        </div>
+    </div>
+
+    <div class="exam-layout-grid">
+        <!-- Left Column: Form to Evaluate / Submit Opinion -->
+        <div>
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <span><i class="bi bi-pen-fill text-primary me-2"></i>Avis et Recommandations du Conseiller</span>
+                    <span class="badge bg-secondary-subtle text-secondary small">Évaluation qualitative</span>
+                </div>
+                <div class="p-4">
+                    {% if canEdit %}
+                        <form method="post" action="{{ path('app_suivi_conseiller_examen', {'id': suivi.id}) }}">
+                            
+                            <!-- 1. Selection du Statut d'Avis -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark mb-2">1. Avis Sectoriel & Conformité *</label>
+                                <div class="statut-grid">
+                                    <!-- Approuvé -->
+                                    <div>
+                                        <input type="radio" class="btn-check" name="statut_suivi" id="statutApprouve" value="APPROUVE" {{ suivi.statutSuivi == 'APPROUVE' ? 'checked' : '' }}>
+                                        <label class="statut-radio-btn border-approuve" for="statutApprouve">
+                                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                            <div>
+                                                <div class="fw-bold text-success">Favorable / Conforme</div>
+                                                <div class="text-muted small" style="font-size:0.75rem;">Action satisfaisante et bien exécutée</div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- Avec réserves -->
+                                    <div>
+                                        <input type="radio" class="btn-check" name="statut_suivi" id="statutReserves" value="AVEC_RESERVES" {{ suivi.statutSuivi == 'AVEC_RESERVES' ? 'checked' : '' }}>
+                                        <label class="statut-radio-btn border-reserves" for="statutReserves">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
+                                            <div>
+                                                <div class="fw-bold text-warning">Avec Réserves / Observations</div>
+                                                <div class="text-muted small" style="font-size:0.75rem;">Des ajustements nécessaires requis</div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- En cours -->
+                                    <div>
+                                        <input type="radio" class="btn-check" name="statut_suivi" id="statutEnCours" value="EN_COURS" {{ suivi.statutSuivi == 'EN_COURS' ? 'checked' : '' }}>
+                                        <label class="statut-radio-btn" for="statutEnCours">
+                                            <i class="bi bi-hourglass-split text-info fs-4"></i>
+                                            <div>
+                                                <div class="fw-bold text-info">En cours d'examen</div>
+                                                <div class="text-muted small" style="font-size:0.75rem;">Analyse technique en cours</div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- Rejeté -->
+                                    <div>
+                                        <input type="radio" class="btn-check" name="statut_suivi" id="statutRejete" value="REJETE" {{ suivi.statutSuivi == 'REJETE' ? 'checked' : '' }}>
+                                        <label class="statut-radio-btn border-rejete" for="statutRejete">
+                                            <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                                            <div>
+                                                <div class="fw-bold text-danger">Défavorable / Non conforme</div>
+                                                <div class="text-muted small" style="font-size:0.75rem;">Insuffisant, à revoir entièrement</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Avis Technique / Rapport -->
+                            <div class="mb-3">
+                                <label for="avis" class="form-label fw-bold text-dark">
+                                    2. Avis technique & Analyse qualitative
+                                </label>
+                                <textarea name="avis" id="avis" rows="4" class="form-control" placeholder="Rédigez ici votre évaluation détaillée sur la mise en œuvre de cette action...">{{ suivi.avis }}</textarea>
+                                <div class="form-text small">Diagnostic de l'exécution, conformité avec les orientations stratégiques du Gouverneur.</div>
+                            </div>
+
+                            <!-- 3. Recommandations -->
+                            <div class="mb-3">
+                                <label for="recommandations" class="form-label fw-bold text-dark">
+                                    3. Recommandations opérationnelles
+                                </label>
+                                <textarea name="recommandations" id="recommandations" rows="3" class="form-control" placeholder="Recommandations concrètes à l'intention de la Direction responsable ou de la Haute Direction...">{{ suivi.recommandations }}</textarea>
+                            </div>
+
+                            <!-- 4. Points d'attention & Risques -->
+                            <div class="mb-4">
+                                <label for="point_attention" class="form-label fw-bold text-danger">
+                                    <i class="bi bi-shield-exclamation me-1"></i> 4. Point d'attention / Alerte Cabinet (Optionnel)
+                                </label>
+                                <input type="text" name="point_attention" id="point_attention" class="form-control border-danger-subtle" value="{{ suivi.pointAttention }}" placeholder="Alerte spécifique à remonter au Gouverneur (ex: Risque de dérapage de délai, blocage inter-direction...)">
+                            </div>
+
+                            <!-- 5. Priorité Cabinet -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark">5. Niveau de Priorité Cabinet</label>
+                                <select name="priorite_cabinet" class="form-select">
+                                    <option value="BASSE" {{ suivi.prioriteCabinet == 'BASSE' ? 'selected' : '' }}>Basse</option>
+                                    <option value="NORMALE" {{ suivi.prioriteCabinet == 'NORMALE' ? 'selected' : '' }}>Normale</option>
+                                    <option value="URGENTE" {{ suivi.prioriteCabinet == 'URGENTE' ? 'selected' : '' }}>Urgente (Suivi rapproché)</option>
+                                    <option value="TRES_URGENTE" {{ suivi.prioriteCabinet == 'TRES_URGENTE' ? 'selected' : '' }}>Très Urgente (Alerte Gouverneur)</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <a href="{{ path('app_suivi_conseiller_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                    <i class="bi bi-check2-circle me-1"></i> Enregistrer l'évaluation
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill fs-5"></i>
+                            <div>Vous visualisez cette évaluation en mode lecture seule. Seul le Conseiller assigné ou un membre du Cabinet peut la modifier.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-dark">Avis technique :</h6>
+                            <p class="p-3 bg-light rounded border text-secondary">{{ suivi.avis ?: 'Aucun avis rédigé.' }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-dark">Recommandations :</h6>
+                            <p class="p-3 bg-light rounded border text-secondary">{{ suivi.recommandations ?: 'Aucune recommandation.' }}</p>
+                        </div>
+
+                        {% if suivi.pointAttention %}
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-danger">Point d'attention :</h6>
+                                <p class="p-3 bg-danger-subtle text-danger rounded border border-danger-subtle">{{ suivi.pointAttention }}</p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Operational Context of the Action -->
+        <div>
+            <!-- Action Details Panel -->
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <span><i class="bi bi-card-checklist text-primary me-2"></i>Fiche Technique de l'Action</span>
+                    <span class="badge bg-primary-subtle text-primary">{{ action.reference ?? 'Action #' ~ action.id }}</span>
+                </div>
+                <div class="p-3">
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Statut d'exécution :</span>
+                            <span class="badge bg-{{ action.statut.code == 'TERMINE' ? 'success' : (action.statut.code == 'EN_COURS' ? 'primary' : 'secondary') }}">
+                                {{ action.statut.libelle }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Taux d'avancement :</span>
+                            <span class="fw-bold text-dark">{{ action.tauxAvancement }}%</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Entité responsable :</span>
+                            <span class="fw-semibold text-dark">{{ action.entiteResponsable ? action.entiteResponsable.nom : 'N/A' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Responsable opérationnel :</span>
+                            <span class="fw-semibold text-dark">{{ action.responsable ? action.responsable.nomComplet : 'N/A' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Date d'échéance :</span>
+                            <span class="fw-bold text-dark">{{ action.dateEcheance ? action.dateEcheance|date('d/m/Y') : 'Non définie' }}</span>
+                        </li>
+                    </ul>
+
+                    {% if action.description %}
+                        <div class="mt-3">
+                            <h6 class="fw-bold text-dark small mb-1">Description / Objectif opérationnel :</h6>
+                            <p class="small text-muted p-2 bg-light rounded border mb-0">{{ action.description }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if action.resultatAttendu %}
+                        <div class="mt-3">
+                            <h6 class="fw-bold text-dark small mb-1">Résultat attendu :</h6>
+                            <p class="small text-muted p-2 bg-light rounded border mb-0">{{ action.resultatAttendu }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if action.resultatObtenu %}
+                        <div class="mt-3">
+                            <h6 class="fw-bold text-success small mb-1">Résultat obtenu rapporté :</h6>
+                            <p class="small text-dark p-2 bg-success-subtle rounded border border-success-subtle mb-0">{{ action.resultatObtenu }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Justificatifs & Pieces Jointes -->
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <span><i class="bi bi-paperclip text-primary me-2"></i>Justificatifs déposés ({{ action.justificatifs|length }})</span>
+                </div>
+                <div class="p-3">
+                    {% if action.justificatifs|length > 0 %}
+                        <ul class="list-group list-group-flush small">
+                            {% for j in action.justificatifs %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <i class="bi bi-file-earmark-text text-primary me-1"></i>
+                                        <span class="fw-semibold">{{ j.libelle }}</span>
+                                        <div class="text-muted" style="font-size:0.75rem;">
+                                            Déposé le {{ j.dateDepot|date('d/m/Y') }} par {{ j.deposePar ? j.deposePar.nomComplet : 'N/A' }}
+                                        </div>
+                                    </div>
+                                    {% if j.cheminFichier %}
+                                        <a href="{{ asset(j.cheminFichier) }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-3 text-muted small">
+                            <i class="bi bi-file-earmark-x fs-3 d-block mb-1 text-secondary opacity-50"></i>
+                            Aucun justificatif déposé pour le moment.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

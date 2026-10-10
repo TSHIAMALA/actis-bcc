@@ -1,69 +1,127 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{% if isEdit %}Modifier l'entité{% else %}Nouvelle Entité{% endif %}{% endblock %}
+{% block title %}{% if isEdit %}Modifier l'entité{% else %}Nouvelle Entité{% endif %} - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+.form-container-card {
+    max-width: 820px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+.form-header-banner {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 50%, #1a3a60 100%);
+    color: #ffffff;
+    padding: 1.75rem 2rem;
+}
+.form-body-content {
+    padding: 2rem;
+}
+.custom-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 768px) {
+    .custom-form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="page-header">
-    <div>
-        <h2 class="page-title">{% if isEdit %}Modifier l'entité : {{ entite.code }}{% else %}Créer une Entité Organisationnelle{% endif %}</h2>
-        <p class="page-subtitle">Rattachement hiérarchique et typologie</p>
-    </div>
-    <div>
-        <a href="{{ path('app_admin_entites') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
-    </div>
-</div>
+<div class="container-fluid px-4 py-3">
 
-<div class="card" style="max-width: 750px; margin: 0 auto;">
-    <div class="card-header">
-        <h3 class="card-title"><i class="bi bi-building-gear"></i> Paramètres de l'Entité</h3>
-    </div>
-    <div class="card-body">
-        {{ form_start(form) }}
-            <div class="grid-2">
-                <div class="form-group">
-                    {{ form_label(form.code, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.code, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.code) }}
+    <!-- Top Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_index') }}">Administration</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_entites') }}">Entités</a></li>
+            <li class="breadcrumb-item active">{% if isEdit %}Modifier{% else %}Nouvelle{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="form-container-card">
+        <!-- Form Header -->
+        <div class="form-header-banner">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold text-white mb-1">
+                        <i class="bi bi-building-gear me-2"></i>{% if isEdit %}Modifier l'entité : {{ entite.code }} - {{ entite.nom }}{% else %}Créer une Entité Organisationnelle{% endif %}
+                    </h3>
+                    <p class="text-white-50 small mb-0">Définition du code, type, rattachement hiérarchique et statut.</p>
                 </div>
-                <div class="form-group">
-                    {{ form_label(form.typeEntite, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.typeEntite, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.typeEntite) }}
+                <a href="{{ path('app_admin_entites') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <div class="form-body-content">
+            {{ form_start(form) }}
+                
+                <!-- Code & Type -->
+                <div class="custom-form-grid-2 mb-3">
+                    <div>
+                        {{ form_label(form.code, 'Code / Sigle de l\'Entité *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.code, {'attr': {'class': 'form-control text-uppercase', 'placeholder': 'Ex: DFI, DMO, DSI...'}}) }}
+                        {{ form_errors(form.code) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.typeEntite, 'Type d\'Entité Organisationnelle *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.typeEntite, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.typeEntite) }}
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.nom) }}
-            </div>
-
-            <div class="form-group">
-                {{ form_label(form.parent, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.parent, {'attr': {'class': 'form-select'}}) }}
-                {{ form_errors(form.parent) }}
-            </div>
-
-            <div class="form-group">
-                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3}}) }}
-                {{ form_errors(form.description) }}
-            </div>
-
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    {{ form_widget(form.actif) }}
-                    {{ form_label(form.actif) }}
+                <!-- Nom de l'entité -->
+                <div class="mb-3">
+                    {{ form_label(form.nom, 'Intitulé Complet de l\'Entité *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Direction des Marchés et Opérations...'}}) }}
+                    {{ form_errors(form.nom) }}
                 </div>
-            </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <a href="{{ path('app_admin_entites') }}" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Enregistrer
-                </button>
-            </div>
-        {{ form_end(form) }}
+                <!-- Entité Parente -->
+                <div class="mb-3">
+                    {{ form_label(form.parent, 'Entité Parente de Rattachement (Optionnel)', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                    {{ form_widget(form.parent, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.parent) }}
+                    <div class="form-text small">Laisser vide si l'entité est rattachée directement au Gouverneur / Direction Générale.</div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Missions & Périmètre de l\'Entité', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Attributions et champ d\'action sectoriel...'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <!-- Statut Actif -->
+                <div class="mb-4 pt-2">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.actif, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.actif, 'Entité Active dans l\'organigramme', {'label_attr': {'class': 'form-check-label fw-semibold text-dark'}}) }}
+                    </div>
+                </div>
+
+                <!-- Buttons Footer -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{{ path('app_admin_entites') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> {% if isEdit %}Enregistrer les modifications{% else %}Créer l'entité{% endif %}
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
     </div>
 </div>
 {% endblock %}

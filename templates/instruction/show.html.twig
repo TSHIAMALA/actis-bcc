@@ -52,8 +52,11 @@
             <a href="{{ path('app_prorogation_demande', {'instruction_id': instruction.id}) }}" class="btn btn-secondary btn-sm" title="Demander un report d'échéance">
                 <i class="bi bi-calendar-plus"></i> Prorogation
             </a>
-            <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-gold btn-sm">
-                <i class="bi bi-plus-circle"></i> Ajouter une Action
+            <button type="button" class="btn btn-gold btn-sm" onclick="openAiActionsModal()" title="Extraire automatiquement des actions par IA à partir d'un document ou scan" style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); color: #FFFFFF; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);">
+                <i class="bi bi-stars"></i> Générer Actions IA
+            </button>
+            <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-plus-circle"></i> Ajouter manuellement
             </a>
             <a href="{{ path('app_instruction_edit', {'id': instruction.id}) }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-pencil"></i> Modifier
@@ -170,13 +173,18 @@
 
 <!-- Actions Decomposition Table -->
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <h3 class="card-title" style="margin: 0;">
             <i class="bi bi-list-task" style="color: var(--bcc-gold);"></i> Décomposition en Actions Opérationnelles ({{ instruction.actions|length }})
         </h3>
-        <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Nouvelle Action
-        </a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-gold btn-sm" onclick="openAiActionsModal()" style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); color: #FFFFFF; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);">
+                <i class="bi bi-stars"></i> Générer par IA
+            </button>
+            <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Nouvelle Action
+            </a>
+        </div>
     </div>
     <div class="card-body" style="padding: 0;">
         <div class="table-responsive">
@@ -190,12 +198,13 @@
                         <th>Échéance</th>
                         <th style="width: 150px;">Avancement</th>
                         <th>Statut</th>
+                        <th style="min-width: 170px;">Conseiller (Cabinet)</th>
                         <th style="text-align: right;">Opérations</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for index, act in instruction.actions %}
-                        <tr {% if act.isEnRetard %}style="background-color: #FEF2F2;"{% endif %}>
+                        <tr {% if act.isEnRetard %}style="background-color: #FEF2F2;"{% endif %} id="action-{{ act.id }}">
                             <td style="font-weight: 700; color: var(--text-muted);">{{ index + 1 }}</td>
                             <td>
                                 <a href="{{ path('app_action_show', {'id': act.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
@@ -228,6 +237,36 @@
                                 </div>
                             </td>
                             <td><span class="badge {{ act.statut.badgeClass }}">{{ act.statut.libelle }}</span></td>
+                            
+                            <!-- Conseillers du Gouverneur Column -->
+                            <td>
+                                {% if act.suivisConseillers|length > 0 %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for s in act.suivisConseillers %}
+                                            <div class="d-flex align-items-center justify-content-between p-1 bg-light border rounded small" style="font-size: 0.75rem;">
+                                                <div class="d-flex align-items-center gap-1 text-truncate" style="max-width: 110px;">
+                                                    <span class="badge bg-primary-subtle text-primary" style="font-size: 0.65rem; padding: 2px 4px;">{{ s.conseiller.codeDomaine }}</span>
+                                                    <span class="fw-semibold text-dark text-truncate" title="{{ s.conseiller.domaineCompetence }}">{{ s.conseiller.utilisateur ? s.conseiller.utilisateur.nom : '' }}</span>
+                                                </div>
+                                                <a href="{{ path('app_suivi_conseiller_examen', {'id': s.id}) }}" class="badge {{ s.statutBadgeClass }} text-decoration-none" style="font-size: 0.65rem; padding: 2px 5px;" title="{{ s.avis ? s.avis|slice(0, 80) : s.statutLibelle }}">
+                                                    <i class="bi {{ s.statutIcon }}"></i> {{ s.statutLibelle }}
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small fst-italic">Non suivi</span>
+                                {% endif %}
+
+                                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_CABINET') or is_granted('ROLE_GESTIONNAIRE') %}
+                                    <div class="mt-1">
+                                        <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" onclick="openAssignConseillerModal({{ act.id }}, '{{ act.libelle|e('js') }}')" style="font-size: 0.7rem; border-radius: 4px;">
+                                            <i class="bi bi-person-plus-fill"></i> + Conseiller
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </td>
+
                             <td style="text-align: right; white-space: nowrap;">
                                 <a href="{{ path('app_action_avancement', {'id': act.id}) }}" class="btn btn-gold btn-sm" title="Mettre à jour l'avancement">
                                     <i class="bi bi-speedometer2"></i> Avancement
@@ -242,12 +281,20 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">
-                                <i class="bi bi-list-nested" style="font-size: 2rem;"></i>
-                                <p style="margin-top: 8px;">Aucune action opérationnelle définie pour cette instruction.</p>
-                                <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-primary btn-sm" style="margin-top: 8px;">
-                                    <i class="bi bi-plus-circle"></i> Décomposer en actions
-                                </a>
+                            <td colspan="9" style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
+                                <i class="bi bi-stars" style="font-size: 2.2rem; color: var(--actis-primary);"></i>
+                                <p style="margin-top: 10px; font-weight: 600; font-size: 1rem; color: var(--text-primary);">Aucune action opérationnelle définie pour cette instruction.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 500px; margin: 0 auto 16px;">
+                                    Vous pouvez soit uploader l'instruction/OS pour en extraire automatiquement les actions via l'intelligence artificielle, soit les saisir manuellement une par une.
+                                </p>
+                                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-gold btn-sm" onclick="openAiActionsModal()" style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); color: #FFFFFF; border: none; font-weight: 600; padding: 8px 16px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
+                                        <i class="bi bi-stars me-1"></i> Générer automatiquement par IA
+                                    </button>
+                                    <a href="{{ path('app_action_new', {'instructionId': instruction.id}) }}" class="btn btn-secondary btn-sm" style="padding: 8px 16px;">
+                                        <i class="bi bi-plus-circle me-1"></i> Saisie manuelle
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
@@ -460,6 +507,572 @@
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalAddContributor').style.display = 'none'">Annuler</button>
                 <button type="submit" class="btn btn-primary">Associer l'entité</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===================================================================
+     MODALE IA : EXTRACTION & CRÉATION EN BLOC DES ACTIONS OPÉRATIONNELLES
+     =================================================================== -->
+<div id="modalAiActions" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1050; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+    <div style="background: #FFFFFF; border-radius: 16px; max-width: 1050px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; border: 1px solid var(--border-color);">
+        
+        <!-- En-tête de la Modale -->
+        <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFFFFF; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--actis-primary);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                        Générateur d'Actions Intelligentes (Google Gemini AI)
+                        <span class="badge" style="background: rgba(20, 184, 166, 0.2); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.4); font-size: 0.7rem; font-weight: 600;">ACTIS AI ASSISTANT</span>
+                    </h3>
+                    <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px;">
+                        Instruction : <strong style="color: #E2E8F0;">{{ instruction.reference }}</strong> — {{ instruction.objet|length > 60 ? instruction.objet|slice(0, 60) ~ '...' : instruction.objet }}
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeAiActionsModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #E2E8F0; cursor: pointer; font-size: 1.1rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                &times;
+            </button>
+        </div>
+
+        <!-- Indicateur d'étapes (Stepper) -->
+        <div style="background: #F8FAFC; padding: 12px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 24px;">
+            <div id="stepIndicator1" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; color: var(--actis-primary);">
+                <span style="width: 26px; height: 26px; border-radius: 50%; background: var(--actis-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">1</span>
+                <span>Document & Analyse IA</span>
+            </div>
+            <div style="height: 2px; width: 40px; background: var(--border-color);" id="stepperLine"></div>
+            <div id="stepIndicator2" style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">
+                <span style="width: 26px; height: 26px; border-radius: 50%; background: #E2E8F0; color: #64748B; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;" id="stepNumber2">2</span>
+                <span>Revue & Création en bloc</span>
+            </div>
+        </div>
+
+        <!-- Corps de la Modale (Scrollable) -->
+        <div style="padding: 24px; overflow-y: auto; flex: 1;">
+            
+            <!-- ÉTAPE 1 : UPLOAD & EXTRACTION -->
+            <div id="aiStepUpload">
+                <div style="text-align: center; max-width: 650px; margin: 0 auto 20px;">
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--bcc-navy); margin-bottom: 6px;">
+                        Téléversez le document de l'Instruction ou de l'Ordre de Service (OS)
+                    </h4>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                        L'IA va extraire et décomposer automatiquement le contenu en actions opérationnelles précises, assignées et planifiées.
+                    </p>
+                </div>
+
+                <!-- Zone de Drag & Drop -->
+                <div id="aiDropzone" style="border: 2px dashed #CBD5E1; border-radius: 12px; background: #F8FAFC; padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative;">
+                    <input type="file" id="aiFileInput" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.txt" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" onchange="handleAiFileSelected(this.files)">
+                    <div id="aiDropzonePrompt">
+                        <div style="width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: rgba(13, 148, 136, 0.1); color: var(--actis-primary); display: flex; align-items: center; justify-content: center; font-size: 1.6rem;">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--bcc-navy); margin-bottom: 4px;">
+                            Glissez-déposez votre fichier ici, ou <span style="color: var(--actis-primary); text-decoration: underline;">parcourez vos dossiers</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">
+                            Formats supportés : PDF, Word (.docx), Scans & Images (PNG, JPG) ou Texte (Max 25 Mo)
+                        </div>
+                    </div>
+
+                    <!-- Fichier Sélectionné (Initialement caché) -->
+                    <div id="aiFileSelectedBox" style="display: none; align-items: center; justify-content: space-between; background: #FFFFFF; border: 1px solid var(--actis-primary); border-radius: 8px; padding: 12px 16px; max-width: 480px; margin: 0 auto; text-align: left;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="bi bi-file-earmark-check-fill fs-3" style="color: var(--actis-primary);"></i>
+                            <div>
+                                <div id="aiFileName" style="font-weight: 700; font-size: 0.9rem; color: var(--bcc-navy);">document.pdf</div>
+                                <div id="aiFileSize" style="font-size: 0.75rem; color: var(--text-muted);">1.2 MB</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeAiSelectedFile(event)" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 1.1rem;" title="Retirer le fichier">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Consignes supplémentaires / Optionnelles -->
+                <div style="margin-top: 16px;">
+                    <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: var(--bcc-navy); display: flex; justify-content: space-between;">
+                        <span><i class="bi bi-sliders me-1"></i> Consignes ou orientations particulières (optionnel)</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Ex: "Priorité haute sur les aspects comptables, délai maximal de 30 jours"</span>
+                    </label>
+                    <textarea id="aiCustomPrompt" class="form-control" rows="2" placeholder="Ajouter des consignes spécifiques pour guider l'analyse de l'IA..." style="font-size: 0.85rem;"></textarea>
+                </div>
+
+                <!-- Animation d'état de chargement IA -->
+                <div id="aiLoadingIndicator" style="display: none; margin-top: 24px; padding: 24px; background: linear-gradient(135deg, rgba(13, 148, 136, 0.05) 0%, rgba(15, 23, 42, 0.05) 100%); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: 12px; text-align: center;">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem; color: var(--actis-primary) !important;" role="status">
+                        <span class="visually-hidden">Traitement en cours...</span>
+                    </div>
+                    <h5 style="font-weight: 700; font-size: 1rem; color: var(--bcc-navy); margin-bottom: 6px;" id="aiLoadingTitle">
+                        Analyse intelligente du document en cours...
+                    </h5>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;" id="aiLoadingSubtitle">
+                        Extraction du texte et structuration des actions opérationnelles via OpenAI GPT-4o.
+                    </p>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;" id="aiStep1Actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAiActionsModal()">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="btnLaunchAiExtraction" onclick="launchAiExtraction()" style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); border: none; font-weight: 600; padding: 8px 20px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
+                        <i class="bi bi-stars me-1"></i> Lancer l'analyse IA
+                    </button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2 : PRÉVISUALISATION, ÉDITION & CRÉATION EN BLOC -->
+            <div id="aiStepPreview" style="display: none;">
+                <!-- Header de succès & résumé -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--bcc-navy); display: flex; align-items: center; gap: 8px;">
+                            <span class="badge" style="background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success); font-size: 0.85rem;" id="aiActionsCountBadge">
+                                0 actions détectées
+                            </span>
+                            <span>Vérifiez et ajustez les actions avant enregistrement :</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                            Cochez ou décochez les actions à créer. Vous pouvez modifier directement les textes, directions et dates.
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addNewAiActionRow()">
+                            <i class="bi bi-plus-lg me-1"></i> Ajouter une ligne
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="backToAiUploadStep()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Ré-analyser
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tableau interactif d'actions -->
+                <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px; max-height: 48vh; overflow-y: auto;">
+                    <table class="table mb-0" id="aiActionsTable" style="font-size: 0.85rem;">
+                        <thead style="position: sticky; top: 0; background: #F1F5F9; z-index: 2;">
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="aiSelectAllCheckbox" checked onchange="toggleAllAiActions(this.checked)" style="cursor: pointer;">
+                                </th>
+                                <th style="min-width: 250px;">Libellé de l'Action <span class="text-danger">*</span></th>
+                                <th style="min-width: 220px;">Résultat attendu / Objectif</th>
+                                <th style="min-width: 180px;">Entité Responsable <span class="text-danger">*</span></th>
+                                <th style="min-width: 130px;">Priorité</th>
+                                <th style="min-width: 130px;">Échéance</th>
+                                <th style="width: 50px; text-align: center;">Retirer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aiActionsTableBody">
+                            <!-- Les lignes seront insérées dynamiquement en JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer de validation en bloc -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--bcc-navy);" id="aiSelectedCountInfo">
+                        <i class="bi bi-check2-circle text-success me-1"></i> 0 action(s) sélectionnée(s) pour création
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeAiActionsModal()">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="btnBatchSaveActions" onclick="submitBatchActions()" style="background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); border: none; font-weight: 700; padding: 8px 24px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
+                            <i class="bi bi-check-all me-1"></i> Valider et Créer en bloc
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===================================================================
+     SCRIPTS CLIENT POUR LA MODALE IA ET LA CRÉATION EN BLOC
+     =================================================================== -->
+<script>
+    // Références globales pour les entités et priorités
+    const ALL_ENTITES = [
+        {% for ent in allEntites %}
+            { id: {{ ent.id }}, code: {{ ent.code|json_encode|raw }}, nom: {{ ent.nom|json_encode|raw }} },
+        {% endfor %}
+    ];
+
+    const ALL_PRIORITES = [
+        {% for prio in allPriorites %}
+            { id: {{ prio.id }}, code: {{ prio.code|json_encode|raw }}, libelle: {{ prio.libelle|json_encode|raw }} },
+        {% endfor %}
+    ];
+
+    const DEFAULT_ENTITE_ID = {{ instruction.entitePilote.id }};
+    const INSTRUCTION_ID = {{ instruction.id }};
+    let currentSelectedFile = null;
+    let extractedActionsData = [];
+
+    function openAiActionsModal() {
+        document.getElementById('modalAiActions').style.display = 'flex';
+        backToAiUploadStep();
+    }
+
+    function closeAiActionsModal() {
+        document.getElementById('modalAiActions').style.display = 'none';
+        resetAiExtractionState();
+    }
+
+    function resetAiExtractionState() {
+        currentSelectedFile = null;
+        extractedActionsData = [];
+        document.getElementById('aiFileInput').value = '';
+        document.getElementById('aiFileSelectedBox').style.display = 'none';
+        document.getElementById('aiDropzonePrompt').style.display = 'block';
+        document.getElementById('aiCustomPrompt').value = '';
+        document.getElementById('aiLoadingIndicator').style.display = 'none';
+        document.getElementById('btnLaunchAiExtraction').disabled = false;
+    }
+
+    function backToAiUploadStep() {
+        document.getElementById('aiStepUpload').style.display = 'block';
+        document.getElementById('aiStepPreview').style.display = 'none';
+        document.getElementById('stepIndicator1').style.color = 'var(--actis-primary)';
+        document.getElementById('stepIndicator1').querySelector('span').style.background = 'var(--actis-primary)';
+        document.getElementById('stepIndicator1').querySelector('span').style.color = '#fff';
+        document.getElementById('stepIndicator2').style.color = 'var(--text-muted)';
+        document.getElementById('stepNumber2').style.background = '#E2E8F0';
+        document.getElementById('stepNumber2').style.color = '#64748B';
+    }
+
+    function handleAiFileSelected(files) {
+        if (!files || files.length === 0) return;
+        currentSelectedFile = files[0];
+        document.getElementById('aiFileName').textContent = currentSelectedFile.name;
+        document.getElementById('aiFileSize').textContent = (currentSelectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+        document.getElementById('aiDropzonePrompt').style.display = 'none';
+        document.getElementById('aiFileSelectedBox').style.display = 'flex';
+    }
+
+    function removeAiSelectedFile(e) {
+        if (e) e.stopPropagation();
+        currentSelectedFile = null;
+        document.getElementById('aiFileInput').value = '';
+        document.getElementById('aiFileSelectedBox').style.display = 'none';
+        document.getElementById('aiDropzonePrompt').style.display = 'block';
+    }
+
+    // Drag & Drop visual highlights
+    const dropzone = document.getElementById('aiDropzone');
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = 'var(--actis-primary)';
+            dropzone.style.background = 'rgba(13, 148, 136, 0.05)';
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.style.borderColor = '#CBD5E1';
+            dropzone.style.background = '#F8FAFC';
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+            handleAiFileSelected(files);
+        }
+    });
+
+    // Lancement de l'analyse IA via Endpoint AJAX
+    async function launchAiExtraction() {
+        if (!currentSelectedFile && !document.getElementById('aiCustomPrompt').value.trim()) {
+            alert('Veuillez sélectionner un fichier (PDF, Word, Scan) ou saisir une consigne textuelle.');
+            return;
+        }
+
+        const btnLaunch = document.getElementById('btnLaunchAiExtraction');
+        const loadingIndicator = document.getElementById('aiLoadingIndicator');
+        btnLaunch.disabled = true;
+        loadingIndicator.style.display = 'block';
+
+        const formData = new FormData();
+        if (currentSelectedFile) {
+            formData.append('document', currentSelectedFile);
+        }
+        formData.append('custom_prompt', document.getElementById('aiCustomPrompt').value);
+
+        try {
+            const response = await fetch(`/instructions/${INSTRUCTION_ID}/ai-extract`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            if (response.redirected || (response.url && response.url.includes('/login'))) {
+                throw new Error("Votre session utilisateur a expiré. Veuillez recharger la page ou vous reconnecter.");
+            }
+
+            const rawText = await response.text();
+            let result;
+            try {
+                result = JSON.parse(rawText);
+            } catch (jsonErr) {
+                if (rawText.includes('<title>')) {
+                    const titleMatch = rawText.match(/<title>(.*?)<\/title>/i);
+                    const pageTitle = titleMatch ? titleMatch[1] : 'Erreur Serveur';
+                    throw new Error(`Le serveur a renvoyé une page d'erreur (${pageTitle}). Veuillez rafraîchir la page.`);
+                }
+                throw new Error("Erreur inattendue du serveur. Veuillez rafraîchir la page ou réessayer.");
+            }
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Une erreur est survenue lors de l\'analyse IA.');
+            }
+
+            extractedActionsData = result.actions || [];
+            renderActionsTable(extractedActionsData);
+            switchToPreviewStep();
+
+        } catch (error) {
+            console.error('Erreur IA:', error);
+            alert('Erreur : ' + error.message);
+        } finally {
+            btnLaunch.disabled = false;
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    function switchToPreviewStep() {
+        document.getElementById('aiStepUpload').style.display = 'none';
+        document.getElementById('aiStepPreview').style.display = 'block';
+        document.getElementById('stepIndicator2').style.color = 'var(--actis-primary)';
+        document.getElementById('stepNumber2').style.background = 'var(--actis-primary)';
+        document.getElementById('stepNumber2').style.color = '#fff';
+    }
+
+    function renderActionsTable(actions) {
+        const tbody = document.getElementById('aiActionsTableBody');
+        tbody.innerHTML = '';
+
+        document.getElementById('aiActionsCountBadge').textContent = actions.length + ' action(s) détectée(s)';
+
+        actions.forEach((act, index) => {
+            const tr = createActionRowElement(act, index);
+            tbody.appendChild(tr);
+        });
+
+        updateSelectedCount();
+    }
+
+    function createActionRowElement(act = {}, index = 0) {
+        const tr = document.createElement('tr');
+        tr.className = 'ai-action-row';
+
+        // Options Entités
+        let entiteOptionsHtml = '';
+        ALL_ENTITES.forEach(ent => {
+            const selected = (act.entite_id && act.entite_id == ent.id) || (!act.entite_id && ent.id == DEFAULT_ENTITE_ID) ? 'selected' : '';
+            entiteOptionsHtml += `<option value="${ent.id}" ${selected}>${ent.code} - ${ent.nom}</option>`;
+        });
+
+        // Options Priorités
+        let prioriteOptionsHtml = '';
+        ALL_PRIORITES.forEach(prio => {
+            const selected = (act.priorite_id && act.priorite_id == prio.id) || (act.priorite_code && act.priorite_code === prio.code) ? 'selected' : '';
+            prioriteOptionsHtml += `<option value="${prio.id}" ${selected}>${prio.libelle}</option>`;
+        });
+
+        tr.innerHTML = `
+            <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" class="ai-row-checkbox" checked onchange="updateSelectedCount()" style="cursor: pointer;">
+            </td>
+            <td>
+                <textarea class="form-control form-control-sm ai-libelle" rows="2" required placeholder="Libellé de l'action...">${act.libelle || ''}</textarea>
+            </td>
+            <td>
+                <textarea class="form-control form-control-sm ai-resultat" rows="2" placeholder="Résultat attendu / Objectif...">${act.resultat_attendu || act.description || ''}</textarea>
+            </td>
+            <td>
+                <select class="form-select form-select-sm ai-entite" required>
+                    ${entiteOptionsHtml}
+                </select>
+            </td>
+            <td>
+                <select class="form-select form-select-sm ai-priorite">
+                    ${prioriteOptionsHtml}
+                </select>
+            </td>
+            <td>
+                <input type="date" class="form-control form-control-sm ai-echeance" value="${act.date_echeance || ''}">
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove(); updateSelectedCount();" title="Supprimer cette action">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        return tr;
+    }
+
+    function addNewAiActionRow() {
+        const tbody = document.getElementById('aiActionsTableBody');
+        const newRow = createActionRowElement({}, tbody.children.length);
+        tbody.appendChild(newRow);
+        updateSelectedCount();
+    }
+
+    function toggleAllAiActions(isChecked) {
+        document.querySelectorAll('.ai-row-checkbox').forEach(cb => {
+            cb.checked = isChecked;
+        });
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const checkboxes = document.querySelectorAll('.ai-row-checkbox');
+        const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+        document.getElementById('aiSelectedCountInfo').innerHTML = `<i class="bi bi-check2-circle text-success me-1"></i> <strong>${checkedCount}</strong> sur ${checkboxes.length} action(s) sélectionnée(s) pour création`;
+        document.getElementById('btnBatchSaveActions').disabled = (checkedCount === 0);
+    }
+
+    // Soumission et Création en Bloc dans la Base de Données
+    async function submitBatchActions() {
+        const rows = document.querySelectorAll('.ai-action-row');
+        const actionsToCreate = [];
+
+        rows.forEach(row => {
+            const isChecked = row.querySelector('.ai-row-checkbox').checked;
+            if (!isChecked) return;
+
+            const libelle = row.querySelector('.ai-libelle').value.trim();
+            const resultatAttendu = row.querySelector('.ai-resultat').value.trim();
+            const entiteId = row.querySelector('.ai-entite').value;
+            const prioriteId = row.querySelector('.ai-priorite').value;
+            const dateEcheance = row.querySelector('.ai-echeance').value;
+
+            if (libelle) {
+                actionsToCreate.push({
+                    libelle: libelle,
+                    resultat_attendu: resultatAttendu,
+                    entite_id: entiteId,
+                    priorite_id: prioriteId,
+                    date_echeance: dateEcheance
+                });
+            }
+        });
+
+        if (actionsToCreate.length === 0) {
+            alert('Veuillez sélectionner au moins une action avec un libellé valide.');
+            return;
+        }
+
+        const btnBatch = document.getElementById('btnBatchSaveActions');
+        btnBatch.disabled = true;
+        btnBatch.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Création en cours...';
+
+        try {
+            const response = await fetch(`/instructions/${INSTRUCTION_ID}/actions/batch-create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ actions: actionsToCreate })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Une erreur est survenue lors de la création en bloc des actions.');
+            }
+
+            // Succès : recharger la page pour afficher le tableau des actions mis à jour
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Erreur de création en bloc:', error);
+            alert('Erreur : ' + error.message);
+            btnBatch.disabled = false;
+            btnBatch.innerHTML = '<i class="bi bi-check-all me-1"></i> Valider et Créer en bloc';
+        }
+    }
+
+    // Modal Affectation Conseiller
+    function openAssignConseillerModal(actionId, actionLibelle) {
+        const form = document.getElementById('formAssignConseiller');
+        form.action = '/suivi-conseillers/affecter/' + actionId;
+        document.getElementById('assignActionLibelle').textContent = actionLibelle;
+        
+        const modal = document.getElementById('modalAssignConseiller');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+    function closeAssignConseillerModal() {
+        const modal = document.getElementById('modalAssignConseiller');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+
+<!-- Modal Affecter un Conseiller du Gouverneur -->
+<div id="modalAssignConseiller" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1050; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+    <div style="background: #FFFFFF; border-radius: 16px; max-width: 540px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; display: flex; flex-direction: column; border: 1px solid #E2E8F0;">
+        <form method="post" id="formAssignConseiller" action="">
+            <div style="background: linear-gradient(135deg, #091A2F 0%, #0F2744 100%); color: #FFFFFF; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0D9488;">
+                <h5 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #FFFFFF;">
+                    <i class="bi bi-person-badge-fill text-warning"></i> Affecter un Conseiller du Gouverneur
+                </h5>
+                <button type="button" onclick="closeAssignConseillerModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #E2E8F0; cursor: pointer; font-size: 1.25rem;">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-semibold">Action sélectionnée :</label>
+                    <div id="assignActionLibelle" class="fw-bold text-dark p-2 bg-light rounded border small"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="selectConseiller" class="form-label fw-semibold text-dark">Conseiller & Domaine de Compétence <span class="text-danger">*</span></label>
+                    <select name="conseiller_id" id="selectConseiller" class="form-select" required>
+                        <option value="">-- Choisir un Conseiller du Gouverneur --</option>
+                        {% for c in allConseillers %}
+                            <option value="{{ c.id }}">
+                                [{{ c.codeDomaine }}] {{ c.utilisateur ? c.utilisateur.nomComplet : '' }} — {{ c.domaineCompetence }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-dark">Niveau de Priorité Cabinet</label>
+                    <select name="priorite_cabinet" class="form-select">
+                        <option value="NORMALE" selected>Normale</option>
+                        <option value="URGENTE">Urgente (Suivi rapproché)</option>
+                        <option value="TRES_URGENTE">Très Urgente (Alerte Haute Direction)</option>
+                        <option value="BASSE">Basse</option>
+                    </select>
+                </div>
+
+                <div class="mb-0">
+                    <label for="pointAttentionInit" class="form-label fw-semibold text-dark">Note / Point d'attention initial (Optionnel)</label>
+                    <textarea name="point_attention" id="pointAttentionInit" class="form-control" rows="2" placeholder="Orientation spécifique pour l'examen du conseiller..."></textarea>
+                </div>
+            </div>
+            <div style="background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeAssignConseillerModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary btn-sm fw-semibold">
+                    <i class="bi bi-check-circle me-1"></i> Confirmer l'affectation
+                </button>
             </div>
         </form>
     </div>

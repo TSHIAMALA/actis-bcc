@@ -3095,4 +3095,49 @@ a:hover {
     }
 }
 
+/* ── Dynamic Filter Controls ── */
+.btn-reset-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-filters:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+    border-color: #94A3B8;
+}
+
+.filter-loading-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(10, 37, 64, 0.06);
+    color: #0A2540;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.dashboard-dynamic-content {
+    transition: opacity 0.25s ease;
+}
+
+.dashboard-dynamic-content.is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+
 

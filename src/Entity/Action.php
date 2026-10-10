@@ -100,6 +100,10 @@ class Action
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
     private Collection $historiques;
 
+    #[ORM\OneToMany(mappedBy: 'action', targetEntity: SuiviConseiller::class, cascade: ['remove'])]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $suivisConseillers;
+
     public function __construct()
     {
         $this->justificatifs = new ArrayCollection();
@@ -107,6 +111,7 @@ class Action
         $this->relances = new ArrayCollection();
         $this->commentaires = new ArrayCollection();
         $this->historiques = new ArrayCollection();
+        $this->suivisConseillers = new ArrayCollection();
         $this->createdAt = new \DateTime();
         $this->updatedAt = new \DateTime();
     }
@@ -380,6 +385,33 @@ class Action
     public function setMotifSuppression(?string $motifSuppression): static
     {
         $this->motifSuppression = $motifSuppression;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SuiviConseiller>
+     */
+    public function getSuivisConseillers(): Collection
+    {
+        return $this->suivisConseillers;
+    }
+
+    public function addSuivisConseiller(SuiviConseiller $suivi): static
+    {
+        if (!$this->suivisConseillers->contains($suivi)) {
+            $this->suivisConseillers->add($suivi);
+            $suivi->setAction($this);
+        }
+        return $this;
+    }
+
+    public function removeSuivisConseiller(SuiviConseiller $suivi): static
+    {
+        if ($this->suivisConseillers->removeElement($suivi)) {
+            if ($suivi->getAction() === $this) {
+                $suivi->setAction(null);
+            }
+        }
         return $this;
     }
 

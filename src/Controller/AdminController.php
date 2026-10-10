@@ -17,6 +17,7 @@ use App\Form\TypeInstructionType;
 use App\Form\TypeRelanceType;
 use App\Form\UtilisateurType;
 use App\Repository\CanalNotificationRepository;
+use App\Repository\ConseillerGouverneurRepository;
 use App\Repository\EntiteRepository;
 use App\Repository\HistoriqueRepository;
 use App\Repository\PrioriteRepository;
@@ -44,14 +45,19 @@ class AdminController extends AbstractController
         EntiteRepository $entiteRepo,
         HistoriqueRepository $histRepo,
         TypeInstructionRepository $typeRepo,
-        PrioriteRepository $prioriteRepo
+        PrioriteRepository $prioriteRepo,
+        ConseillerGouverneurRepository $conseillerRepo
     ): Response {
         return $this->render('admin/index.html.twig', [
             'totalUsers' => $userRepo->count([]),
+            'activeUsers' => $userRepo->count(['actif' => true]),
             'totalEntites' => $entiteRepo->count([]),
+            'totalConseillers' => $conseillerRepo->count([]),
+            'activeConseillers' => $conseillerRepo->count(['actif' => true]),
             'totalTypes' => $typeRepo->count([]),
             'totalPriorites' => $prioriteRepo->count([]),
-            'recentAudit' => $histRepo->findBy([], ['createdAt' => 'DESC'], 15),
+            'totalAudit' => $histRepo->count([]),
+            'recentAudit' => $histRepo->findBy([], ['createdAt' => 'DESC'], 10),
         ]);
     }
 

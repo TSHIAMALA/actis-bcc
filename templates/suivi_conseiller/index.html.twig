@@ -1,0 +1,1136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi des Actions - Conseillers du Gouverneur - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── Container & Global Reset for Suivi Conseiller ── */
+.cg-page-container {
+    padding: 1.5rem 1.75rem 3rem 1.75rem;
+    max-width: 100%;
+}
+
+/* ── Hero Banner ── */
+.cg-hero-banner {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 45%, #1b3d64 100%);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 2rem 2.25rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 12px 28px -6px rgba(9, 26, 47, 0.25);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.cg-hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.18) 0%, rgba(212, 149, 107, 0.08) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.cg-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+.cg-hero-left {
+    max-width: 780px;
+}
+.cg-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    padding: 0.35rem 0.9rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #d4e3f5;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    letter-spacing: 0.02em;
+}
+.cg-hero-badge i {
+    color: #38bdf8;
+}
+.cg-hero-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin-bottom: 0.45rem;
+    letter-spacing: -0.025em;
+    color: #ffffff;
+    line-height: 1.2;
+}
+.cg-hero-desc {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+.cg-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.btn-hero-light {
+    background: #ffffff;
+    color: #0f2744;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+.btn-hero-light:hover {
+    background: #f1f5f9;
+    color: #0b1a2d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+.btn-hero-outline {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+.btn-hero-outline:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* ── 6 Horizontal KPI Stat Cards ── */
+.cg-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 1.75rem;
+}
+.cg-stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.cg-stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+.cg-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+}
+.cg-stat-card.active {
+    border-color: var(--actis-primary, #0d9488);
+    background: #f8fafc;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.15);
+}
+.cg-stat-card.active::after {
+    background: var(--actis-primary, #0d9488);
+}
+.cg-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+.cg-stat-card:hover .cg-stat-icon {
+    transform: scale(1.08);
+}
+.icon-stat-total { background: #e0f2fe; color: #0284c7; }
+.icon-stat-attente { background: #fef3c7; color: #d97706; }
+.icon-stat-cours { background: #e0e7ff; color: #4f46e5; }
+.icon-stat-approuve { background: #dcfce7; color: #16a34a; }
+.icon-stat-reserves { background: #ffedd5; color: #ea580c; }
+.icon-stat-rejete { background: #fee2e2; color: #dc2626; }
+
+.cg-stat-info {
+    flex: 1;
+    min-width: 0;
+}
+.cg-stat-num {
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+.cg-stat-label {
+    font-size: 0.76rem;
+    color: #64748b;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.15rem;
+}
+
+/* ── Advisor Cards Section ── */
+.cg-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.cg-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+}
+.cg-section-title i {
+    color: var(--actis-primary, #0d9488);
+}
+.cg-advisors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+    margin-bottom: 2rem;
+}
+.cg-advisor-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    transition: all 0.22s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.cg-advisor-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    transform: translateY(-2px);
+}
+.cg-advisor-card.selected-advisor {
+    border: 2px solid var(--actis-primary, #0d9488);
+    background: #f0fdf4;
+}
+.cg-advisor-card.current-user-card {
+    border: 2px solid #2563eb;
+    background: linear-gradient(180deg, #eff6ff 0%, #ffffff 38%);
+}
+.cg-advisor-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+.cg-avatar-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(15, 39, 68, 0.2);
+}
+.cg-advisor-info {
+    flex: 1;
+    min-width: 0;
+}
+.cg-advisor-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+}
+.cg-domain-pill {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.cg-badge-you {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+.cg-advisor-domain-desc {
+    color: #64748b;
+    font-size: 0.83rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    min-height: 38px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Advisor Progress Bar & Footer ── */
+.cg-advisor-footer {
+    margin-top: auto;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f1f5f9;
+}
+.cg-advisor-metrics {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+.cg-advisor-metrics strong {
+    color: #0f172a;
+}
+.cg-stacked-progress {
+    height: 6px;
+    border-radius: 4px;
+    background: #e2e8f0;
+    display: flex;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+.cg-prog-segment {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+.prog-success { background: #10b981; }
+.prog-warning { background: #f59e0b; }
+.prog-danger { background: #ef4444; }
+.prog-attente { background: #94a3b8; }
+
+.cg-advisor-action-row {
+    display: flex;
+    justify-content: flex-end;
+}
+.btn-advisor-filter {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--actis-primary, #0d9488);
+    background: #f0fdf4;
+    border: 1px solid rgba(13, 148, 136, 0.2);
+    border-radius: 8px;
+    padding: 0.35rem 0.75rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+.btn-advisor-filter:hover {
+    background: var(--actis-primary, #0d9488);
+    color: #ffffff;
+}
+
+/* ── Filter Panel & Toolbar ── */
+.cg-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+.cg-toolbar-panel {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.15rem 1.25rem;
+}
+.cg-toolbar-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+.cg-role-toggle {
+    display: inline-flex;
+    background: #e2e8f0;
+    padding: 3px;
+    border-radius: 10px;
+    gap: 3px;
+}
+.cg-role-btn {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 7px;
+    text-decoration: none;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+.cg-role-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.cg-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+}
+.cg-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+.cg-search-input {
+    width: 100%;
+    padding: 0.48rem 0.85rem 0.48rem 2.25rem;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #0f172a;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cg-search-input:focus {
+    border-color: var(--actis-primary, #0d9488);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.cg-select-filter {
+    padding: 0.48rem 2rem 0.48rem 0.85rem;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background-color: #ffffff;
+    color: #0f172a;
+    outline: none;
+    min-width: 160px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.cg-select-filter:focus {
+    border-color: var(--actis-primary, #0d9488);
+}
+.btn-filter-submit {
+    background: var(--actis-primary, #0d9488);
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.48rem 1rem;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+.btn-filter-submit:hover {
+    background: #0f766e;
+    transform: translateY(-1px);
+}
+.btn-filter-reset {
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.48rem 0.85rem;
+    border-radius: 9px;
+    text-decoration: none;
+    border: 1px solid #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+.btn-filter-reset:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* ── Table Styling ── */
+.cg-table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+.cg-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+}
+.cg-data-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.95rem 1.15rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+.cg-data-table td {
+    padding: 1rem 1.15rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+    color: #1e293b;
+}
+.cg-data-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+/* ── Badges & Chips ── */
+.cg-badge-ref {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+.cg-badge-entity {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+.cg-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 30px;
+    letter-spacing: 0.02em;
+}
+.status-attente { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.status-cours { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.status-approuve { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-reserves { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.status-rejete { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.cg-priority-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: inline-block;
+}
+.prio-URGENTE, .prio-TRES_URGENTE {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+.prio-NORMALE {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.prio-BASSE {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* ── Avis snippet block ── */
+.cg-avis-box {
+    max-width: 320px;
+}
+.cg-avis-text {
+    font-size: 0.84rem;
+    color: #1e293b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.cg-recom-text {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.35;
+    margin-top: 0.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.cg-alert-point {
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+}
+
+/* ── Action Buttons ── */
+.btn-evaluer {
+    background: #ffffff;
+    color: var(--actis-primary, #0d9488);
+    border: 1px solid var(--actis-primary, #0d9488);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+.btn-evaluer:hover {
+    background: var(--actis-primary, #0d9488);
+    color: #ffffff;
+}
+
+/* ── Empty State ── */
+.cg-empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #64748b;
+}
+.cg-empty-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #94a3b8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.cg-empty-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.35rem;
+}
+.cg-empty-desc {
+    font-size: 0.88rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* ── Responsive Media Queries ── */
+@media (max-width: 1200px) {
+    .cg-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .cg-page-container {
+        padding: 1rem;
+    }
+    .cg-hero-banner {
+        padding: 1.5rem;
+    }
+    .cg-hero-title {
+        font-size: 1.45rem;
+    }
+    .cg-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .cg-toolbar-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cg-search-box, .cg-select-filter {
+        min-width: 100%;
+    }
+}
+@media (max-width: 480px) {
+    .cg-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="cg-page-container">
+
+    <!-- Top Hero Banner -->
+    <div class="cg-hero-banner">
+        <div class="cg-hero-content">
+            <div class="cg-hero-left">
+                <div class="cg-hero-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Cabinet du Gouverneur • Cellule de Suivi Stratégique</span>
+                </div>
+                <h1 class="cg-hero-title">Suivi des Actions par Conseiller du Gouverneur</h1>
+                <p class="cg-hero-desc">
+                    Supervision sectorielle, cadrage stratégique et évaluation qualitative des actions de la Banque Centrale du Congo selon les portefeuilles d'expertise respectifs.
+                </p>
+            </div>
+            <div class="cg-hero-actions">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_suivi_conseiller_admin') }}" class="btn-hero-light">
+                        <i class="bi bi-gear-fill text-primary"></i>
+                        <span>Gérer les Conseillers</span>
+                    </a>
+                {% endif %}
+                <a href="{{ path('app_instruction_index') }}" class="btn-hero-outline">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Toutes les Instructions</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6 KPI Mini Cards Horizontal Row -->
+    <div class="cg-stats-grid">
+        <!-- 1. Total -->
+        <a href="{{ path('app_suivi_conseiller_index') }}" class="cg-stat-card {{ filters.statut_suivi == '' ? 'active' : '' }}" title="Afficher tous les dossiers">
+            <div class="cg-stat-icon icon-stat-total">
+                <i class="bi bi-layers-fill"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.total }}</div>
+                <div class="cg-stat-label">Total Suivis</div>
+            </div>
+        </a>
+
+        <!-- 2. En Attente -->
+        <a href="{{ path('app_suivi_conseiller_index', {'statut_suivi': 'EN_ATTENTE'}) }}" class="cg-stat-card {{ filters.statut_suivi == 'EN_ATTENTE' ? 'active' : '' }}" title="Filtrer en attente d'examen">
+            <div class="cg-stat-icon icon-stat-attente">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.EN_ATTENTE }}</div>
+                <div class="cg-stat-label">En attente</div>
+            </div>
+        </a>
+
+        <!-- 3. En Cours -->
+        <a href="{{ path('app_suivi_conseiller_index', {'statut_suivi': 'EN_COURS'}) }}" class="cg-stat-card {{ filters.statut_suivi == 'EN_COURS' ? 'active' : '' }}" title="Filtrer en cours d'analyse">
+            <div class="cg-stat-icon icon-stat-cours">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.EN_COURS }}</div>
+                <div class="cg-stat-label">En cours analyse</div>
+            </div>
+        </a>
+
+        <!-- 4. Avis Favorables -->
+        <a href="{{ path('app_suivi_conseiller_index', {'statut_suivi': 'APPROUVE'}) }}" class="cg-stat-card {{ filters.statut_suivi == 'APPROUVE' ? 'active' : '' }}" title="Filtrer avis favorables">
+            <div class="cg-stat-icon icon-stat-approuve">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.APPROUVE }}</div>
+                <div class="cg-stat-label">Avis Favorables</div>
+            </div>
+        </a>
+
+        <!-- 5. Réserves / Observations -->
+        <a href="{{ path('app_suivi_conseiller_index', {'statut_suivi': 'AVEC_RESERVES'}) }}" class="cg-stat-card {{ filters.statut_suivi == 'AVEC_RESERVES' ? 'active' : '' }}" title="Filtrer avec réserves">
+            <div class="cg-stat-icon icon-stat-reserves">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.AVEC_RESERVES }}</div>
+                <div class="cg-stat-label">Avec Réserves</div>
+            </div>
+        </a>
+
+        <!-- 6. Défavorables -->
+        <a href="{{ path('app_suivi_conseiller_index', {'statut_suivi': 'REJETE'}) }}" class="cg-stat-card {{ filters.statut_suivi == 'REJETE' ? 'active' : '' }}" title="Filtrer défavorables">
+            <div class="cg-stat-icon icon-stat-rejete">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="cg-stat-info">
+                <div class="cg-stat-num">{{ statsCabinet.REJETE }}</div>
+                <div class="cg-stat-label">Défavorables</div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Advisors Carousel / Grid Section -->
+    <div class="cg-section-header">
+        <h5 class="cg-section-title">
+            <i class="bi bi-people-fill"></i>
+            <span>Collège des Conseillers du Gouverneur</span>
+        </h5>
+        <span class="cg-badge-ref">{{ conseillers|length }} Conseillers actifs</span>
+    </div>
+
+    <div class="cg-advisors-grid">
+        {% for stat in statsParConseiller %}
+            {% set c = stat.conseiller %}
+            {% set isMe = monProfilConseiller and monProfilConseiller.id == c.id %}
+            {% set isSelected = filters.conseiller_id == c.id %}
+            <div class="cg-advisor-card {{ isMe ? 'current-user-card' : '' }} {{ isSelected ? 'selected-advisor' : '' }}">
+                <div class="cg-advisor-head">
+                    <div class="cg-avatar-box">
+                        {{ c.utilisateur ? (c.utilisateur.prenom|slice(0,1) ~ c.utilisateur.nom|slice(0,1))|upper : 'CG' }}
+                    </div>
+                    <div class="cg-advisor-info">
+                        <div class="cg-advisor-name">{{ c.utilisateur ? c.utilisateur.nomComplet : 'Conseiller' }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <span class="cg-domain-pill">{{ c.codeDomaine }}</span>
+                            {% if isMe %}
+                                <span class="cg-badge-you">Vous</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cg-advisor-domain-desc" title="{{ c.domaineCompetence }}">
+                    <i class="bi bi-briefcase me-1 text-primary"></i>{{ c.domaineCompetence }}
+                </div>
+
+                <!-- Metrics & Progress -->
+                <div class="cg-advisor-footer">
+                    <div class="cg-advisor-metrics">
+                        <span>Dossiers : <strong>{{ stat.total }}</strong></span>
+                        <span>En attente : <strong class="{{ stat.en_attente > 0 ? 'text-danger' : 'text-muted' }}">{{ stat.en_attente }}</strong></span>
+                    </div>
+
+                    <!-- Stacked Progress Bar -->
+                    <div class="cg-stacked-progress">
+                        {% set pctApprouve = stat.total > 0 ? (stat.approuves / stat.total * 100) : 0 %}
+                        {% set pctReserves = stat.total > 0 ? (stat.avec_reserves / stat.total * 100) : 0 %}
+                        {% set pctRejete = stat.total > 0 ? (stat.rejetes / stat.total * 100) : 0 %}
+                        {% set pctAttente = stat.total > 0 ? (stat.en_attente / stat.total * 100) : 0 %}
+                        
+                        <div class="cg-prog-segment prog-success" style="width: {{ pctApprouve }}%" title="Favorables: {{ stat.approuves }}"></div>
+                        <div class="cg-prog-segment prog-warning" style="width: {{ pctReserves }}%" title="Avec réserves: {{ stat.avec_reserves }}"></div>
+                        <div class="cg-prog-segment prog-danger" style="width: {{ pctRejete }}%" title="Défavorables: {{ stat.rejetes }}"></div>
+                        <div class="cg-prog-segment prog-attente" style="width: {{ pctAttente }}%" title="En attente: {{ stat.en_attente }}"></div>
+                    </div>
+
+                    <div class="cg-advisor-action-row">
+                        {% if stat.total == 1 and c.suivis|length > 0 %}
+                            {% set singleSuivi = c.suivis|first %}
+                            <a href="{{ path('app_instruction_show', {'id': singleSuivi.action.instruction.id}) }}" class="btn-advisor-filter" title="Accéder directement à l'instruction">
+                                <span>Voir l'instruction (1)</span>
+                                <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        {% elseif stat.total > 1 %}
+                            <a href="{{ path('app_suivi_conseiller_index', {'conseiller_id': c.id}) }}#tableau-dossiers" class="btn-advisor-filter" title="Consulter les {{ stat.total }} dossiers du conseiller">
+                                <span>Voir dossiers ({{ stat.total }})</span>
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% else %}
+                            <span class="btn-advisor-filter" style="opacity: 0.5; cursor: not-allowed; background: #f8fafc; color: #94a3b8; border-color: #e2e8f0;">
+                                <span>Aucun dossier (0)</span>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Filters and Data Table Card -->
+    <div class="cg-table-card" id="tableau-dossiers">
+        <!-- Toolbar Panel -->
+        <div class="cg-toolbar-panel">
+            <form method="get" action="{{ path('app_suivi_conseiller_index') }}" class="cg-toolbar-form">
+                <!-- Role view switch if current user is advisor -->
+                {% if monProfilConseiller %}
+                    <div class="cg-role-toggle">
+                        <a href="{{ path('app_suivi_conseiller_index', filters|merge({'vue': 'mes_suivis', 'conseiller_id': ''})) }}" 
+                           class="cg-role-btn {{ filters.vue == 'mes_suivis' ? 'active' : '' }}">
+                            <i class="bi bi-person-check-fill"></i>
+                            <span>Mes dossiers</span>
+                        </a>
+                        <a href="{{ path('app_suivi_conseiller_index', filters|merge({'vue': 'tous'})) }}" 
+                           class="cg-role-btn {{ filters.vue != 'mes_suivis' ? 'active' : '' }}">
+                            <i class="bi bi-grid-fill"></i>
+                            <span>Vue globale Cabinet</span>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Search Input -->
+                <div class="cg-search-box">
+                    <i class="bi bi-search cg-search-icon"></i>
+                    <input type="text" name="q" value="{{ filters.q }}" class="cg-search-input" placeholder="Rechercher une action, instruction, mot-clé...">
+                </div>
+
+                <!-- Advisor Dropdown -->
+                <select name="conseiller_id" class="cg-select-filter">
+                    <option value="">Tous les conseillers</option>
+                    {% for c in conseillers %}
+                        <option value="{{ c.id }}" {{ filters.conseiller_id == c.id ? 'selected' : '' }}>
+                            {{ c.codeDomaine }} - {{ c.utilisateur ? c.utilisateur.nomComplet : '' }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Status Dropdown -->
+                <select name="statut_suivi" class="cg-select-filter">
+                    <option value="">Tous les statuts d'avis</option>
+                    {% for key, label in statutsSuivi %}
+                        <option value="{{ key }}" {{ filters.statut_suivi == key ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Priority Dropdown -->
+                <select name="priorite_cabinet" class="cg-select-filter" style="min-width: 140px;">
+                    <option value="">Toutes priorités</option>
+                    <option value="URGENTE" {{ filters.priorite_cabinet == 'URGENTE' ? 'selected' : '' }}>Urgente</option>
+                    <option value="NORMALE" {{ filters.priorite_cabinet == 'NORMALE' ? 'selected' : '' }}>Normale</option>
+                    <option value="BASSE" {{ filters.priorite_cabinet == 'BASSE' ? 'selected' : '' }}>Basse</option>
+                </select>
+
+                <!-- Action Buttons -->
+                <button type="submit" class="btn-filter-submit">
+                    <i class="bi bi-funnel-fill"></i>
+                    <span>Filtrer</span>
+                </button>
+
+                {% if filters.q or filters.statut_suivi or filters.conseiller_id or filters.priorite_cabinet or filters.vue == 'mes_suivis' %}
+                    <a href="{{ path('app_suivi_conseiller_index') }}" class="btn-filter-reset" title="Réinitialiser les filtres">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Réinitialiser</span>
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Table View -->
+        <div class="cg-table-responsive">
+            <table class="cg-data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 28%;">Action & Instruction</th>
+                        <th style="width: 18%;">Conseiller / Domaine</th>
+                        <th style="width: 14%;">Statut de l'Avis</th>
+                        <th style="width: 10%;">Priorité</th>
+                        <th style="width: 20%;">Synthèse & Observations</th>
+                        <th style="width: 10%; text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if suivis|length > 0 %}
+                        {% for s in suivis %}
+                            {% set action = s.action %}
+                            {% set instr = action.instruction %}
+                            {% set cons = s.conseiller %}
+                            <tr>
+                                <!-- Action & Instruction -->
+                                <td>
+                                    <div style="font-weight: 700; margin-bottom: 0.35rem;">
+                                        <a href="{{ path('app_instruction_show', {'id': instr.id}) }}#action-{{ action.id }}" style="color: #0f172a; text-decoration: none;" onmouseover="this.style.color='#0d9488'" onmouseout="this.style.color='#0f172a'">
+                                            {{ action.libelle }}
+                                        </a>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: #64748b; flex-wrap: wrap;">
+                                        <span class="cg-badge-ref">{{ action.reference ?? 'Action #' ~ action.id }}</span>
+                                        <span>•</span>
+                                        <span>Inst: <a href="{{ path('app_instruction_show', {'id': instr.id}) }}" style="color: #475569; font-weight: 600;">{{ instr.reference }}</a></span>
+                                        {% if action.entiteResponsable %}
+                                            <span>•</span>
+                                            <span class="cg-badge-entity">{{ action.entiteResponsable.code }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
+                                <!-- Conseiller -->
+                                <td>
+                                    <div style="font-weight: 700; color: #0f172a;">
+                                        {{ cons.utilisateur ? cons.utilisateur.nomComplet : 'N/A' }}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.35rem; margin-top: 0.15rem;">
+                                        <span class="cg-domain-pill">{{ cons.codeDomaine }}</span>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.78rem; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px;" title="{{ cons.domaineCompetence }}">
+                                        {{ cons.domaineCompetence }}
+                                    </div>
+                                </td>
+
+                                <!-- Statut Avis -->
+                                <td>
+                                    {% if s.statutSuivi == 'APPROUVE' %}
+                                        <span class="cg-status-badge status-approuve">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            <span>Favorable</span>
+                                        </span>
+                                    {% elseif s.statutSuivi == 'AVEC_RESERVES' %}
+                                        <span class="cg-status-badge status-reserves">
+                                            <i class="bi bi-exclamation-triangle-fill"></i>
+                                            <span>Avec Réserves</span>
+                                        </span>
+                                    {% elseif s.statutSuivi == 'EN_COURS' %}
+                                        <span class="cg-status-badge status-cours">
+                                            <i class="bi bi-hourglass-split"></i>
+                                            <span>En cours</span>
+                                        </span>
+                                    {% elseif s.statutSuivi == 'REJETE' %}
+                                        <span class="cg-status-badge status-rejete">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                            <span>Défavorable</span>
+                                        </span>
+                                    {% else %}
+                                        <span class="cg-status-badge status-attente">
+                                            <i class="bi bi-clock-history"></i>
+                                            <span>En attente</span>
+                                        </span>
+                                    {% endif %}
+
+                                    {% if s.dateAvis %}
+                                        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.25rem;">
+                                            le {{ s.dateAvis|date('d/m/Y H:i') }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Priorité Cabinet -->
+                                <td>
+                                    <span class="cg-priority-tag prio-{{ s.prioriteCabinet }}">
+                                        {{ s.prioriteCabinet }}
+                                    </span>
+                                </td>
+
+                                <!-- Synthèse / Recommandation -->
+                                <td>
+                                    <div class="cg-avis-box">
+                                        {% if s.avis %}
+                                            <div class="cg-avis-text" title="{{ s.avis }}">
+                                                <strong>Avis :</strong> {{ s.avis }}
+                                            </div>
+                                        {% endif %}
+                                        {% if s.recommandations %}
+                                            <div class="cg-recom-text" title="{{ s.recommandations }}">
+                                                <strong>Recom :</strong> {{ s.recommandations }}
+                                            </div>
+                                        {% endif %}
+                                        {% if not s.avis and not s.recommandations %}
+                                            <span style="color: #94a3b8; font-style: italic; font-size: 0.82rem;">En attente de rédaction</span>
+                                        {% endif %}
+                                        {% if s.pointAttention %}
+                                            <div class="cg-alert-point" title="{{ s.pointAttention }}">
+                                                <i class="bi bi-exclamation-circle-fill"></i>
+                                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ s.pointAttention }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
+                                <!-- Actions -->
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.4rem; justify-content: flex-end;">
+                                        <a href="{{ path('app_instruction_show', {'id': instr.id}) }}" class="btn btn-sm" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.38rem 0.65rem; font-size: 0.78rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Consulter la fiche complète de l'instruction">
+                                            <i class="bi bi-file-earmark-text text-primary"></i>
+                                            <span>Instruction</span>
+                                        </a>
+
+                                        <a href="{{ path('app_suivi_conseiller_examen', {'id': s.id}) }}" class="btn-evaluer" title="Évaluer ou modifier l'avis">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <span>Évaluer</span>
+                                        </a>
+
+                                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_CABINET') %}
+                                            <form method="post" action="{{ path('app_suivi_conseiller_retirer', {'id': s.id}) }}" onsubmit="return confirm('Voulez-vous retirer cette affectation de conseiller ?');" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm" style="color: #ef4444; background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.38rem 0.6rem; cursor: pointer;" title="Retirer l'affectation">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="cg-empty-state">
+                                    <div class="cg-empty-icon">
+                                        <i class="bi bi-inbox"></i>
+                                    </div>
+                                    <h6 class="cg-empty-title">Aucun dossier de suivi trouvé</h6>
+                                    <p class="cg-empty-desc">
+                                        Aucun suivi ne correspond aux critères sélectionnés. Vous pouvez affecter des Conseillers aux actions directement depuis la fiche de détail d'une instruction.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -2,27 +2,32 @@
 
 namespace App\Controller;
 
+use App\Entity\Action;
 use App\Entity\Commentaire;
 use App\Entity\Entite;
 use App\Entity\Instruction;
 use App\Entity\InstructionEntite;
+use App\Entity\Priorite;
 use App\Entity\Statut;
 use App\Entity\TypeEvenement;
 use App\Form\CommentaireType;
 use App\Form\InstructionType;
 use App\Form\JustificatifType;
 use App\Form\RelanceType;
+use App\Repository\ConseillerGouverneurRepository;
 use App\Repository\EntiteRepository;
 use App\Repository\InstructionRepository;
 use App\Repository\PrioriteRepository;
 use App\Repository\StatutRepository;
 use App\Repository\TypeInstructionRepository;
 use App\Repository\UtilisateurRepository;
+use App\Service\AiActionExtractorService;
 use App\Service\FileUploader;
 use App\Service\InstructionService;
 use App\Service\RelanceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -124,9 +129,14 @@ class InstructionController extends AbstractController
         EntityManagerInterface $em,
         InstructionService $instructionService,
         StatutRepository $statutRepo,
-        EntiteRepository $entiteRepo
+        EntiteRepository $entiteRepo,
+        PrioriteRepository $prioriteRepo,
+        UtilisateurRepository $userRepo,
+        ConseillerGouverneurRepository $conseillerRepo
     ): Response {
+        /** @var \App\Entity\Utilisateur|null $currentUser */
         $currentUser = $this->getUser();
+        $monProfilConseiller = $currentUser ? $conseillerRepo->findByUtilisateur($currentUser) : null;
 
         // Comment form
         $commentaire = new Commentaire();
@@ -154,12 +164,19 @@ class InstructionController extends AbstractController
 
         $allEntites = $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']);
         $availableStatuts = $statutRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']);
+        $allPriorites = $prioriteRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']);
+        $allUtilisateurs = $userRepo->findBy(['actif' => true], ['nom' => 'ASC']);
+        $allConseillers = $conseillerRepo->findActifs();
 
         return $this->render('instruction/show.html.twig', [
             'instruction' => $instruction,
             'commentForm' => $commentForm,
             'allEntites' => $allEntites,
             'availableStatuts' => $availableStatuts,
+            'allPriorites' => $allPriorites,
+            'allUtilisateurs' => $allUtilisateurs,
+            'allConseillers' => $allConseillers,
+            'monProfilConseiller' => $monProfilConseiller,
         ]);
     }
 
@@ -422,5 +439,131 @@ class InstructionController extends AbstractController
         }
 
         return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
+    }
+
+    #[Route('/{id}/ai-extract', name: 'app_instruction_ai_extract', methods: ['POST'])]
+    public function aiExtract(
+        Instruction $instruction,
+        Request $request,
+        AiActionExtractorService $aiExtractor
+    ): JsonResponse {
+        try {
+            $uploadedFile = $request->files->get('document');
+            $customPrompt = $request->request->get('custom_prompt');
+
+            $actions = $aiExtractor->extractActions($instruction, $uploadedFile, $customPrompt);
+
+            return new JsonResponse([
+                'success' => true,
+                'actions' => $actions,
+                'count' => count($actions)
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    #[Route('/{id}/actions/batch-create', name: 'app_instruction_actions_batch_create', methods: ['POST'])]
+    public function batchCreateActions(
+        Instruction $instruction,
+        Request $request,
+        EntityManagerInterface $em,
+        InstructionService $instructionService,
+        EntiteRepository $entiteRepo,
+        PrioriteRepository $prioriteRepo,
+        StatutRepository $statutRepo
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $rawActions = $data['actions'] ?? [];
+
+            if (empty($rawActions)) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Aucune action reçue pour l\'enregistrement.'
+                ], 400);
+            }
+
+            $currentUser = $this->getUser();
+            $defaultStatut = $statutRepo->findOneBy(['code' => Statut::CODE_AFFECTEE])
+                ?? $statutRepo->findOneBy(['code' => Statut::CODE_BROUILLON])
+                ?? $statutRepo->findOneBy([]);
+
+            $createdCount = 0;
+            $currentActionCount = $instruction->getActions()->count();
+
+            foreach ($rawActions as $item) {
+                $libelle = trim($item['libelle'] ?? '');
+                if (empty($libelle)) {
+                    continue;
+                }
+
+                $action = new Action();
+                $action->setInstruction($instruction);
+                $action->setLibelle($libelle);
+                $action->setResultatAttendu(!empty($item['resultat_attendu']) ? trim($item['resultat_attendu']) : null);
+                
+                // Entité responsable
+                $entiteId = !empty($item['entite_id']) ? (int)$item['entite_id'] : null;
+                $entite = $entiteId ? $entiteRepo->find($entiteId) : null;
+                $action->setEntiteResponsable($entite ?? $instruction->getEntitePilote());
+
+                // Priorité
+                $prioriteId = !empty($item['priorite_id']) ? (int)$item['priorite_id'] : null;
+                $priorite = $prioriteId ? $prioriteRepo->find($prioriteId) : null;
+                $action->setPriorite($priorite ?? $instruction->getPriorite());
+
+                // Date d'échéance
+                if (!empty($item['date_echeance'])) {
+                    try {
+                        $action->setDateEcheance(new \DateTime($item['date_echeance']));
+                    } catch (\Throwable) {
+                        $action->setDateEcheance($instruction->getDateEcheance());
+                    }
+                } else {
+                    $action->setDateEcheance($instruction->getDateEcheance());
+                }
+
+                $action->setDateDebut(new \DateTime());
+                $action->setStatut($defaultStatut);
+                $action->setCreatedBy($currentUser);
+                $action->setTauxAvancement('0.00');
+
+                // Référence unique
+                $currentActionCount++;
+                $action->setReference(sprintf('%s-ACT%02d', $instruction->getReference(), $currentActionCount));
+
+                $em->persist($action);
+                $createdCount++;
+            }
+
+            if ($createdCount > 0) {
+                $instructionService->logHistorique(
+                    $instruction,
+                    TypeEvenement::CREATION,
+                    $currentUser,
+                    null,
+                    null,
+                    sprintf('Génération et création en bloc de %d action(s) opérationnelle(s) par IA.', $createdCount)
+                );
+
+                $em->flush();
+                $this->addFlash('success', sprintf('%d action(s) opérationnelle(s) ont été créées avec succès.', $createdCount));
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'count' => $createdCount,
+                'message' => sprintf('%d action(s) créée(s) avec succès.', $createdCount)
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de la création : ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -1,96 +1,179 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{% if isEdit %}Modifier l'utilisateur{% else %}Nouvel Utilisateur{% endif %}{% endblock %}
+{% block title %}{% if isEdit %}Modifier l'utilisateur{% else %}Nouvel Utilisateur{% endif %} - ACTIS-BCC{% endblock %}
+
+{% block stylesheets %}
+<style>
+.form-container-card {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+.form-header-banner {
+    background: linear-gradient(135deg, #091a2f 0%, #0f2744 50%, #1a3a60 100%);
+    color: #ffffff;
+    padding: 1.75rem 2rem;
+}
+.form-body-content {
+    padding: 2rem;
+}
+.custom-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.custom-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 768px) {
+    .custom-form-grid-2, .custom-form-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+.roles-selector-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+.roles-selector-box .form-check {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem 0.55rem 2rem;
+    margin-bottom: 0;
+    transition: border-color 0.2s;
+}
+.roles-selector-box .form-check:hover {
+    border-color: #cbd5e1;
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="page-header">
-    <div>
-        <h2 class="page-title">{% if isEdit %}Modifier l'utilisateur : {{ user.nomComplet }}{% else %}Créer un Utilisateur{% endif %}</h2>
-        <p class="page-subtitle">Affectation aux entités et habilitations</p>
-    </div>
-    <div>
-        <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
-    </div>
-</div>
+<div class="container-fluid px-4 py-3">
 
-<div class="card" style="max-width: 800px; margin: 0 auto;">
-    <div class="card-header">
-        <h3 class="card-title"><i class="bi bi-person-fill-gear"></i> Formulaire Utilisateur</h3>
-    </div>
-    <div class="card-body">
-        {{ form_start(form) }}
-            <div class="grid-2">
-                <div class="form-group">
-                    {{ form_label(form.matricule, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.matricule, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.matricule) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.email) }}
-                </div>
-            </div>
+    <!-- Top Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_index') }}">Administration</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_utilisateurs') }}">Utilisateurs</a></li>
+            <li class="breadcrumb-item active">{% if isEdit %}Modifier{% else %}Nouveau{% endif %}</li>
+        </ol>
+    </nav>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
-                <div class="form-group">
-                    {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.prenom) }}
+    <div class="form-container-card">
+        <!-- Form Header -->
+        <div class="form-header-banner">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold text-white mb-1">
+                        <i class="bi bi-person-fill-gear me-2"></i>{% if isEdit %}Modifier le compte : {{ user.nomComplet }}{% else %}Créer un Nouvel Utilisateur{% endif %}
+                    </h3>
+                    <p class="text-white-50 small mb-0">Paramétrage des identifiants, rattachement organisationnel et profil d'accès.</p>
                 </div>
-                <div class="form-group">
-                    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.nom) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.postnom, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.postnom, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.postnom) }}
-                </div>
+                <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                </a>
             </div>
+        </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    {{ form_label(form.telephone, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.telephone) }}
+        <!-- Form Body -->
+        <div class="form-body-content">
+            {{ form_start(form) }}
+                
+                <!-- Matricule & Email -->
+                <div class="custom-form-grid-2 mb-3">
+                    <div>
+                        {{ form_label(form.matricule, 'Matricule BCC *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.matricule, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 10458'}}) }}
+                        {{ form_errors(form.matricule) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.email, 'Email Professionnel *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'nom.prenom@bcc.cd'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
                 </div>
-                <div class="form-group">
-                    {{ form_label(form.entite, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.entite, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.entite) }}
+
+                <!-- Prénom, Nom, Postnom -->
+                <div class="custom-form-grid-3 mb-3">
+                    <div>
+                        {{ form_label(form.prenom, 'Prénom *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.nom, 'Nom *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.postnom, 'Post-nom', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.postnom, {'attr': {'class': 'form-control', 'placeholder': 'Post-nom'}}) }}
+                        {{ form_errors(form.postnom) }}
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                {{ form_label(form.plainPassword, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.plainPassword) }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Rôles / Profils d'Habilitation</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--bg-main); padding: 14px; border-radius: var(--radius-md);">
-                    {{ form_widget(form.appRoles) }}
+                <!-- Téléphone & Entité -->
+                <div class="custom-form-grid-2 mb-3">
+                    <div>
+                        {{ form_label(form.telephone, 'Téléphone Professionnel', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.telephone, {'attr': {'class': 'form-control', 'placeholder': '+243 ...'}}) }}
+                        {{ form_errors(form.telephone) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.entite, 'Direction / Entité de Rattachement', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                        {{ form_widget(form.entite, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.entite) }}
+                    </div>
                 </div>
-                {{ form_errors(form.appRoles) }}
-            </div>
 
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    {{ form_widget(form.actif) }}
-                    {{ form_label(form.actif) }}
+                <!-- Mot de passe -->
+                <div class="mb-3">
+                    {{ form_label(form.plainPassword, isEdit ? 'Nouveau mot de passe (laisser vide pour conserver l\'actuel)' : 'Mot de passe initial *', {'label_attr': {'class': 'form-label fw-bold text-dark'}}) }}
+                    {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control', 'placeholder': isEdit ? '••••••••' : 'Définir un mot de passe sécurisé'}}) }}
+                    {{ form_errors(form.plainPassword) }}
                 </div>
-            </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Enregistrer
-                </button>
-            </div>
-        {{ form_end(form) }}
+                <!-- Rôles / Profils -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-dark">Rôles & Habilitations d'Accès</label>
+                    <div class="roles-selector-box">
+                        {{ form_widget(form.appRoles) }}
+                    </div>
+                    {{ form_errors(form.appRoles) }}
+                </div>
+
+                <!-- Statut Actif -->
+                <div class="mb-4 pt-2">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.actif, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                        {{ form_label(form.actif, 'Compte Actif (Autorisé à se connecter)', {'label_attr': {'class': 'form-check-label fw-semibold text-dark'}}) }}
+                    </div>
+                </div>
+
+                <!-- Buttons Footer -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{{ path('app_admin_utilisateurs') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> {% if isEdit %}Enregistrer les modifications{% else %}Créer l'utilisateur{% endif %}
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
     </div>
 </div>
 {% endblock %}
