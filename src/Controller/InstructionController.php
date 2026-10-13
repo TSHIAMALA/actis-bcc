@@ -23,13 +23,16 @@ use App\Repository\TypeInstructionRepository;
 use App\Repository\UtilisateurRepository;
 use App\Service\AiActionExtractorService;
 use App\Service\FileUploader;
+use App\Service\InstructionDocumentStorage;
 use App\Service\InstructionService;
 use App\Service\RelanceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/instructions')]
@@ -75,7 +78,8 @@ class InstructionController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         InstructionService $instructionService,
-        StatutRepository $statutRepo
+        StatutRepository $statutRepo,
+        InstructionDocumentStorage $documentStorage
     ): Response {
         $instruction = new Instruction();
         $instruction->setDateInstruction(new \DateTime());
@@ -98,6 +102,11 @@ class InstructionController extends AbstractController
                 : $statutRepo->findOneBy(['code' => Statut::CODE_BROUILLON]);
             
             $instruction->setStatut($statutInitial ?? $statutRepo->findOneBy([]));
+
+            $documentPdf = $form->get('documentPdf')->getData();
+            if ($documentPdf) {
+                $documentStorage->store($instruction, $documentPdf);
+            }
 
             $em->persist($instruction);
             $em->flush();
@@ -185,22 +194,33 @@ class InstructionController extends AbstractController
         Instruction $instruction,
         Request $request,
         EntityManagerInterface $em,
-        InstructionService $instructionService
+        InstructionService $instructionService,
+        InstructionDocumentStorage $documentStorage
     ): Response {
-        $form = $this->createForm(InstructionType::class, $instruction);
+        $form = $this->createForm(InstructionType::class, $instruction, ['is_edit' => true]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $currentUser = $this->getUser();
             $instruction->setUpdatedAt(new \DateTime());
-            
+
+            $description = 'Mise à jour des informations de l\'instruction.';
+            $documentPdf = $form->get('documentPdf')->getData();
+            if ($documentPdf) {
+                $documentStorage->store($instruction, $documentPdf);
+                $description .= sprintf(' Document officiel joint : %s.', $instruction->getDocumentNomOriginal());
+            } elseif ($form->get('supprimerDocument')->getData() && $instruction->hasDocument()) {
+                $documentStorage->remove($instruction);
+                $description .= ' Document officiel supprimé.';
+            }
+
             $instructionService->logHistorique(
                 $instruction,
                 TypeEvenement::MODIFICATION,
                 $currentUser,
                 null,
                 null,
-                'Mise à jour des informations de l\'instruction.'
+                $description
             );
 
             $em->flush();
@@ -213,6 +233,31 @@ class InstructionController extends AbstractController
             'instruction' => $instruction,
             'form' => $form,
         ]);
+    }
+
+    /**
+     * Affiche le PDF officiel dans le navigateur (lecteur intégré), ou le télécharge avec ?telecharger=1.
+     */
+    #[Route('/{id}/document', name: 'app_instruction_document', methods: ['GET'])]
+    public function document(
+        Instruction $instruction,
+        Request $request,
+        InstructionDocumentStorage $documentStorage
+    ): Response {
+        $path = $documentStorage->getPath($instruction);
+        if ($path === null || !is_file($path)) {
+            throw $this->createNotFoundException('Aucun document officiel n\'est joint à cette instruction.');
+        }
+
+        $response = new BinaryFileResponse($path);
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->setContentDisposition(
+            $request->query->getBoolean('telecharger') ? ResponseHeaderBag::DISPOSITION_ATTACHMENT : ResponseHeaderBag::DISPOSITION_INLINE,
+            $instruction->getDocumentNomOriginal() ?: $instruction->getReference() . '.pdf',
+            $instruction->getDocumentFichier()
+        );
+
+        return $response;
     }
 
     #[Route('/{id}/changer-statut', name: 'app_instruction_change_statut', methods: ['POST'])]

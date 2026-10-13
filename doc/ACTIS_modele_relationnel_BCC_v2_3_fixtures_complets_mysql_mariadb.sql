@@ -262,6 +262,10 @@ CREATE TABLE instructions (
 
     emetteur VARCHAR(255) NULL,
 
+    document_fichier VARCHAR(255) NULL,
+    document_nom_original VARCHAR(255) NULL,
+    lien_portail VARCHAR(500) NULL,
+
     entite_pilote_id BIGINT UNSIGNED NOT NULL,
     responsable_id BIGINT UNSIGNED NULL,
 

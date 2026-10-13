@@ -171,6 +171,64 @@
     </div>
 </div>
 
+<!-- Document officiel (PDF) & lien portail BCC : bandeau compact, aperçu en fenêtre -->
+<div class="card" id="documentOfficiel" style="padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+        <i class="bi bi-file-earmark-pdf-fill" style="color: {{ instruction.hasDocument ? '#DC2626' : '#CBD5E1' }}; font-size: 1.3rem;"></i>
+        <div style="min-width: 0;">
+            <div style="font-weight: 700; font-size: 0.85rem; color: var(--bcc-navy);">Document officiel</div>
+            {% if instruction.hasDocument %}
+                <div style="font-size: 0.76rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 420px;" title="{{ instruction.documentNomOriginal }}">{{ instruction.documentNomOriginal }}</div>
+            {% else %}
+                <div style="font-size: 0.76rem; color: var(--text-muted);">
+                    Aucun PDF joint{% if not instruction.lienPortail %} ni lien portail{% endif %} —
+                    <a href="{{ path('app_instruction_edit', {'id': instruction.id}) }}" style="font-weight: 600;">joindre le document</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        {% if instruction.hasDocument %}
+            <button type="button" class="btn btn-primary btn-sm" onclick="openDocumentModal()">
+                <i class="bi bi-eye"></i> Consulter
+            </button>
+            <a href="{{ path('app_instruction_document', {'id': instruction.id, 'telecharger': 1}) }}" class="btn btn-secondary btn-sm" title="Télécharger le PDF">
+                <i class="bi bi-download"></i>
+            </a>
+        {% endif %}
+        {% if instruction.lienPortail %}
+            <a href="{{ instruction.lienPortail }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" title="{{ instruction.lienPortail }}">
+                <i class="bi bi-box-arrow-up-right"></i> Portail BCC
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if instruction.hasDocument %}
+<div id="modalDocument" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px;" onclick="if (event.target === this) closeDocumentModal()">
+    <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: min(1100px, 100%); height: 92vh; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <h3 class="card-title" style="margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <i class="bi bi-file-earmark-pdf-fill" style="color: #DC2626;"></i> {{ instruction.reference }} — {{ instruction.documentNomOriginal }}
+            </h3>
+            <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                <a href="{{ path('app_instruction_document', {'id': instruction.id}) }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" title="Ouvrir dans un nouvel onglet">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </a>
+                <a href="{{ path('app_instruction_document', {'id': instruction.id, 'telecharger': 1}) }}" class="btn btn-secondary btn-sm" title="Télécharger">
+                    <i class="bi bi-download"></i>
+                </a>
+                <button type="button" onclick="closeDocumentModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; line-height: 1;" title="Fermer">&times;</button>
+            </div>
+        </div>
+        <!-- Le PDF n'est chargé qu'à l'ouverture -->
+        <iframe id="documentFrame" data-src="{{ path('app_instruction_document', {'id': instruction.id}) }}#view=FitH"
+                title="Document officiel {{ instruction.reference }}"
+                style="flex: 1; width: 100%; border: 0; display: block;"></iframe>
+    </div>
+</div>
+{% endif %}
+
 <!-- Actions Decomposition Table -->
 <div class="card">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -712,6 +770,25 @@
     const INSTRUCTION_ID = {{ instruction.id }};
     let currentSelectedFile = null;
     let extractedActionsData = [];
+
+    function openDocumentModal() {
+        const frame = document.getElementById('documentFrame');
+        if (!frame.getAttribute('src')) {
+            frame.setAttribute('src', frame.dataset.src);
+        }
+        document.getElementById('modalDocument').style.display = 'flex';
+    }
+
+    function closeDocumentModal() {
+        document.getElementById('modalDocument').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        const modal = document.getElementById('modalDocument');
+        if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+            closeDocumentModal();
+        }
+    });
 
     function openAiActionsModal() {
         document.getElementById('modalAiActions').style.display = 'flex';

@@ -40,7 +40,8 @@ class InstructionRepository extends ServiceEntityRepository
         }
 
         if (!empty($filters['statut'])) {
-            $qb->andWhere('s.id = :statutId')
+            // Accepte un id de statut (formulaire de filtre) ou un code (liens du tableau de bord)
+            $qb->andWhere(ctype_digit((string) $filters['statut']) ? 's.id = :statutId' : 's.code = :statutId')
                 ->setParameter('statutId', $filters['statut']);
         }
 

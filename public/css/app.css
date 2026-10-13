@@ -2549,6 +2549,27 @@ a:hover {
     color: #059669;
 }
 
+.icon-indigo {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+.kpi-quad-row.kpi-five {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.kpi-metric-detail {
+    font-size: 0.72rem;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+@media (max-width: 1400px) {
+    .kpi-quad-row.kpi-five {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .kpi-metric-content {
     flex: 1;
 }
@@ -3077,7 +3098,8 @@ a:hover {
 }
 
 @media (max-width: 1024px) {
-    .kpi-quad-row {
+    .kpi-quad-row,
+    .kpi-quad-row.kpi-five {
         grid-template-columns: repeat(2, 1fr);
     }
     .charts-dual-row {
@@ -3086,7 +3108,8 @@ a:hover {
 }
 
 @media (max-width: 640px) {
-    .kpi-quad-row {
+    .kpi-quad-row,
+    .kpi-quad-row.kpi-five {
         grid-template-columns: 1fr;
     }
     .dashboard-topbar-header {
@@ -3141,3 +3164,63 @@ a:hover {
 
 
 
+
+.trend-neutral {
+    color: #94A3B8;
+}
+
+/* ── Période personnalisée (dashboard) ── */
+.filter-custom-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 6px 10px 6px 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.filter-custom-range label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+}
+
+.filter-date-input {
+    border: none;
+    background: transparent;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #0F172A;
+    padding: 0;
+    outline: none;
+}
+
+.btn-apply-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #0A2540;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-range-error {
+    flex-basis: 100%;
+    font-size: 0.74rem;
+    color: #DC2626;
+}
+
+.dashboard-period-info {
+    font-size: 0.76rem;
+    color: #64748B;
+    margin: 4px 0 0;
+}

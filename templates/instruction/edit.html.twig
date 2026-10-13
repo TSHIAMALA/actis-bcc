@@ -90,6 +90,35 @@
                 {{ form_errors(form.description) }}
             </div>
 
+            <div class="grid-2">
+                <div class="form-group">
+                    {{ form_label(form.documentPdf, instruction.hasDocument ? 'Remplacer le document officiel (PDF)' : null, {'label_attr': {'class': 'form-label'}}) }}
+                    {% if instruction.hasDocument %}
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.82rem;">
+                            <i class="bi bi-file-earmark-pdf-fill" style="color: #DC2626;"></i>
+                            <a href="{{ path('app_instruction_document', {'id': instruction.id}) }}" target="_blank" rel="noopener">{{ instruction.documentNomOriginal }}</a>
+                        </div>
+                    {% endif %}
+                    {{ form_widget(form.documentPdf, {'attr': {'class': 'form-control'}}) }}
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">PDF uniquement, 20 Mo maximum.</small>
+                    {{ form_errors(form.documentPdf) }}
+                    {% if instruction.hasDocument %}
+                        <div style="margin-top: 6px; font-size: 0.82rem;">
+                            {{ form_widget(form.supprimerDocument) }}
+                            {{ form_label(form.supprimerDocument) }}
+                        </div>
+                    {% else %}
+                        {% do form.supprimerDocument.setRendered %}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.lienPortail, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.lienPortail, {'attr': {'class': 'form-control'}}) }}
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">Copier l'adresse de la page depuis le portail BCC et la coller ici.</small>
+                    {{ form_errors(form.lienPortail) }}
+                </div>
+            </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
                 <a href="{{ path('app_instruction_show', {'id': instruction.id}) }}" class="btn btn-secondary">Annuler</a>
                 <button type="submit" class="btn btn-primary">

@@ -50,6 +50,17 @@ class Instruction
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $emetteur = null;
 
+    /** Nom du fichier PDF du document officiel, stocké hors du dossier public (var/uploads/instructions) */
+    #[ORM\Column(name: 'document_fichier', length: 255, nullable: true)]
+    private ?string $documentFichier = null;
+
+    #[ORM\Column(name: 'document_nom_original', length: 255, nullable: true)]
+    private ?string $documentNomOriginal = null;
+
+    /** Lien vers la publication de l'instruction / OS sur le portail BCC */
+    #[ORM\Column(name: 'lien_portail', length: 500, nullable: true)]
+    private ?string $lienPortail = null;
+
     #[ORM\ManyToOne(targetEntity: Entite::class)]
     #[ORM\JoinColumn(name: 'entite_pilote_id', referencedColumnName: 'id', nullable: false)]
     private ?Entite $entitePilote = null;
@@ -236,6 +247,44 @@ class Instruction
     public function setEmetteur(?string $emetteur): static
     {
         $this->emetteur = $emetteur;
+        return $this;
+    }
+
+    public function getDocumentFichier(): ?string
+    {
+        return $this->documentFichier;
+    }
+
+    public function setDocumentFichier(?string $documentFichier): static
+    {
+        $this->documentFichier = $documentFichier;
+        return $this;
+    }
+
+    public function getDocumentNomOriginal(): ?string
+    {
+        return $this->documentNomOriginal;
+    }
+
+    public function setDocumentNomOriginal(?string $documentNomOriginal): static
+    {
+        $this->documentNomOriginal = $documentNomOriginal;
+        return $this;
+    }
+
+    public function hasDocument(): bool
+    {
+        return $this->documentFichier !== null;
+    }
+
+    public function getLienPortail(): ?string
+    {
+        return $this->lienPortail;
+    }
+
+    public function setLienPortail(?string $lienPortail): static
+    {
+        $this->lienPortail = $lienPortail !== null && trim($lienPortail) !== '' ? trim($lienPortail) : null;
         return $this;
     }
 

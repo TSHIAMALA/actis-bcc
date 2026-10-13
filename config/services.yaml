@@ -1,5 +1,7 @@
 parameters:
     justificatifs_directory: '%kernel.project_dir%/public/uploads/justificatifs'
+    # Hors de public/ : servis uniquement via le contrôleur (utilisateurs connectés)
+    instructions_documents_directory: '%kernel.project_dir%/var/uploads/instructions'
 
 services:
     _defaults:
@@ -14,3 +16,7 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%justificatifs_directory%'
+
+    App\Service\InstructionDocumentStorage:
+        arguments:
+            $targetDirectory: '%instructions_documents_directory%'

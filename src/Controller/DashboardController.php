@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Repository\ActionRepository;
+use App\Entity\Action;
+use App\Entity\Historique;
+use App\Entity\Statut;
 use App\Repository\EntiteRepository;
-use App\Repository\InstructionRepository;
-use App\Service\RelanceService;
 use App\Service\StatsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,48 +18,12 @@ class DashboardController extends AbstractController
     #[Route('/', name: 'app_dashboard')]
     public function index(
         StatsService $statsService,
-        InstructionRepository $instructionRepo,
-        ActionRepository $actionRepo,
-        EntiteRepository $entiteRepo,
-        RelanceService $relanceService,
-        Request $request
+        EntiteRepository $entiteRepo
     ): Response {
-        $kpis = $statsService->getDashboardKPIs();
-        $chartsData = $statsService->getChartsData();
-        $performanceDirections = $entiteRepo->getPerformanceDirections();
-        $allEntites = $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']);
-        $recentInstructions = $instructionRepo->getRecent(5);
-        $upcomingEcheances = $actionRepo->getUpcomingEcheances(14);
-
-        // Actions prioritaires pour le tableau principal
-        $priorityActions = $actionRepo->createQueryBuilder('a')
-            ->leftJoin('a.instruction', 'i')->addSelect('i')
-            ->leftJoin('a.statut', 's')->addSelect('s')
-            ->leftJoin('a.priorite', 'p')->addSelect('p')
-            ->leftJoin('a.entiteResponsable', 'e')->addSelect('e')
-            ->leftJoin('a.responsable', 'r')->addSelect('r')
-            ->where('a.deletedAt IS NULL')
-            ->orderBy('a.dateEcheance', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult();
-
-        // Actions user specific
-        $user = $this->getUser();
-        $myPendingActions = [];
-        if ($user) {
-            $myPendingActions = $actionRepo->searchAndFilter(['my_actions' => '1'], $user);
-        }
-
         return $this->render('dashboard/index.html.twig', [
-            'kpis' => $kpis,
-            'charts' => $chartsData,
-            'allEntites' => $allEntites,
-            'performanceDirections' => $performanceDirections,
-            'recentInstructions' => $recentInstructions,
-            'upcomingEcheances' => $upcomingEcheances,
-            'priorityActions' => $priorityActions,
-            'myPendingActions' => array_slice($myPendingActions, 0, 5),
+            'allEntites' => $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']),
+            // Même source de données que l'API de filtrage : le rendu initial et le filtre « Tous » sont identiques
+            'dashboard' => $this->buildDashboardPayload($statsService, 'all', null),
         ]);
     }
 
@@ -71,94 +35,157 @@ class DashboardController extends AbstractController
         $periode = $request->query->get('periode', 'all');
         $entiteId = $request->query->getInt('entite_id') ?: null;
 
-        // KPIs filtrés
-        $kpis = $statsService->getFilteredKPIs($periode, $entiteId);
-
-        // Charts filtrés
-        $charts = $statsService->getFilteredChartsData($periode, $entiteId);
-
-        // Actions prioritaires filtrées
-        $priorityActions = $statsService->getFilteredPriorityActions($periode, $entiteId, 5);
-        $actionsData = [];
-        foreach ($priorityActions as $act) {
-            $isEnRetard = $act->isEnRetard();
-            $statutCode = $act->getStatut()?->getCode();
-            $prioriteCode = $act->getPriorite()?->getCode() ?? null;
-
-            // Determine status display
-            if ($isEnRetard) {
-                $statutDisplay = ['label' => 'En retard', 'class' => 'badge-soft-red'];
-            } elseif ($statutCode === 'EXECUTEE') {
-                $statutDisplay = ['label' => 'Réalisée', 'class' => 'badge-soft-green'];
-            } elseif ($statutCode === 'AFFECTEE') {
-                $statutDisplay = ['label' => 'À démarrer', 'class' => 'badge-soft-gray'];
-            } else {
-                $statutDisplay = ['label' => 'En cours', 'class' => 'badge-soft-blue'];
+        if ($periode === 'custom') {
+            $periode = StatsService::buildCustomPeriod($request->query->get('du'), $request->query->get('au'));
+            if ($periode === null) {
+                return new JsonResponse(['success' => false, 'message' => 'Période personnalisée invalide : la date de début doit précéder la date de fin.'], 400);
             }
-
-            // Priority display
-            if (in_array($prioriteCode, ['TRES_HAUTE', 'HAUTE'])) {
-                $prioriteDisplay = ['label' => 'Haute', 'class' => 'badge-soft-pink'];
-            } elseif ($prioriteCode === 'MOYENNE') {
-                $prioriteDisplay = ['label' => 'Moyenne', 'class' => 'badge-soft-yellow'];
-            } else {
-                $prioriteDisplay = ['label' => 'Normale', 'class' => 'badge-soft-gray'];
-            }
-
-            $actionsData[] = [
-                'id' => $act->getId(),
-                'libelle' => $act->getLibelle(),
-                'reference' => $act->getReference(),
-                'instruction_id' => $act->getInstruction()?->getId(),
-                'instruction_reference' => $act->getInstruction()?->getReference(),
-                'instruction_objet' => mb_substr($act->getInstruction()?->getObjet() ?? '', 0, 32) . (mb_strlen($act->getInstruction()?->getObjet() ?? '') > 32 ? '...' : ''),
-                'entite_code' => $act->getEntiteResponsable()?->getCode() ?? 'BCC',
-                'entite_nom' => mb_substr($act->getEntiteResponsable()?->getNom() ?? 'Direction Générale', 0, 24),
-                'date_echeance' => $act->getDateEcheance()?->format('d/m/Y') ?? '-',
-                'is_en_retard' => $isEnRetard,
-                'statut' => $statutDisplay,
-                'priorite' => $prioriteDisplay,
-            ];
         }
 
-        // Upcoming échéances filtrées
-        $upcomingEcheances = $statsService->getFilteredUpcomingEcheances($periode, $entiteId);
+        return new JsonResponse($this->buildDashboardPayload($statsService, $periode, $entiteId));
+    }
+
+    private function buildDashboardPayload(StatsService $statsService, string $periode, ?int $entiteId): array
+    {
+        $actionsData = array_map(
+            fn (Action $act) => $this->serializePriorityAction($act),
+            $statsService->getFilteredPriorityActions($periode, $entiteId, 5)
+        );
+
+        $today = new \DateTime('today');
         $echeancesData = [];
-        foreach ($upcomingEcheances as $ech) {
-            $today = new \DateTime('today');
-            $daysUntil = $ech->getDateEcheance() ? (int) $today->diff($ech->getDateEcheance())->format('%r%a') : 999;
+        foreach ($statsService->getFilteredUpcomingEcheances($periode, $entiteId) as $ech) {
+            $daysUntil = (int) $today->diff($ech->getDateEcheance())->format('%r%a');
             $isRetard = $daysUntil < 0;
             $isProche = !$isRetard && $daysUntil <= 3;
 
             $echeancesData[] = [
                 'id' => $ech->getId(),
-                'libelle' => mb_substr($ech->getLibelle(), 0, 35),
+                'url' => $this->generateUrl('app_action_show', ['id' => $ech->getId()]),
+                'libelle' => $ech->getLibelle(),
                 'entite_code' => $ech->getEntiteResponsable()?->getCode() ?? '',
-                'date_echeance' => $ech->getDateEcheance()?->format('d/m/Y') ?? '',
-                'date_day' => $ech->getDateEcheance()?->format('d') ?? '',
+                'date_echeance' => $ech->getDateEcheance()->format('d/m/Y'),
+                'date_day' => $ech->getDateEcheance()->format('d'),
                 'date_month' => $this->getShortMonthFr($ech->getDateEcheance()),
-                'is_retard' => $isRetard,
-                'is_proche' => $isProche,
                 'date_class' => $isRetard ? 'date-red' : ($isProche ? 'date-amber' : 'date-blue'),
                 'status_label' => $isRetard ? 'En retard' : ($isProche ? 'Échéance proche' : 'À venir'),
                 'status_class' => $isRetard ? 'badge-soft-red' : ($isProche ? 'badge-soft-yellow' : 'badge-soft-blue'),
             ];
         }
 
-        // Filtre label for UI feedback
-        $filterLabel = 'Tous';
-        if ($periode === 'month') $filterLabel = 'Ce mois';
-        elseif ($periode === 'quarter') $filterLabel = 'Ce trimestre';
-        elseif ($periode === 'year') $filterLabel = 'Cette année';
+        $activitiesData = array_map(
+            fn (Historique $h) => $this->serializeActivity($h),
+            $statsService->getRecentActivities($periode, $entiteId, 5)
+        );
 
-        return new JsonResponse([
+        $kpis = $statsService->getFilteredKPIs($periode, $entiteId);
+
+        return [
             'success' => true,
-            'filter_label' => $filterLabel,
+            'filter_label' => match ($periode) {
+                'month' => 'Ce mois',
+                'quarter' => 'Ce trimestre',
+                'year' => 'Cette année',
+                'all' => 'Tous',
+                default => 'Personnalisée',
+            },
             'kpis' => $kpis,
-            'charts' => $charts,
+            'period_info' => $kpis['period_from']
+                ? sprintf('Créées du %s au %s', $kpis['period_from'], $kpis['period_to'])
+                : 'Toutes les données (date de création)',
+            'charts' => $statsService->getFilteredChartsData($periode, $entiteId),
             'actions' => $actionsData,
             'echeances' => $echeancesData,
-        ]);
+            'activities' => $activitiesData,
+        ];
+    }
+
+    private function serializePriorityAction(Action $act): array
+    {
+        $statutCode = $act->getStatut()?->getCode();
+
+        if ($act->isEnRetard()) {
+            $statutDisplay = ['label' => 'En retard', 'class' => 'badge-soft-red'];
+        } elseif (in_array($statutCode, [Statut::CODE_BROUILLON, Statut::CODE_AFFECTEE])) {
+            $statutDisplay = ['label' => 'À démarrer', 'class' => 'badge-soft-gray'];
+        } elseif ($statutCode === Statut::CODE_A_VERIFIER) {
+            $statutDisplay = ['label' => 'À vérifier', 'class' => 'badge-soft-yellow'];
+        } elseif ($statutCode === Statut::CODE_EN_ATTENTE) {
+            $statutDisplay = ['label' => 'En attente', 'class' => 'badge-soft-gray'];
+        } else {
+            $statutDisplay = ['label' => 'En cours', 'class' => 'badge-soft-blue'];
+        }
+
+        $prioriteDisplay = match ($act->getPriorite()?->getCode()) {
+            'URGENTE' => ['label' => 'Urgente', 'class' => 'badge-soft-red'],
+            'HAUTE' => ['label' => 'Haute', 'class' => 'badge-soft-pink'],
+            'FAIBLE' => ['label' => 'Faible', 'class' => 'badge-soft-gray'],
+            default => ['label' => 'Normale', 'class' => 'badge-soft-gray'],
+        };
+
+        $instruction = $act->getInstruction();
+        $objet = $instruction?->getObjet() ?? '';
+
+        return [
+            'id' => $act->getId(),
+            'url' => $this->generateUrl('app_action_show', ['id' => $act->getId()]),
+            'instruction_url' => $instruction ? $this->generateUrl('app_instruction_show', ['id' => $instruction->getId()]) : null,
+            'libelle' => $act->getLibelle(),
+            'reference' => $act->getReference(),
+            'instruction_id' => $instruction?->getId(),
+            'instruction_reference' => $instruction?->getReference(),
+            'instruction_objet' => mb_substr($objet, 0, 32) . (mb_strlen($objet) > 32 ? '...' : ''),
+            'entite_code' => $act->getEntiteResponsable()?->getCode() ?? 'BCC',
+            'entite_nom' => mb_substr($act->getEntiteResponsable()?->getNom() ?? 'Direction Générale', 0, 24),
+            'date_echeance' => $act->getDateEcheance()?->format('d/m/Y') ?? '-',
+            'is_en_retard' => $act->isEnRetard(),
+            'statut' => $statutDisplay,
+            'priorite' => $prioriteDisplay,
+        ];
+    }
+
+    private function serializeActivity(Historique $h): array
+    {
+        $style = StatsService::getActivityStyle($h->getTypeEvenement()?->getCode());
+        $user = $h->getUtilisateur();
+
+        if ($h->getAction()) {
+            $subject = 'Action ' . $h->getAction()->getReference();
+            $url = $this->generateUrl('app_action_show', ['id' => $h->getAction()->getId()]);
+        } elseif ($h->getInstruction()) {
+            $subject = 'Instruction ' . $h->getInstruction()->getReference();
+            $url = $this->generateUrl('app_instruction_show', ['id' => $h->getInstruction()->getId()]);
+        } else {
+            $subject = '';
+            $url = null;
+        }
+
+        return [
+            'subject' => $subject,
+            'url' => $url,
+            'text' => $h->getDescription() ?: ($h->getTypeEvenement()?->getLibelle() ?? ''),
+            'actor' => $user ? $user->getNomComplet() . ($user->getEntite() ? ' (' . $user->getEntite()->getCode() . ')' : '') : null,
+            'time' => $this->formatRelativeTime($h->getCreatedAt()),
+            'icon' => $style['icon'],
+            'icon_class' => $style['class'],
+        ];
+    }
+
+    private function formatRelativeTime(?\DateTimeInterface $date): string
+    {
+        if (!$date) return '';
+
+        $seconds = (new \DateTime())->getTimestamp() - $date->getTimestamp();
+        if ($seconds < 60) return "À l'instant";
+        if ($seconds < 3600) return sprintf('Il y a %d min', intdiv($seconds, 60));
+        if ($seconds < 86400) {
+            $h = intdiv($seconds, 3600);
+            return sprintf('Il y a %d heure%s', $h, $h > 1 ? 's' : '');
+        }
+        $d = intdiv($seconds, 86400);
+        if ($d < 30) return sprintf('Il y a %d jour%s', $d, $d > 1 ? 's' : '');
+
+        return 'Le ' . $date->format('d/m/Y');
     }
 
     private function getShortMonthFr(?\DateTimeInterface $date): string

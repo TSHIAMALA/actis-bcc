@@ -14,6 +14,9 @@
             </div>
             <h1 class="dashboard-main-title">Tableau de bord</h1>
             <p class="dashboard-main-subtitle">Vue d'ensemble du suivi des Instructions et Actions</p>
+            <p class="dashboard-period-info" id="periodInfo" title="La période filtre les instructions et actions selon leur date de création dans ACTIS">
+                <i class="bi bi-info-circle"></i> <span id="periodInfoText">{{ dashboard.period_info }}</span>
+            </p>
         </div>
 
         <!-- Quick Filters Toolbar -->
@@ -23,14 +26,31 @@
                 <i class="bi bi-calendar3 filter-icon"></i>
                 <div class="filter-labels">
                     <span class="filter-caption">Période</span>
-                    <select class="filter-select-input" id="filterPeriode" onchange="applyFilters()">
+                    <select class="filter-select-input" id="filterPeriode" onchange="onPeriodeChange()">
                         <option value="all" selected>Tous</option>
                         <option value="month">Ce mois</option>
                         <option value="quarter">Ce trimestre</option>
                         <option value="year">Cette année</option>
+                        <option value="custom">Personnalisée…</option>
                     </select>
                 </div>
                 <i class="bi bi-chevron-down filter-arrow"></i>
+            </div>
+
+            <!-- Custom Period Range (visible si « Personnalisée ») -->
+            <div class="filter-custom-range" id="customRangeBox" hidden>
+                <label>
+                    <span class="filter-caption">Du</span>
+                    <input type="date" class="filter-date-input" id="filterDu" max="{{ 'now'|date('Y-m-d') }}">
+                </label>
+                <label>
+                    <span class="filter-caption">Au</span>
+                    <input type="date" class="filter-date-input" id="filterAu" value="{{ 'now'|date('Y-m-d') }}">
+                </label>
+                <button type="button" class="btn-apply-range" onclick="applyFilters()">
+                    <i class="bi bi-check2"></i> Appliquer
+                </button>
+                <span class="filter-range-error" id="customRangeError" hidden></span>
             </div>
 
             <!-- Entity Filter -->
@@ -72,68 +92,65 @@
     <div class="dashboard-dynamic-content" id="dashboardDynamicContainer">
 
     <!-- 4 Top KPI Metric Cards -->
-    <div class="kpi-quad-row">
+    <div class="kpi-quad-row kpi-five">
         <!-- 1. Instructions en cours -->
         <a href="{{ path('app_instruction_index', {'statut': 'EN_COURS'}) }}" class="kpi-metric-card">
             <div class="kpi-metric-icon-box icon-blue">
                 <i class="bi bi-file-earmark-text"></i>
             </div>
             <div class="kpi-metric-content">
-                <div class="kpi-metric-number" id="kpiEnCours">{{ kpis.en_cours > 0 ? kpis.en_cours : 58 }}</div>
+                <div class="kpi-metric-number" id="kpiEnCours">{{ dashboard.kpis.en_cours }}</div>
                 <div class="kpi-metric-label">Instructions en cours</div>
-                <div class="kpi-metric-trend trend-up">
-                    <i class="bi bi-arrow-up-right"></i>
-                    <span>+12%</span>
-                    <span class="trend-sub">sur la période précédente</span>
-                </div>
+                <div class="kpi-metric-trend" id="trendEnCours"></div>
             </div>
         </a>
 
-        <!-- 2. Actions en retard -->
+        <!-- 2. Total actions -->
+        <a href="{{ path('app_action_index') }}" class="kpi-metric-card">
+            <div class="kpi-metric-icon-box icon-indigo">
+                <i class="bi bi-list-check"></i>
+            </div>
+            <div class="kpi-metric-content">
+                <div class="kpi-metric-number" id="kpiTotalActions">{{ dashboard.kpis.total_actions }}</div>
+                <div class="kpi-metric-label">Total actions</div>
+                <div class="kpi-metric-detail" id="kpiTotalActionsDetail"></div>
+                <div class="kpi-metric-trend" id="trendTotalActions"></div>
+            </div>
+        </a>
+
+        <!-- 3. Actions en retard -->
         <a href="{{ path('app_action_index', {'retard': '1'}) }}" class="kpi-metric-card">
             <div class="kpi-metric-icon-box icon-red">
                 <i class="bi bi-exclamation-triangle"></i>
             </div>
             <div class="kpi-metric-content">
-                <div class="kpi-metric-number text-red" id="kpiRetard">{{ kpis.actions_en_retard > 0 ? kpis.actions_en_retard : 17 }}</div>
+                <div class="kpi-metric-number text-red" id="kpiRetard">{{ dashboard.kpis.actions_en_retard }}</div>
                 <div class="kpi-metric-label">Actions en retard</div>
-                <div class="kpi-metric-trend trend-danger">
-                    <i class="bi bi-arrow-up-right"></i>
-                    <span>+6%</span>
-                    <span class="trend-sub">sur la période précédente</span>
-                </div>
+                <div class="kpi-metric-trend" id="trendRetard"></div>
             </div>
         </a>
 
-        <!-- 3. Échéances cette semaine -->
+        <!-- 4. Échéances cette semaine -->
         <a href="{{ path('app_action_index') }}" class="kpi-metric-card">
             <div class="kpi-metric-icon-box icon-amber">
                 <i class="bi bi-calendar-event"></i>
             </div>
             <div class="kpi-metric-content">
-                <div class="kpi-metric-number" id="kpiEcheances">{{ upcomingEcheances|length > 0 ? upcomingEcheances|length : 24 }}</div>
+                <div class="kpi-metric-number" id="kpiEcheances">{{ dashboard.kpis.echeances_this_week }}</div>
                 <div class="kpi-metric-label">Échéances cette semaine</div>
-                <div class="kpi-metric-trend trend-green">
-                    <i class="bi bi-arrow-down-right"></i>
-                    <span>-18%</span>
-                    <span class="trend-sub">vs semaine précédente</span>
-                </div>
+                <div class="kpi-metric-trend" id="trendEcheances"></div>
             </div>
         </a>
 
-        <!-- 4. Taux d'exécution -->
+        <!-- 5. Taux d'exécution -->
         <div class="kpi-metric-card">
             <div class="kpi-metric-icon-box icon-green">
                 <i class="bi bi-bullseye"></i>
             </div>
             <div class="kpi-metric-content">
-                <div class="kpi-metric-number" id="kpiTaux">{{ kpis.taux_execution_actions > 0 ? kpis.taux_execution_actions ~ '%' : '72%' }}</div>
-                <div class="kpi-metric-label">Taux d'exécution</div>
-                <div class="kpi-metric-trend trend-up">
-                    <i class="bi bi-arrow-up-right"></i>
-                    <span>+9%</span>
-                    <span class="trend-sub">sur la période précédente</span>
-                </div>
+                <div class="kpi-metric-number" id="kpiTaux">{{ dashboard.kpis.taux_execution_actions }}%</div>
+                <div class="kpi-metric-label">Taux d'exécution des actions</div>
+                <div class="kpi-metric-trend" id="trendTaux"></div>
             </div>
         </div>
     </div>
@@ -153,36 +170,21 @@
                         <div class="donut-canvas-wrapper">
                             <canvas id="statutsDonutChart"></canvas>
                             <div class="donut-center-info">
-                                <span class="donut-center-val" id="donutTotalCount">{{ charts.total_instructions_count|default(102) }}</span>
+                                <span class="donut-center-val" id="donutTotalCount">{{ dashboard.charts.total_instructions_count }}</span>
                                 <span class="donut-center-lbl">Instructions<br>totales</span>
                             </div>
                         </div>
-                        <div class="donut-legend-custom" id="donutLegendCustom">
-                            {% for item in charts.statuts_detailed|default([
-                                {'libelle': 'En cours', 'total': 46, 'percent': 45, 'color': '#0A2540'},
-                                {'libelle': 'Réalisée', 'total': 26, 'percent': 25, 'color': '#E5A93C'},
-                                {'libelle': 'En retard', 'total': 17, 'percent': 17, 'color': '#E74C3C'},
-                                {'libelle': 'Suspendue', 'total': 8, 'percent': 8, 'color': '#38BDF8'},
-                                {'libelle': 'Annulée', 'total': 5, 'percent': 5, 'color': '#94A3B8'}
-                            ]) %}
-                                <div class="donut-legend-row">
-                                    <span class="legend-color-dot" style="background-color: {{ item.color }};"></span>
-                                    <span class="legend-text-label">{{ item.libelle }}</span>
-                                    <span class="legend-count-val">{{ item.total }}</span>
-                                    <span class="legend-pct-val">{{ item.percent }}%</span>
-                                </div>
-                            {% endfor %}
-                        </div>
+                        <div class="donut-legend-custom" id="donutLegendCustom"></div>
                     </div>
                 </div>
 
                 <!-- Chart 2: Évolution du taux d'exécution -->
                 <div class="bcc-card chart-card">
                     <div class="card-head-simple">
-                        <h3 class="card-block-title">Évolution du taux d'exécution</h3>
+                        <h3 class="card-block-title">Évolution du taux d'exécution <small class="text-muted fw-normal">(cumulé)</small></h3>
                     </div>
                     <div class="line-chart-wrapper">
-                        <div class="chart-peak-badge" id="chartPeakBadge">72%</div>
+                        <div class="chart-peak-badge" id="chartPeakBadge" title="Taux d'exécution actuel">{{ dashboard.charts.monthly_rates.current_rate }}%</div>
                         <canvas id="executionLineChart"></canvas>
                     </div>
                 </div>
@@ -209,137 +211,6 @@
                             </tr>
                         </thead>
                         <tbody id="priorityActionsTbody">
-                            {% if priorityActions|length > 0 %}
-                                {% for index, act in priorityActions|slice(0, 5) %}
-                                    <tr>
-                                        <td class="col-index">{{ index + 1 }}</td>
-                                        <td class="col-instruction">
-                                            {% if act.instruction %}
-                                                <a href="{{ path('app_instruction_show', {'id': act.instruction.id}) }}" class="inst-ref-link">
-                                                    {{ act.instruction.reference }}
-                                                </a>
-                                                <div class="inst-sub-title" title="{{ act.instruction.objet }}">
-                                                    {{ act.instruction.objet|u.truncate(32, '...') }}
-                                                </div>
-                                            {% else %}
-                                                <a href="{{ path('app_action_show', {'id': act.id}) }}" class="inst-ref-link">
-                                                    {{ act.reference }}
-                                                </a>
-                                                <div class="inst-sub-title">{{ act.libelle|u.truncate(32, '...') }}</div>
-                                            {% endif %}
-                                        </td>
-                                        <td class="col-entity">
-                                            <div class="entity-code-bold">{{ act.entiteResponsable ? act.entiteResponsable.code : 'BCC' }}</div>
-                                            <div class="entity-name-sub">{{ act.entiteResponsable ? act.entiteResponsable.nom|u.truncate(24, '...') : 'Direction Générale' }}</div>
-                                        </td>
-                                        <td class="col-date {% if act.isEnRetard %}text-danger font-bold{% endif %}">
-                                            {{ act.dateEcheance ? act.dateEcheance|date('d/m/Y') : '-' }}
-                                        </td>
-                                        <td class="col-status">
-                                            {% if act.isEnRetard %}
-                                                <span class="modern-badge badge-soft-red">En retard</span>
-                                            {% elseif act.statut and act.statut.code == 'EXECUTEE' %}
-                                                <span class="modern-badge badge-soft-green">Réalisée</span>
-                                            {% elseif act.statut and act.statut.code == 'AFFECTEE' %}
-                                                <span class="modern-badge badge-soft-gray">À démarrer</span>
-                                            {% else %}
-                                                <span class="modern-badge badge-soft-blue">En cours</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="col-priority">
-                                            {% if act.priorite and act.priorite.code == 'TRES_HAUTE' or act.priorite and act.priorite.code == 'HAUTE' %}
-                                                <span class="modern-badge badge-soft-pink">Haute</span>
-                                            {% elseif act.priorite and act.priorite.code == 'MOYENNE' %}
-                                                <span class="modern-badge badge-soft-yellow">Moyenne</span>
-                                            {% else %}
-                                                <span class="modern-badge badge-soft-gray">Normale</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="col-actions">
-                                            <a href="{{ path('app_action_show', {'id': act.id}) }}" class="btn-dots-menu" title="Voir les détails">
-                                                <i class="bi bi-three-dots"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <!-- Realistic Sample rows matching mock when database has no actions -->
-                                <tr>
-                                    <td class="col-index">1</td>
-                                    <td class="col-instruction">
-                                        <a href="{{ path('app_instruction_index') }}" class="inst-ref-link">INS-2026-058</a>
-                                        <div class="inst-sub-title">Mise en place du cadre de gouverna...</div>
-                                    </td>
-                                    <td class="col-entity">
-                                        <div class="entity-code-bold">DGAS</div>
-                                        <div class="entity-name-sub">Administration & Support</div>
-                                    </td>
-                                    <td class="col-date text-danger font-bold">24/09/2026</td>
-                                    <td class="col-status"><span class="modern-badge badge-soft-red">En retard</span></td>
-                                    <td class="col-priority"><span class="modern-badge badge-soft-pink">Haute</span></td>
-                                    <td class="col-actions"><button class="btn-dots-menu"><i class="bi bi-three-dots"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="col-index">2</td>
-                                    <td class="col-instruction">
-                                        <a href="{{ path('app_instruction_index') }}" class="inst-ref-link">INS-2026-031</a>
-                                        <div class="inst-sub-title">Digitalisation des processus internes</div>
-                                    </td>
-                                    <td class="col-entity">
-                                        <div class="entity-code-bold">DGSI</div>
-                                        <div class="entity-name-sub">Systèmes d'Information</div>
-                                    </td>
-                                    <td class="col-date">26/09/2026</td>
-                                    <td class="col-status"><span class="modern-badge badge-soft-blue">En cours</span></td>
-                                    <td class="col-priority"><span class="modern-badge badge-soft-pink">Haute</span></td>
-                                    <td class="col-actions"><button class="btn-dots-menu"><i class="bi bi-three-dots"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="col-index">3</td>
-                                    <td class="col-instruction">
-                                        <a href="{{ path('app_instruction_index') }}" class="inst-ref-link">INS-2026-044</a>
-                                        <div class="inst-sub-title">Révision de la cartographie des risq...</div>
-                                    </td>
-                                    <td class="col-entity">
-                                        <div class="entity-code-bold">DGSR</div>
-                                        <div class="entity-name-sub">Supervision & Régulation</div>
-                                    </td>
-                                    <td class="col-date">28/09/2026</td>
-                                    <td class="col-status"><span class="modern-badge badge-soft-blue">En cours</span></td>
-                                    <td class="col-priority"><span class="modern-badge badge-soft-yellow">Moyenne</span></td>
-                                    <td class="col-actions"><button class="btn-dots-menu"><i class="bi bi-three-dots"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="col-index">4</td>
-                                    <td class="col-instruction">
-                                        <a href="{{ path('app_instruction_index') }}" class="inst-ref-link">INS-2026-012</a>
-                                        <div class="inst-sub-title">Plan de communication institutionn...</div>
-                                    </td>
-                                    <td class="col-entity">
-                                        <div class="entity-code-bold">DGC</div>
-                                        <div class="entity-name-sub">Communication</div>
-                                    </td>
-                                    <td class="col-date">30/09/2026</td>
-                                    <td class="col-status"><span class="modern-badge badge-soft-blue">En cours</span></td>
-                                    <td class="col-priority"><span class="modern-badge badge-soft-pink">Haute</span></td>
-                                    <td class="col-actions"><button class="btn-dots-menu"><i class="bi bi-three-dots"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td class="col-index">5</td>
-                                    <td class="col-instruction">
-                                        <a href="{{ path('app_instruction_index') }}" class="inst-ref-link">INS-2026-067</a>
-                                        <div class="inst-sub-title">Renforcement du dispositif de con...</div>
-                                    </td>
-                                    <td class="col-entity">
-                                        <div class="entity-code-bold">DGAIF</div>
-                                        <div class="entity-name-sub">Analyse & Recherche</div>
-                                    </td>
-                                    <td class="col-date">02/10/2026</td>
-                                    <td class="col-status"><span class="modern-badge badge-soft-gray">À démarrer</span></td>
-                                    <td class="col-priority"><span class="modern-badge badge-soft-yellow">Moyenne</span></td>
-                                    <td class="col-actions"><button class="btn-dots-menu"><i class="bi bi-three-dots"></i></button></td>
-                                </tr>
-                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -356,80 +227,6 @@
                 </div>
 
                 <div class="agenda-items-list" id="upcomingAgendaList">
-                    <!-- Item 1 -->
-                    <div class="agenda-item">
-                        <div class="calendar-date-box date-red">
-                            <span class="date-day">24</span>
-                            <span class="date-month">Sept.</span>
-                        </div>
-                        <div class="agenda-meta">
-                            <h4 class="agenda-task-title">Finaliser le rapport d'analyse</h4>
-                            <span class="agenda-entity-code">DGSE</span>
-                        </div>
-                        <div class="agenda-status-pill">
-                            <span class="modern-badge badge-soft-red">En retard</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 2 -->
-                    <div class="agenda-item">
-                        <div class="calendar-date-box date-amber">
-                            <span class="date-day">26</span>
-                            <span class="date-month">Sept.</span>
-                        </div>
-                        <div class="agenda-meta">
-                            <h4 class="agenda-task-title">Transmettre projet de texte</h4>
-                            <span class="agenda-entity-code">DGJ</span>
-                        </div>
-                        <div class="agenda-status-pill">
-                            <span class="modern-badge badge-soft-yellow">Échéance proche</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 3 -->
-                    <div class="agenda-item">
-                        <div class="calendar-date-box date-blue">
-                            <span class="date-day">28</span>
-                            <span class="date-month">Sept.</span>
-                        </div>
-                        <div class="agenda-meta">
-                            <h4 class="agenda-task-title">Réunion de validation</h4>
-                            <span class="agenda-entity-code">DGAS</span>
-                        </div>
-                        <div class="agenda-status-pill">
-                            <span class="modern-badge badge-soft-blue">À venir</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 4 -->
-                    <div class="agenda-item">
-                        <div class="calendar-date-box date-blue">
-                            <span class="date-day">30</span>
-                            <span class="date-month">Sept.</span>
-                        </div>
-                        <div class="agenda-meta">
-                            <h4 class="agenda-task-title">Soumettre le plan d'action</h4>
-                            <span class="agenda-entity-code">DGAIF</span>
-                        </div>
-                        <div class="agenda-status-pill">
-                            <span class="modern-badge badge-soft-blue">À venir</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 5 -->
-                    <div class="agenda-item">
-                        <div class="calendar-date-box date-blue">
-                            <span class="date-day">02</span>
-                            <span class="date-month">Oct.</span>
-                        </div>
-                        <div class="agenda-meta">
-                            <h4 class="agenda-task-title">Retour sur recommandations</h4>
-                            <span class="agenda-entity-code">DGSF</span>
-                        </div>
-                        <div class="agenda-status-pill">
-                            <span class="modern-badge badge-soft-blue">À venir</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -440,62 +237,7 @@
                     <a href="{{ path('app_instruction_index') }}" class="link-see-all">Voir tout <i class="bi bi-arrow-right"></i></a>
                 </div>
 
-                <div class="activity-timeline-feed">
-                    <!-- Item 1: Instruction updated -->
-                    <div class="timeline-feed-item">
-                        <div class="timeline-icon-circle disc-blue">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <p class="timeline-text">
-                                <strong>Instruction INS-2026-058</strong> mise à jour
-                            </p>
-                            <div class="timeline-actor">par Marie Kabila (DGAS)</div>
-                            <div class="timeline-time">Il y a 1 heure</div>
-                        </div>
-                    </div>
-
-                    <!-- Item 2: Action done -->
-                    <div class="timeline-feed-item">
-                        <div class="timeline-icon-circle disc-green">
-                            <i class="bi bi-check2"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <p class="timeline-text">
-                                <strong>Action ACT-2026-145</strong> marquée comme réalisée
-                            </p>
-                            <div class="timeline-actor">par Jean Mbuyi (DGSE)</div>
-                            <div class="timeline-time">Il y a 3 heures</div>
-                        </div>
-                    </div>
-
-                    <!-- Item 3: Comment -->
-                    <div class="timeline-feed-item">
-                        <div class="timeline-icon-circle disc-gray">
-                            <i class="bi bi-chat-left-text"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <p class="timeline-text">
-                                Nouveau commentaire sur <strong>INS-2026-031</strong>
-                            </p>
-                            <div class="timeline-actor">par Patrick Lemba (DGJ)</div>
-                            <div class="timeline-time">Il y a 5 heures</div>
-                        </div>
-                    </div>
-
-                    <!-- Item 4: Relance sent -->
-                    <div class="timeline-feed-item">
-                        <div class="timeline-icon-circle disc-indigo">
-                            <i class="bi bi-send"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <p class="timeline-text">
-                                Relance envoyée pour <strong>ACT-2026-098</strong>
-                            </p>
-                            <div class="timeline-actor">à DGAF</div>
-                            <div class="timeline-time">Il y a 1 jour</div>
-                        </div>
-                    </div>
+                <div class="activity-timeline-feed" id="recentActivitiesFeed">
                 </div>
             </div>
         </div>
@@ -509,14 +251,24 @@
 let statutsDonutChartInstance = null;
 let executionLineChartInstance = null;
 
+const INITIAL_DASHBOARD = {{ dashboard|json_encode|raw }};
+
 function escapeHtml(text) {
-    if (!text) return '';
+    if (text === null || text === undefined) return '';
     return String(text)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function emptyState(icon, message, colspan) {
+    const inner = `<i class="bi ${icon}" style="font-size: 1.8rem; color: #CBD5E1; display: block; margin-bottom: 6px;"></i>${escapeHtml(message)}`;
+    if (colspan) {
+        return `<tr><td colspan="${colspan}" style="text-align: center; padding: 32px 16px; color: #64748B;">${inner}</td></tr>`;
+    }
+    return `<div style="text-align: center; padding: 24px 12px; color: #64748B; font-size: 0.85rem;">${inner}</div>`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -526,10 +278,10 @@ document.addEventListener('DOMContentLoaded', function() {
         statutsDonutChartInstance = new Chart(donutCtx, {
             type: 'doughnut',
             data: {
-                labels: {{ charts.statuts.labels|json_encode|raw }},
+                labels: [],
                 datasets: [{
-                    data: {{ charts.statuts.data|json_encode|raw }},
-                    backgroundColor: {{ charts.statuts.colors|json_encode|raw }},
+                    data: [],
+                    backgroundColor: [],
                     borderWidth: 3,
                     borderColor: '#ffffff',
                     hoverOffset: 4,
@@ -558,12 +310,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 2. Line Chart: Évolution du taux d'exécution ──
+    // ── 2. Line Chart: Évolution du taux d'exécution (cumulé, année en cours) ──
     const lineCtx = document.getElementById('executionLineChart');
     if (lineCtx) {
-        const labels = {{ charts.monthly_rates.labels|json_encode|raw }};
-        const dataValues = {{ charts.monthly_rates.data|json_encode|raw }};
-
         const gradient = lineCtx.getContext('2d').createLinearGradient(0, 0, 0, 220);
         gradient.addColorStop(0, 'rgba(13, 71, 161, 0.22)');
         gradient.addColorStop(1, 'rgba(13, 71, 161, 0.01)');
@@ -571,16 +320,18 @@ document.addEventListener('DOMContentLoaded', function() {
         executionLineChartInstance = new Chart(lineCtx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: [],
                 datasets: [{
                     label: "Taux d'exécution",
-                    data: dataValues,
+                    data: [],
                     borderColor: '#0A2540',
                     borderWidth: 2.5,
                     backgroundColor: gradient,
                     fill: true,
                     tension: 0.35,
-                    pointRadius: [3, 3, 3, 3, 3, 3, 3, 3, 5],
+                    spanGaps: false,
+                    // Point du mois courant mis en évidence
+                    pointRadius: (ctx) => ctx.dataIndex === ctx.dataset.data.length - 1 ? 5 : 3,
                     pointBackgroundColor: '#0A2540',
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 2,
@@ -639,13 +390,220 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    renderDashboard(INITIAL_DASHBOARD);
 });
+
+function renderTrend(elementId, trend, subLabel) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    // Pas de période de comparaison (filtre « Tous ») : aucune tendance affichée plutôt qu'une valeur inventée
+    if (!trend || !subLabel) {
+        el.className = 'kpi-metric-trend';
+        el.innerHTML = '';
+        return;
+    }
+
+    el.className = 'kpi-metric-trend ' + trend.css_class;
+    el.innerHTML = `
+        <i class="bi ${escapeHtml(trend.icon)}"></i>
+        <span>${escapeHtml(trend.label)}</span>
+        <span class="trend-sub">${escapeHtml(subLabel)}</span>
+    `;
+}
+
+function renderDashboard(data) {
+    if (!data || !data.success) return;
+
+    document.getElementById('periodInfoText').textContent = data.period_info;
+
+    // 1. KPI Cards + tendances
+    const kpis = data.kpis;
+    document.getElementById('kpiEnCours').textContent = kpis.en_cours;
+    document.getElementById('kpiTotalActions').textContent = kpis.total_actions;
+    document.getElementById('kpiTotalActionsDetail').textContent =
+        `${kpis.actions_executees} exécutée${kpis.actions_executees > 1 ? 's' : ''} · ${kpis.total_actions - kpis.actions_executees} non terminée${(kpis.total_actions - kpis.actions_executees) > 1 ? 's' : ''}`;
+    document.getElementById('kpiRetard').textContent = kpis.actions_en_retard;
+    document.getElementById('kpiEcheances').textContent = kpis.echeances_this_week;
+    document.getElementById('kpiTaux').textContent = (kpis.taux_execution_actions || 0) + '%';
+
+    renderTrend('trendEnCours', kpis.trends.en_cours, kpis.trend_label);
+    renderTrend('trendTotalActions', kpis.trends.total_actions, kpis.trend_label);
+    renderTrend('trendRetard', kpis.trends.actions_en_retard, kpis.trend_label);
+    renderTrend('trendEcheances', kpis.trends.echeances, 'vs semaine précédente');
+    renderTrend('trendTaux', kpis.trends.taux_execution, kpis.trend_label);
+
+    // 2. Donut Chart & Légende
+    const charts = data.charts;
+    if (statutsDonutChartInstance) {
+        statutsDonutChartInstance.data.labels = charts.statuts.labels;
+        statutsDonutChartInstance.data.datasets[0].data = charts.statuts.data;
+        statutsDonutChartInstance.data.datasets[0].backgroundColor = charts.statuts.colors;
+        statutsDonutChartInstance.update();
+    }
+
+    document.getElementById('donutTotalCount').textContent = charts.total_instructions_count;
+
+    const donutLegendCustom = document.getElementById('donutLegendCustom');
+    if (charts.statuts_detailed.length > 0) {
+        donutLegendCustom.innerHTML = charts.statuts_detailed.map(item => `
+            <div class="donut-legend-row">
+                <span class="legend-color-dot" style="background-color: ${escapeHtml(item.color)};"></span>
+                <span class="legend-text-label">${escapeHtml(item.libelle)}</span>
+                <span class="legend-count-val">${item.total}</span>
+                <span class="legend-pct-val">${item.percent}%</span>
+            </div>
+        `).join('');
+    } else {
+        donutLegendCustom.innerHTML = emptyState('bi-pie-chart', 'Aucune instruction pour cette sélection');
+    }
+
+    // 3. Line Chart (série complète) & badge du taux actuel
+    if (executionLineChartInstance) {
+        executionLineChartInstance.data.labels = charts.monthly_rates.labels;
+        executionLineChartInstance.data.datasets[0].data = charts.monthly_rates.data;
+        executionLineChartInstance.update();
+    }
+    document.getElementById('chartPeakBadge').textContent = Math.round(charts.monthly_rates.current_rate || 0) + '%';
+
+    // 4. Tableau des actions prioritaires
+    const tbody = document.getElementById('priorityActionsTbody');
+    if (data.actions.length > 0) {
+        tbody.innerHTML = data.actions.map((act, index) => {
+            const instUrl = act.instruction_url || act.url;
+            const refText = act.instruction_reference || act.reference;
+            const titleText = act.instruction_objet || act.libelle;
+            const dateClass = act.is_en_retard ? 'text-danger font-bold' : '';
+
+            return `
+                <tr>
+                    <td class="col-index">${index + 1}</td>
+                    <td class="col-instruction">
+                        <a href="${instUrl}" class="inst-ref-link">${escapeHtml(refText)}</a>
+                        <div class="inst-sub-title" title="${escapeHtml(act.libelle)}">
+                            ${escapeHtml(titleText)}
+                        </div>
+                    </td>
+                    <td class="col-entity">
+                        <div class="entity-code-bold">${escapeHtml(act.entite_code)}</div>
+                        <div class="entity-name-sub">${escapeHtml(act.entite_nom)}</div>
+                    </td>
+                    <td class="col-date ${dateClass}">
+                        ${escapeHtml(act.date_echeance)}
+                    </td>
+                    <td class="col-status">
+                        <span class="modern-badge ${escapeHtml(act.statut.class)}">${escapeHtml(act.statut.label)}</span>
+                    </td>
+                    <td class="col-priority">
+                        <span class="modern-badge ${escapeHtml(act.priorite.class)}">${escapeHtml(act.priorite.label)}</span>
+                    </td>
+                    <td class="col-actions">
+                        <a href="${escapeHtml(act.url)}" class="btn-dots-menu" title="Voir les détails">
+                            <i class="bi bi-three-dots"></i>
+                        </a>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } else {
+        tbody.innerHTML = emptyState('bi-inbox', 'Aucune action en cours pour ces filtres', 7);
+    }
+
+    // 5. Liste À suivre (échéances)
+    const upcomingAgendaList = document.getElementById('upcomingAgendaList');
+    if (data.echeances.length > 0) {
+        upcomingAgendaList.innerHTML = data.echeances.map(ech => `
+            <a href="${escapeHtml(ech.url)}" class="agenda-item" style="text-decoration: none; color: inherit;">
+                <div class="calendar-date-box ${escapeHtml(ech.date_class)}">
+                    <span class="date-day">${escapeHtml(ech.date_day)}</span>
+                    <span class="date-month">${escapeHtml(ech.date_month)}</span>
+                </div>
+                <div class="agenda-meta">
+                    <h4 class="agenda-task-title" title="${escapeHtml(ech.libelle)}">${escapeHtml(ech.libelle)}</h4>
+                    <span class="agenda-entity-code">${escapeHtml(ech.entite_code)}</span>
+                </div>
+                <div class="agenda-status-pill">
+                    <span class="modern-badge ${escapeHtml(ech.status_class)}">${escapeHtml(ech.status_label)}</span>
+                </div>
+            </a>
+        `).join('');
+    } else {
+        upcomingAgendaList.innerHTML = emptyState('bi-calendar-check', 'Aucune échéance à venir pour cette sélection');
+    }
+
+    // 6. Activités récentes (journal historique)
+    const feed = document.getElementById('recentActivitiesFeed');
+    if (data.activities.length > 0) {
+        feed.innerHTML = data.activities.map(act => {
+            let subject = '';
+            if (act.subject) {
+                const strong = `<strong>${escapeHtml(act.subject)}</strong>`;
+                subject = (act.url ? `<a href="${escapeHtml(act.url)}">${strong}</a>` : strong) + ' — ';
+            }
+            return `
+                <div class="timeline-feed-item">
+                    <div class="timeline-icon-circle ${escapeHtml(act.icon_class)}">
+                        <i class="bi ${escapeHtml(act.icon)}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <p class="timeline-text">${subject}${escapeHtml(act.text)}</p>
+                        ${act.actor ? `<div class="timeline-actor">par ${escapeHtml(act.actor)}</div>` : ''}
+                        <div class="timeline-time">${escapeHtml(act.time)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        feed.innerHTML = emptyState('bi-clock-history', 'Aucune activité récente pour cette sélection');
+    }
+}
+
+function showRangeError(message) {
+    const el = document.getElementById('customRangeError');
+    el.textContent = message || '';
+    el.hidden = !message;
+}
+
+function onPeriodeChange() {
+    const isCustom = document.getElementById('filterPeriode').value === 'custom';
+    document.getElementById('customRangeBox').hidden = !isCustom;
+    showRangeError(null);
+
+    if (isCustom) {
+        // On attend que l'utilisateur choisisse ses dates puis clique « Appliquer »
+        document.getElementById('filterDu').focus();
+        return;
+    }
+    applyFilters();
+}
 
 function applyFilters() {
     const entiteSelect = document.getElementById('filterEntite');
     const periodeSelect = document.getElementById('filterPeriode');
     const entite = entiteSelect ? entiteSelect.value : '';
     const periode = periodeSelect ? periodeSelect.value : 'all';
+
+    const params = new URLSearchParams();
+    if (periode === 'custom') {
+        const du = document.getElementById('filterDu').value;
+        const au = document.getElementById('filterAu').value;
+        if (!du || !au) {
+            showRangeError('Choisissez une date de début et de fin.');
+            return;
+        }
+        if (du > au) {
+            showRangeError('La date de début doit précéder la date de fin.');
+            return;
+        }
+        showRangeError(null);
+        params.append('periode', 'custom');
+        params.append('du', du);
+        params.append('au', au);
+    } else if (periode && periode !== 'all') {
+        params.append('periode', periode);
+    }
+    if (entite) params.append('entite_id', entite);
 
     // Bouton de réinitialisation
     const btnReset = document.getElementById('btnResetFilters');
@@ -660,167 +618,22 @@ function applyFilters() {
     if (dynamicContainer) dynamicContainer.classList.add('is-loading');
 
     // Requête AJAX
-    const params = new URLSearchParams();
-    if (periode && periode !== 'all') params.append('periode', periode);
-    if (entite) params.append('entite_id', entite);
-
-    fetch('/api/dashboard?' + params.toString(), {
+    fetch('{{ path('app_dashboard_api') }}?' + params.toString(), {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
     })
-    .then(response => {
+    .then(response => response.json().then(data => {
         if (!response.ok) {
-            throw new Error('Erreur HTTP ' + response.status);
+            throw new Error(data.message || ('Erreur HTTP ' + response.status));
         }
-        return response.json();
-    })
-    .then(data => {
-        if (!data.success) return;
-
-        // 1. Mise à jour des 4 KPI Cards
-        const kpiEnCours = document.getElementById('kpiEnCours');
-        const kpiRetard = document.getElementById('kpiRetard');
-        const kpiEcheances = document.getElementById('kpiEcheances');
-        const kpiTaux = document.getElementById('kpiTaux');
-
-        if (kpiEnCours) kpiEnCours.textContent = data.kpis.en_cours;
-        if (kpiRetard) kpiRetard.textContent = data.kpis.actions_en_retard;
-        if (kpiEcheances) kpiEcheances.textContent = data.echeances.length;
-        if (kpiTaux) kpiTaux.textContent = (data.kpis.taux_execution_actions || 0) + '%';
-
-        // 2. Mise à jour Donut Chart & Légende
-        if (statutsDonutChartInstance && data.charts && data.charts.statuts) {
-            statutsDonutChartInstance.data.labels = data.charts.statuts.labels;
-            statutsDonutChartInstance.data.datasets[0].data = data.charts.statuts.data;
-            statutsDonutChartInstance.data.datasets[0].backgroundColor = data.charts.statuts.colors;
-            statutsDonutChartInstance.update();
-        }
-
-        const donutTotalCount = document.getElementById('donutTotalCount');
-        if (donutTotalCount && data.charts) {
-            donutTotalCount.textContent = data.charts.total_instructions_count;
-        }
-
-        const donutLegendCustom = document.getElementById('donutLegendCustom');
-        if (donutLegendCustom && data.charts && data.charts.statuts_detailed) {
-            let legendHtml = '';
-            data.charts.statuts_detailed.forEach(item => {
-                legendHtml += `
-                    <div class="donut-legend-row">
-                        <span class="legend-color-dot" style="background-color: ${escapeHtml(item.color)};"></span>
-                        <span class="legend-text-label">${escapeHtml(item.libelle)}</span>
-                        <span class="legend-count-val">${item.total}</span>
-                        <span class="legend-pct-val">${item.percent}%</span>
-                    </div>
-                `;
-            });
-            donutLegendCustom.innerHTML = legendHtml;
-        }
-
-        // 3. Mise à jour Line Chart & Badge de crête
-        if (executionLineChartInstance && data.charts && data.charts.monthly_rates) {
-            const currentRate = Math.round(data.charts.monthly_rates.current_rate || 0);
-            const dataset = executionLineChartInstance.data.datasets[0];
-            dataset.data[dataset.data.length - 1] = currentRate;
-            executionLineChartInstance.update();
-
-            const peakBadge = document.getElementById('chartPeakBadge');
-            if (peakBadge) {
-                peakBadge.textContent = currentRate + '%';
-            }
-        }
-
-        // 4. Mise à jour du tableau des actions prioritaires
-        const tbody = document.getElementById('priorityActionsTbody');
-        if (tbody) {
-            if (data.actions && data.actions.length > 0) {
-                let rowsHtml = '';
-                data.actions.forEach((act, index) => {
-                    const instUrl = act.instruction_id ? `/instruction/${act.instruction_id}` : `/action/${act.id}`;
-                    const refText = act.instruction_reference || act.reference;
-                    const titleText = act.instruction_objet || act.libelle;
-                    const dateClass = act.is_en_retard ? 'text-danger font-bold' : '';
-
-                    rowsHtml += `
-                        <tr>
-                            <td class="col-index">${index + 1}</td>
-                            <td class="col-instruction">
-                                <a href="${instUrl}" class="inst-ref-link">${escapeHtml(refText)}</a>
-                                <div class="inst-sub-title" title="${escapeHtml(titleText)}">
-                                    ${escapeHtml(titleText)}
-                                </div>
-                            </td>
-                            <td class="col-entity">
-                                <div class="entity-code-bold">${escapeHtml(act.entite_code)}</div>
-                                <div class="entity-name-sub">${escapeHtml(act.entite_nom)}</div>
-                            </td>
-                            <td class="col-date ${dateClass}">
-                                ${escapeHtml(act.date_echeance)}
-                            </td>
-                            <td class="col-status">
-                                <span class="modern-badge ${escapeHtml(act.statut.class)}">${escapeHtml(act.statut.label)}</span>
-                            </td>
-                            <td class="col-priority">
-                                <span class="modern-badge ${escapeHtml(act.priorite.class)}">${escapeHtml(act.priorite.label)}</span>
-                            </td>
-                            <td class="col-actions">
-                                <a href="/action/${act.id}" class="btn-dots-menu" title="Voir les détails">
-                                    <i class="bi bi-three-dots"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = rowsHtml;
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 32px 16px; color: #64748B;">
-                            <i class="bi bi-inbox" style="font-size: 2rem; color: #CBD5E1; display: block; margin-bottom: 8px;"></i>
-                            Aucune action prioritaire trouvée pour ces filtres
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-
-        // 5. Mise à jour de la liste À suivre (Échéances)
-        const upcomingAgendaList = document.getElementById('upcomingAgendaList');
-        if (upcomingAgendaList) {
-            if (data.echeances && data.echeances.length > 0) {
-                let echeancesHtml = '';
-                data.echeances.forEach(ech => {
-                    echeancesHtml += `
-                        <div class="agenda-item">
-                            <div class="calendar-date-box ${escapeHtml(ech.date_class)}">
-                                <span class="date-day">${escapeHtml(ech.date_day)}</span>
-                                <span class="date-month">${escapeHtml(ech.date_month)}</span>
-                            </div>
-                            <div class="agenda-meta">
-                                <h4 class="agenda-task-title">${escapeHtml(ech.libelle)}</h4>
-                                <span class="agenda-entity-code">${escapeHtml(ech.entite_code)}</span>
-                            </div>
-                            <div class="agenda-status-pill">
-                                <span class="modern-badge ${escapeHtml(ech.status_class)}">${escapeHtml(ech.status_label)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                upcomingAgendaList.innerHTML = echeancesHtml;
-            } else {
-                upcomingAgendaList.innerHTML = `
-                    <div style="text-align: center; padding: 24px 12px; color: #64748B; font-size: 0.85rem;">
-                        <i class="bi bi-calendar-check" style="font-size: 1.8rem; color: #CBD5E1; display: block; margin-bottom: 6px;"></i>
-                        Aucune échéance à venir pour cette sélection
-                    </div>
-                `;
-            }
-        }
-    })
+        return data;
+    }))
+    .then(renderDashboard)
     .catch(err => {
         console.error('Erreur lors du filtrage dynamique:', err);
+        if (periode === 'custom') showRangeError(err.message);
     })
     .finally(() => {
         if (loadingBadge) loadingBadge.style.display = 'none';
@@ -833,7 +646,10 @@ function resetFilters() {
     const filterEntite = document.getElementById('filterEntite');
     if (filterPeriode) filterPeriode.value = 'all';
     if (filterEntite) filterEntite.value = '';
+    document.getElementById('customRangeBox').hidden = true;
+    showRangeError(null);
     applyFilters();
 }
 </script>
 {% endblock %}
+

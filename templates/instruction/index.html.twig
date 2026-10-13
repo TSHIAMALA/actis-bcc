@@ -114,6 +114,12 @@
                                 <a href="{{ path('app_instruction_show', {'id': inst.id}) }}" style="font-weight: 700; color: var(--bcc-navy-light);">
                                     {{ inst.reference }}
                                 </a>
+                                {% if inst.hasDocument %}
+                                    <a href="{{ path('app_instruction_document', {'id': inst.id}) }}" target="_blank" rel="noopener" title="Voir le document officiel (PDF)" style="color: #DC2626; margin-left: 4px;"><i class="bi bi-file-earmark-pdf-fill"></i></a>
+                                {% endif %}
+                                {% if inst.lienPortail %}
+                                    <a href="{{ inst.lienPortail }}" target="_blank" rel="noopener noreferrer" title="Voir sur le portail BCC" style="margin-left: 2px;"><i class="bi bi-box-arrow-up-right"></i></a>
+                                {% endif %}
                                 {% if inst.isDeleted %}
                                     <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;">Archivée</span>
                                 {% endif %}

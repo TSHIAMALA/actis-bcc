@@ -10,11 +10,17 @@ use App\Entity\TypeInstruction;
 use App\Entity\Utilisateur;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Url;
 
 class InstructionType extends AbstractType
 {
@@ -78,13 +84,47 @@ class InstructionType extends AbstractType
                 'label' => 'Contenu synthétique / Description détaillée',
                 'attr' => ['rows' => 4, 'placeholder' => 'Détails, contexte, orientations spécifiques...'],
                 'required' => false,
+            ])
+            ->add('documentPdf', FileType::class, [
+                'label' => 'Document officiel (PDF)',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['accept' => 'application/pdf,.pdf'],
+                'constraints' => [
+                    new File([
+                        'maxSize' => '20M',
+                        'mimeTypes' => ['application/pdf', 'application/x-pdf'],
+                        'mimeTypesMessage' => 'Le document officiel doit être un fichier PDF.',
+                        'maxSizeMessage' => 'Le PDF ne doit pas dépasser {{ limit }} {{ suffix }}.',
+                    ]),
+                ],
+            ])
+            ->add('lienPortail', UrlType::class, [
+                'label' => 'Lien sur le portail BCC',
+                'required' => false,
+                'default_protocol' => 'https',
+                'attr' => ['placeholder' => 'Coller ici l\'adresse de la publication sur le portail BCC'],
+                'constraints' => [
+                    new Url(['message' => 'Le lien du portail n\'est pas une adresse web valide.', 'requireTld' => false]),
+                    new Length(['max' => 500]),
+                ],
             ]);
+
+        if ($options['is_edit']) {
+            $builder->add('supprimerDocument', CheckboxType::class, [
+                'label' => 'Supprimer le document actuel',
+                'mapped' => false,
+                'required' => false,
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Instruction::class,
+            'is_edit' => false,
         ]);
+        $resolver->setAllowedTypes('is_edit', 'bool');
     }
 }
