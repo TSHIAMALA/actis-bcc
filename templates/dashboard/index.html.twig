@@ -60,9 +60,8 @@
                     <span class="filter-caption">Entité</span>
                     <select class="filter-select-input" id="filterEntite" onchange="applyFilters()">
                         <option value="" selected>Toutes les entités</option>
-                        {% for ent in allEntites %}
-                            <option value="{{ ent.id }}">{{ ent.code }} - {{ ent.nom }}</option>
-                        {% endfor %}
+                        {% import '_macros/entites.html.twig' as entites_ui %}
+                        {{ entites_ui.options(allEntites) }}
                     </select>
                 </div>
                 <i class="bi bi-chevron-down filter-arrow"></i>

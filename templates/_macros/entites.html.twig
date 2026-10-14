@@ -1,0 +1,20 @@
+{#
+    Options d'une liste d'entités, groupées par Direction Générale (<optgroup>).
+    `entites` doit être trié par DG : EntiteRepository::findActivesGroupees().
+
+    Usage :
+        {% import '_macros/entites.html.twig' as entites_ui %}
+        <select ...>{{ entites_ui.options(entites, filters.entite) }}</select>
+#}
+{% macro options(entites, selected = null, exclude_id = null) %}
+    {% set groupe = null %}
+    {% for ent in entites|filter(e => e.id != exclude_id) %}
+        {% if ent.groupeDirectionGenerale != groupe %}
+            {% if groupe is not null %}</optgroup>{% endif %}
+            {% set groupe = ent.groupeDirectionGenerale %}
+            <optgroup label="{{ groupe }}">
+        {% endif %}
+        <option value="{{ ent.id }}" {% if selected is not null and selected ~ '' == ent.id ~ '' %}selected{% endif %}>{{ ent.code }} - {{ ent.nom }}</option>
+    {% endfor %}
+    {% if groupe is not null %}</optgroup>{% endif %}
+{% endmacro %}

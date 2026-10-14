@@ -49,7 +49,7 @@ class ActionController extends AbstractController
         return $this->render('action/index.html.twig', [
             'actions' => $actions,
             'statuts' => $statutRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']),
-            'entites' => $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']),
+            'entites' => $entiteRepo->findActivesGroupees(),
             'utilisateurs' => $userRepo->findBy(['actif' => true], ['nom' => 'ASC']),
             'filters' => $filters,
         ]);

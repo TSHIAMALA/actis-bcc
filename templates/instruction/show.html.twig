@@ -547,11 +547,8 @@
             <div class="form-group">
                 <label class="form-label">Entité / Direction</label>
                 <select name="entite_id" class="form-select" required>
-                    {% for ent in allEntites %}
-                        {% if ent.id != instruction.entitePilote.id %}
-                            <option value="{{ ent.id }}">{{ ent.code }} - {{ ent.nom }}</option>
-                        {% endif %}
-                    {% endfor %}
+                    {% import '_macros/entites.html.twig' as entites_ui %}
+                    {{ entites_ui.options(allEntites, null, instruction.entitePilote.id) }}
                 </select>
             </div>
             <div class="form-group">
@@ -756,7 +753,7 @@
     // Références globales pour les entités et priorités
     const ALL_ENTITES = [
         {% for ent in allEntites %}
-            { id: {{ ent.id }}, code: {{ ent.code|json_encode|raw }}, nom: {{ ent.nom|json_encode|raw }} },
+            { id: {{ ent.id }}, code: {{ ent.code|json_encode|raw }}, nom: {{ ent.nom|json_encode|raw }}, groupe: {{ ent.groupeDirectionGenerale|json_encode|raw }} },
         {% endfor %}
     ];
 
@@ -770,6 +767,16 @@
     const INSTRUCTION_ID = {{ instruction.id }};
     let currentSelectedFile = null;
     let extractedActionsData = [];
+
+    function escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     function openDocumentModal() {
         const frame = document.getElementById('documentFrame');
@@ -954,12 +961,19 @@
         const tr = document.createElement('tr');
         tr.className = 'ai-action-row';
 
-        // Options Entités
+        // Options Entités, groupées par Direction Générale (ALL_ENTITES est déjà trié par DG)
         let entiteOptionsHtml = '';
+        let groupeCourant = null;
         ALL_ENTITES.forEach(ent => {
+            if (ent.groupe !== groupeCourant) {
+                if (groupeCourant !== null) entiteOptionsHtml += '</optgroup>';
+                groupeCourant = ent.groupe;
+                entiteOptionsHtml += `<optgroup label="${escapeHtml(ent.groupe)}">`;
+            }
             const selected = (act.entite_id && act.entite_id == ent.id) || (!act.entite_id && ent.id == DEFAULT_ENTITE_ID) ? 'selected' : '';
-            entiteOptionsHtml += `<option value="${ent.id}" ${selected}>${ent.code} - ${ent.nom}</option>`;
+            entiteOptionsHtml += `<option value="${ent.id}" ${selected}>${escapeHtml(ent.code)} - ${escapeHtml(ent.nom)}</option>`;
         });
+        if (groupeCourant !== null) entiteOptionsHtml += '</optgroup>';
 
         // Options Priorités
         let prioriteOptionsHtml = '';

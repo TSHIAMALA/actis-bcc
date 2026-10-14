@@ -21,7 +21,7 @@ class DashboardController extends AbstractController
         EntiteRepository $entiteRepo
     ): Response {
         return $this->render('dashboard/index.html.twig', [
-            'allEntites' => $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']),
+            'allEntites' => $entiteRepo->findActivesGroupees(),
             // Même source de données que l'API de filtrage : le rendu initial et le filtre « Tous » sont identiques
             'dashboard' => $this->buildDashboardPayload($statsService, 'all', null),
         ]);

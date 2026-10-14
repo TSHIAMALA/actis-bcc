@@ -8,6 +8,7 @@ use App\Entity\Priorite;
 use App\Entity\Statut;
 use App\Entity\TypeInstruction;
 use App\Entity\Utilisateur;
+use App\Repository\EntiteRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -55,7 +56,9 @@ class InstructionType extends AbstractType
             ])
             ->add('entitePilote', EntityType::class, [
                 'class' => Entite::class,
+                'query_builder' => fn (EntiteRepository $repo) => $repo->createChoicesQueryBuilder(($options['data'] ?? null)?->getEntitePilote()),
                 'choice_label' => 'nomComplet',
+                'group_by' => fn (Entite $e) => $e->getGroupeDirectionGenerale(),
                 'label' => 'Entité pilote (Direction / Département responsable)',
                 'placeholder' => '-- Sélectionner l\'entité pilote --',
             ])

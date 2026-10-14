@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Entite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,6 +15,42 @@ class EntiteRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Entite::class);
+    }
+
+    /**
+     * Entités proposées dans les listes de choix : uniquement les actives,
+     * triées par Direction Générale (Gouvernorat en premier), la DG puis ses directions.
+     * $valeurActuelle reste proposée même si elle a été désactivée, pour qu'un dossier
+     * existant puisse être modifié sans perdre (ni invalider) son rattachement.
+     */
+    public function createChoicesQueryBuilder(?Entite $valeurActuelle = null): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.parent', 'dg')->addSelect('dg')
+            ->addSelect("CASE WHEN COALESCE(dg.code, e.code) = 'GOUV' THEN 0 ELSE 1 END AS HIDDEN gouvernoratEnPremier")
+            ->addSelect('COALESCE(dg.code, e.code) AS HIDDEN codeDg')
+            ->addSelect('CASE WHEN e.parent IS NULL THEN 0 ELSE 1 END AS HIDDEN dgAvantDirections')
+            ->where('e.actif = true')
+            ->orderBy('gouvernoratEnPremier', 'ASC')
+            ->addOrderBy('codeDg', 'ASC')
+            ->addOrderBy('dgAvantDirections', 'ASC')
+            ->addOrderBy('e.code', 'ASC');
+
+        if ($valeurActuelle?->getId()) {
+            $qb->orWhere('e.id = :valeurActuelle')->setParameter('valeurActuelle', $valeurActuelle->getId());
+        }
+
+        return $qb;
+    }
+
+    /**
+     * Entités actives, dans l'ordre des listes groupées par Direction Générale.
+     *
+     * @return Entite[]
+     */
+    public function findActivesGroupees(): array
+    {
+        return $this->createChoicesQueryBuilder()->getQuery()->getResult();
     }
 
     public function getPerformanceDirections(): array

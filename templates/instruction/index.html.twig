@@ -56,9 +56,8 @@
             <label class="form-label">Direction pilote</label>
             <select name="entite" class="form-select">
                 <option value="">-- Toutes les entités --</option>
-                {% for ent in entites %}
-                    <option value="{{ ent.id }}" {% if filters.entite == ent.id %}selected{% endif %}>{{ ent.code }} - {{ ent.nom }}</option>
-                {% endfor %}
+                {% import '_macros/entites.html.twig' as entites_ui %}
+                {{ entites_ui.options(entites, filters.entite) }}
             </select>
         </div>
         <div>

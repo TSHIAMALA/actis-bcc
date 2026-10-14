@@ -67,7 +67,7 @@ class InstructionController extends AbstractController
             'statuts' => $statutRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']),
             'priorites' => $prioriteRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']),
             'types' => $typeRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']),
-            'entites' => $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']),
+            'entites' => $entiteRepo->findActivesGroupees(),
             'utilisateurs' => $userRepo->findBy(['actif' => true], ['nom' => 'ASC']),
             'filters' => $filters,
         ]);
@@ -171,7 +171,7 @@ class InstructionController extends AbstractController
             return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
         }
 
-        $allEntites = $entiteRepo->findBy(['actif' => true], ['nom' => 'ASC']);
+        $allEntites = $entiteRepo->findActivesGroupees();
         $availableStatuts = $statutRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']);
         $allPriorites = $prioriteRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']);
         $allUtilisateurs = $userRepo->findBy(['actif' => true], ['nom' => 'ASC']);

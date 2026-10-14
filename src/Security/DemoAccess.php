@@ -36,6 +36,12 @@ class DemoAccess
             'titre' => 'Direction générale',
             'description' => 'Supervise les directions et valide les prorogations',
         ],
+        'conseiller' => [
+            'email' => 'joseph.mbala@bcc.local',
+            'icon' => 'bi-mortarboard',
+            'titre' => 'Conseiller du Gouverneur',
+            'description' => 'Rend ses avis sur les actions que le Cabinet lui confie',
+        ],
         'directeur' => [
             'email' => 'jean.tshibanda@bcc.local',
             'icon' => 'bi-diagram-3',

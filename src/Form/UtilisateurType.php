@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Entite;
 use App\Entity\Role;
 use App\Entity\Utilisateur;
+use App\Repository\EntiteRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -45,7 +46,9 @@ class UtilisateurType extends AbstractType
             ])
             ->add('entite', EntityType::class, [
                 'class' => Entite::class,
+                'query_builder' => fn (EntiteRepository $repo) => $repo->createChoicesQueryBuilder(($options['data'] ?? null)?->getEntite()),
                 'choice_label' => 'nomComplet',
+                'group_by' => fn (Entite $e) => $e->getGroupeDirectionGenerale(),
                 'label' => 'Entité de rattachement',
             ])
             ->add('appRoles', EntityType::class, [

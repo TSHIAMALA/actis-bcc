@@ -171,6 +171,17 @@ class Entite
         return $this->code . ' - ' . $this->nom;
     }
 
+    /**
+     * Libellé du groupe dans les listes déroulantes : la Direction Générale de rattachement
+     * (une Direction Générale est rangée dans son propre groupe).
+     */
+    public function getGroupeDirectionGenerale(): string
+    {
+        $dg = $this->parent ?? $this;
+
+        return $dg->getCode() . ' — ' . $dg->getNom();
+    }
+
     public function __toString(): string
     {
         return $this->getNomComplet();

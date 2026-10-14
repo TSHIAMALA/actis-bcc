@@ -1,4 +1,6 @@
 parameters:
+    # Valeur par défaut si APP_DEMO_MODE n'est défini nulle part (ex. serveur de production) : démo désactivée
+    env(APP_DEMO_MODE): '0'
     justificatifs_directory: '%kernel.project_dir%/public/uploads/justificatifs'
     # Hors de public/ : servis uniquement via le contrôleur (utilisateurs connectés)
     instructions_documents_directory: '%kernel.project_dir%/var/uploads/instructions'

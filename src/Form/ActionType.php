@@ -9,6 +9,7 @@ use App\Entity\Priorite;
 use App\Entity\Utilisateur;
 use App\Repository\InstructionRepository;
 use App\Repository\UtilisateurRepository;
+use App\Repository\EntiteRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -53,7 +54,9 @@ class ActionType extends AbstractType
             ])
             ->add('entiteResponsable', EntityType::class, [
                 'class' => Entite::class,
+                'query_builder' => fn (EntiteRepository $repo) => $repo->createChoicesQueryBuilder(($options['data'] ?? null)?->getEntiteResponsable()),
                 'choice_label' => 'nomComplet',
+                'group_by' => fn (Entite $e) => $e->getGroupeDirectionGenerale(),
                 'label' => 'Entité responsable de l\'action',
             ])
             ->add('responsable', EntityType::class, [

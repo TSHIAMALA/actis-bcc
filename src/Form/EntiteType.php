@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Entite;
 use App\Entity\TypeEntite;
+use App\Repository\EntiteRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -32,7 +33,9 @@ class EntiteType extends AbstractType
             ])
             ->add('parent', EntityType::class, [
                 'class' => Entite::class,
+                'query_builder' => fn (EntiteRepository $repo) => $repo->createChoicesQueryBuilder(($options['data'] ?? null)?->getParent()),
                 'choice_label' => 'nomComplet',
+                'group_by' => fn (Entite $e) => $e->getGroupeDirectionGenerale(),
                 'label' => 'Entité parente (Hiérarchie)',
                 'placeholder' => '-- Aucune (Entité racine / Direction Générale) --',
                 'required' => false,
