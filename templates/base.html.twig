@@ -282,6 +282,12 @@
             }
         });
         </script>
+        {% if demo_access.enabled %}
+            <div title="APP_DEMO_MODE=1 : l'annuaire BCC simulé est actif. À désactiver en production."
+                 style="position: fixed; bottom: 14px; right: 14px; z-index: 900; background: #F5C563; color: #3B2A06; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,0.18); pointer-events: none;">
+                <i class="bi bi-easel2"></i> Mode démonstration
+            </div>
+        {% endif %}
     {% else %}
         {% block login_body %}{% endblock %}
     {% endif %}

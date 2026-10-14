@@ -17,6 +17,10 @@ services:
         arguments:
             $targetDirectory: '%justificatifs_directory%'
 
+    App\Security\DemoAccess:
+        arguments:
+            $enabled: '%env(bool:APP_DEMO_MODE)%'
+
     App\Service\InstructionDocumentStorage:
         arguments:
             $targetDirectory: '%instructions_documents_directory%'

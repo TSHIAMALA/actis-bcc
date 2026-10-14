@@ -23,7 +23,11 @@ body, html {
     justify-content: space-between;
     padding: 100px 5% 40px 6%;
     box-sizing: border-box;
-    background-image: linear-gradient(135deg, rgba(6, 17, 34, 0.45) 0%, rgba(6, 17, 34, 0.18) 40%, rgba(6, 17, 34, 0.72) 100%), url('{{ asset('images/bcc_building.jpg') }}');
+    /* Voile sombre concentré à gauche (lisibilité du texte), le bâtiment reste visible au centre */
+    background-image:
+        linear-gradient(90deg, rgba(6, 17, 34, 0.86) 0%, rgba(6, 17, 34, 0.62) 30%, rgba(6, 17, 34, 0.18) 58%, rgba(6, 17, 34, 0.40) 100%),
+        linear-gradient(180deg, rgba(6, 17, 34, 0.35) 0%, rgba(6, 17, 34, 0) 25%),
+        url('{{ asset('images/bcc_building.jpg') }}');
     background-size: cover;
     background-position: center left;
     background-repeat: no-repeat;
@@ -123,11 +127,11 @@ body, html {
 }
 
 .auth-hero-fullname {
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #FFFFFF;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.92);
     margin-top: 10px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
@@ -137,7 +141,7 @@ body, html {
     gap: 12px;
     width: 100%;
     max-width: 440px;
-    margin-top: 12px;
+    margin-top: 16px;
 }
 
 .auth-hero-slogan-line::before,
@@ -145,73 +149,66 @@ body, html {
     content: '';
     flex: 1;
     height: 1.5px;
-    background: #E5A93C;
+    background: linear-gradient(90deg, transparent, #F2B84B);
+}
+
+.auth-hero-slogan-line::after {
+    background: linear-gradient(90deg, #F2B84B, transparent);
 }
 
 .auth-hero-slogan-text {
-    font-size: 0.68rem;
+    font-size: 0.82rem;
     font-weight: 800;
-    color: #E5A93C;
-    letter-spacing: 1.8px;
+    color: #F5C563;
+    letter-spacing: 2.4px;
     text-transform: uppercase;
     white-space: nowrap;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* 4 Value Pillars Grid */
+/* 4 piliers : informatifs (non cliquables), donc sans aspect « bouton » */
 .auth-hero-pillars-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
     max-width: 540px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    padding-top: 20px;
 }
 
 .auth-pillar-card {
-    background: rgba(8, 22, 43, 0.55);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 14px 10px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    align-items: flex-start;
+    text-align: left;
+    padding: 0 14px;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.auth-pillar-card:hover {
-    transform: translateY(-4px);
-    background: rgba(8, 22, 43, 0.75);
-    border-color: #E5A93C;
+.auth-pillar-card:first-child {
+    padding-left: 0;
+    border-left: none;
 }
 
 .auth-pillar-icon-box {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    border: 1.5px solid #E5A93C;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #E5A93C;
-    font-size: 1.15rem;
-    margin-bottom: 8px;
-    background: rgba(229, 169, 60, 0.12);
+    color: #F5C563;
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+    line-height: 1;
 }
 
 .auth-pillar-title {
-    font-size: 0.68rem;
+    font-size: 0.74rem;
     font-weight: 800;
     color: #FFFFFF;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     text-transform: uppercase;
 }
 
 .auth-pillar-desc {
-    font-size: 0.62rem;
-    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.82);
     margin-top: 3px;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
 /* Bottom Navy & Gold Wave Overlay */
@@ -414,93 +411,190 @@ body, html {
     border-color: #0A2540;
 }
 
-/* Security Callout Box */
-.auth-security-callout {
+/* Mention de sécurité : une ligne discrète */
+.auth-security-note {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: #EFF6FF;
-    border: 1px solid #DBEAFE;
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-top: 20px;
-}
-
-.auth-security-icon {
-    font-size: 1.3rem;
-    color: #1E3A8A;
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-.auth-security-content {
-    flex: 1;
-}
-
-.auth-security-title {
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: #0F172A;
-    margin: 0 0 2px;
-}
-
-.auth-security-text {
-    font-size: 0.72rem;
-    color: #475569;
-    line-height: 1.35;
-    margin: 0;
-}
-
-/* Demo Drawer */
-.auth-demo-drawer {
-    margin-top: 14px;
-    text-align: center;
-}
-
-.auth-demo-toggle-btn {
-    background: transparent;
-    border: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 18px 0 0;
+    font-size: 0.74rem;
     color: #64748B;
-    font-size: 0.76rem;
-    font-weight: 600;
-    cursor: pointer;
+}
+
+.auth-security-note i {
+    color: #0A2540;
+}
+
+/* ── Mode démonstration : bandeau + annuaire simulé ── */
+.demo-mode-ribbon {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 30;
+    background: #F5C563;
+    color: #3B2A06;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
-.auth-demo-toggle-btn:hover {
-    color: #0A2540;
+.demo-directory-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(6, 17, 34, 0.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-.auth-demo-accounts-grid {
+.demo-directory-backdrop[hidden] {
     display: none;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 10px;
 }
 
-.auth-demo-accounts-grid.open {
-    display: grid;
+.demo-directory-dialog {
+    width: min(480px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.45);
 }
 
-.demo-pill-btn {
-    background: #F1F5F9;
+.demo-directory-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 22px 24px 14px;
+    border-bottom: 1px solid #EEF2F6;
+}
+
+.demo-directory-head h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0A1931;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.demo-directory-head p {
+    margin: 4px 0 0;
+    font-size: 0.78rem;
+    color: #64748B;
+}
+
+.demo-directory-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #64748B;
+    cursor: pointer;
+}
+
+.demo-directory-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.demo-directory-list form {
+    margin: 0;
+}
+
+.demo-profile-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    padding: 6px 8px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #334155;
+    border-radius: 14px;
     cursor: pointer;
     text-align: left;
-    transition: all 0.15s;
     font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
 }
 
-.demo-pill-btn:hover {
-    background: #E2E8F0;
+.demo-profile-btn:hover,
+.demo-profile-btn:focus-visible {
+    border-color: #0A2540;
+    background: #F8FAFC;
+    outline: none;
+}
+
+.demo-profile-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #0A2540;
+    color: #F5C563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.demo-profile-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.demo-profile-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.demo-profile-user {
+    font-size: 0.76rem;
+    font-weight: 600;
     color: #0A2540;
+}
+
+.demo-profile-desc {
+    font-size: 0.72rem;
+    color: #64748B;
+}
+
+.demo-profile-arrow {
+    color: #94A3B8;
+}
+
+.demo-directory-empty {
+    font-size: 0.84rem;
+    color: #64748B;
+    text-align: center;
+    padding: 16px;
+    margin: 0;
+}
+
+.demo-directory-foot {
+    padding: 12px 24px 18px;
+    font-size: 0.72rem;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* Responsive */
@@ -511,13 +605,33 @@ body, html {
         align-items: center;
         padding: 120px 20px 50px;
     }
+    .auth-fullscreen-container {
+        /* Voile uniforme : le texte est centré par-dessus la photo */
+        background-image:
+            linear-gradient(180deg, rgba(6, 17, 34, 0.80) 0%, rgba(6, 17, 34, 0.55) 100%),
+            url('{{ asset('images/bcc_building.jpg') }}');
+        background-attachment: scroll;
+    }
     .auth-hero-left {
         align-items: center;
         text-align: center;
         margin-bottom: 24px;
+        gap: 0;
+        padding-bottom: 0;
     }
     .auth-hero-brand {
         align-items: center;
+    }
+    /* Sur écran réduit, la priorité va au formulaire */
+    .auth-hero-pillars-grid {
+        display: none;
+    }
+    .auth-hero-logo-mark {
+        width: 64px;
+        height: 64px;
+    }
+    .auth-hero-title {
+        font-size: 2.4rem;
     }
     .auth-bottom-wave-overlay {
         display: none;
@@ -530,8 +644,19 @@ body, html {
 }
 
 @media (max-width: 640px) {
-    .auth-hero-pillars-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .auth-fullscreen-container {
+        padding: 96px 16px 32px;
+    }
+    .auth-hero-fullname,
+    .auth-hero-slogan-line {
+        display: none;
+    }
+    .auth-motto-sub {
+        display: none;
+    }
+    .auth-card-container {
+        padding: 28px 22px 24px;
+        border-radius: 20px;
     }
 }
 </style>
@@ -643,7 +768,7 @@ body, html {
     <div class="auth-card-container">
         <!-- Heading -->
         <h2 class="auth-card-heading">Bienvenue sur ACTIS</h2>
-        <p class="auth-card-subheading">Connectez-vous pour accéder à votre espace de suivi des Ordres de Service et Instructions.</p>
+        <p class="auth-card-subheading">Connectez-vous pour accéder au suivi des instructions, ordres de service et décisions du Gouverneur.</p>
 
         {% if error %}
             <div class="alert alert-danger" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; font-size: 0.84rem;">
@@ -686,51 +811,72 @@ body, html {
                 <i class="bi bi-arrow-right"></i>
             </button>
 
-            <!-- Divider "ou" -->
-            <div class="auth-divider">
-                <span>ou</span>
-            </div>
+            {% if demo_access.enabled %}
+                <!-- Divider "ou" -->
+                <div class="auth-divider">
+                    <span>ou</span>
+                </div>
 
-            <!-- Directory SSO Button -->
-            <button type="button" class="auth-btn-directory" onclick="setCredentials('admin.actis@bcc.local', 'password'); document.forms[0].submit();">
-                <i class="bi bi-bank" style="font-size: 1.05rem;"></i>
-                <span>Se connecter avec l'annuaire BCC</span>
-            </button>
+                <!-- Annuaire BCC simulé (mode démonstration uniquement) -->
+                <button type="button" class="auth-btn-directory" onclick="openDemoDirectory()">
+                    <i class="bi bi-bank" style="font-size: 1.05rem;"></i>
+                    <span>Se connecter avec l'annuaire BCC</span>
+                </button>
+            {% endif %}
         </form>
 
-        <!-- Security Badge Callout -->
-        <div class="auth-security-callout">
-            <i class="bi bi-shield-check auth-security-icon"></i>
-            <div class="auth-security-content">
-                <h4 class="auth-security-title">Accès sécurisé</h4>
-                <p class="auth-security-text">Vos données sont protégées et réservées aux utilisateurs autorisés de la Banque Centrale du Congo.</p>
+        <p class="auth-security-note">
+            <i class="bi bi-shield-lock-fill"></i>
+            Accès réservé aux agents autorisés de la Banque Centrale du Congo
+        </p>
+    </div>
+</div>
+
+{% if demo_access.enabled %}
+<!-- Bandeau mode démonstration -->
+<div class="demo-mode-ribbon">
+    <i class="bi bi-easel2"></i> Mode démonstration
+</div>
+
+<!-- Modale : annuaire BCC simulé -->
+<div class="demo-directory-backdrop" id="demoDirectory" hidden onclick="if (event.target === this) closeDemoDirectory()">
+    <div class="demo-directory-dialog" role="dialog" aria-modal="true" aria-labelledby="demoDirectoryTitle">
+        <div class="demo-directory-head">
+            <div>
+                <h3 id="demoDirectoryTitle"><i class="bi bi-bank"></i> Annuaire BCC</h3>
+                <p>Simulation — choisissez le profil à présenter</p>
             </div>
+            <button type="button" class="demo-directory-close" onclick="closeDemoDirectory()" title="Fermer">&times;</button>
         </div>
 
-        <!-- Collapsible Demo Accounts -->
-        <div class="auth-demo-drawer">
-            <button type="button" class="auth-demo-toggle-btn" onclick="toggleDemoAccounts()">
-                <i class="bi bi-key"></i>
-                <span>Comptes de test (cliquez pour pré-remplir)</span>
-                <i class="bi bi-chevron-down" id="demoChevron"></i>
-            </button>
-            <div class="auth-demo-accounts-grid" id="demoAccountsGrid">
-                <button type="button" class="demo-pill-btn" onclick="setCredentials('admin.actis@bcc.local', 'password')">
-                    👑 Admin (DSI)
-                </button>
-                <button type="button" class="demo-pill-btn" onclick="setCredentials('paul.kabeya@bcc.local', 'password')">
-                    🏛️ Cabinet Gouverneur
-                </button>
-                <button type="button" class="demo-pill-btn" onclick="setCredentials('marie.mukendi@bcc.local', 'password')">
-                    📑 Dir. Générale (DGAS)
-                </button>
-                <button type="button" class="demo-pill-btn" onclick="setCredentials('jean.tshibanda@bcc.local', 'password')">
-                    ⚙️ Opérationnel (DGSI)
-                </button>
-            </div>
+        <div class="demo-directory-list">
+            {% for key, profile in demo_access.profiles %}
+                <form method="post" action="{{ path('app_demo_login', {'profil': key}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('demo_login') }}">
+                    <button type="submit" class="demo-profile-btn">
+                        <span class="demo-profile-icon"><i class="bi {{ profile.icon }}"></i></span>
+                        <span class="demo-profile-text">
+                            <span class="demo-profile-title">{{ profile.titre }}</span>
+                            <span class="demo-profile-user">
+                                {{ profile.user.nomComplet }}{% if profile.user.entite %} · {{ profile.user.entite.code }}{% endif %}
+                            </span>
+                            <span class="demo-profile-desc">{{ profile.description }}</span>
+                        </span>
+                        <i class="bi bi-chevron-right demo-profile-arrow"></i>
+                    </button>
+                </form>
+            {% else %}
+                <p class="demo-directory-empty">Aucun compte de démonstration actif n'a été trouvé.</p>
+            {% endfor %}
+        </div>
+
+        <div class="demo-directory-foot">
+            <i class="bi bi-info-circle"></i>
+            Connexion sans mot de passe, disponible uniquement en mode démonstration.
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 function togglePasswordVisibility() {
@@ -747,20 +893,18 @@ function togglePasswordVisibility() {
     }
 }
 
-function toggleDemoAccounts() {
-    const grid = document.getElementById('demoAccountsGrid');
-    const chevron = document.getElementById('demoChevron');
-    grid.classList.toggle('open');
-    if (grid.classList.contains('open')) {
-        chevron.classList.replace('bi-chevron-down', 'bi-chevron-up');
-    } else {
-        chevron.classList.replace('bi-chevron-up', 'bi-chevron-down');
-    }
+{% if demo_access.enabled %}
+function openDemoDirectory() {
+    document.getElementById('demoDirectory').hidden = false;
 }
 
-function setCredentials(email, pass) {
-    document.getElementById('username').value = email;
-    document.getElementById('password').value = pass;
+function closeDemoDirectory() {
+    document.getElementById('demoDirectory').hidden = true;
 }
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDemoDirectory();
+});
+{% endif %}
 </script>
 {% endblock %}
