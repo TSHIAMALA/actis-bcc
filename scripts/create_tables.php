@@ -11,8 +11,9 @@ $dbUrl = $_ENV['DATABASE_URL'] ?? getenv('DATABASE_URL');
 
 // Parse database URL
 $parsed = parse_url($dbUrl);
-$user = $parsed['user'] ?? 'root';
-$pass = $parsed['pass'] ?? '';
+// Identifiant et mot de passe sont encodés dans l'URL (ex. « @ » écrit « %40 ») : on les décode comme Doctrine
+$user = rawurldecode($parsed['user'] ?? 'root');
+$pass = rawurldecode($parsed['pass'] ?? '');
 $host = $parsed['host'] ?? '127.0.0.1';
 $port = $parsed['port'] ?? 3306;
 $dbname = ltrim($parsed['path'] ?? 'actis_bcc', '/');
