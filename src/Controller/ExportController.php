@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Instruction;
 use App\Repository\InstructionRepository;
+use App\Service\RapportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -20,10 +21,25 @@ class ExportController extends AbstractController
         ]);
     }
 
+    /**
+     * Rapport d'analyse Excel : synthèse, entités & conseillers, détail des instructions.
+     */
+    #[Route('/rapport', name: 'app_export_rapport', methods: ['GET'])]
+    public function rapport(RapportService $rapportService): Response
+    {
+        $filename = 'rapport_actis_bcc_' . (new \DateTime())->format('Ymd_Hi') . '.xlsx';
+
+        return new Response($rapportService->genererClasseur(), 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
     #[Route('/instructions/csv', name: 'app_export_instructions_csv', methods: ['GET'])]
     public function exportCsv(InstructionRepository $instructionRepo): StreamedResponse
     {
-        $instructions = $instructionRepo->findAll();
+        $instructions = $instructionRepo->findBy(['deletedAt' => null], ['dateInstruction' => 'DESC']);
 
         $response = new StreamedResponse(function () use ($instructions) {
             $handle = fopen('php://output', 'w+');
@@ -36,8 +52,8 @@ class ExportController extends AbstractController
                 'Objet',
                 'Statut',
                 'Priorité',
-                'Entité Pilote',
-                'Responsable',
+                'Entités concernées',
+                'Conseillers responsables',
                 'Date Instruction',
                 'Date Échéance',
                 'Avancement (%)',
@@ -52,8 +68,8 @@ class ExportController extends AbstractController
                     $inst->getObjet(),
                     $inst->getStatut()?->getLibelle() ?? '',
                     $inst->getPriorite()?->getLibelle() ?? '',
-                    $inst->getEntitePilote()?->getNomComplet() ?? '',
-                    $inst->getResponsable()?->getNomComplet() ?? 'Non désigné',
+                    implode(', ', array_map(fn ($e) => $e->getCode(), $inst->getEntitesConcernees())),
+                    implode(', ', $inst->getResponsables()->map(fn ($c) => $c->getNom())->toArray()) ?: 'Non désigné',
                     $inst->getDateInstruction()?->format('d/m/Y') ?? '',
                     $inst->getDateEcheance()?->format('d/m/Y') ?? '',
                     $inst->getTauxAvancement() . '%',
