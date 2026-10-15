@@ -53,11 +53,20 @@
             </select>
         </div>
         <div>
-            <label class="form-label">Direction pilote</label>
+            <label class="form-label">Entité concernée</label>
             <select name="entite" class="form-select">
                 <option value="">-- Toutes les entités --</option>
                 {% import '_macros/entites.html.twig' as entites_ui %}
                 {{ entites_ui.options(entites, filters.entite) }}
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Conseiller responsable</label>
+            <select name="responsable" class="form-select">
+                <option value="">-- Tous --</option>
+                {% for c in conseillers %}
+                    <option value="{{ c.id }}" {% if filters.responsable == c.id %}selected{% endif %}>{{ c.nom }}</option>
+                {% endfor %}
             </select>
         </div>
         <div>
@@ -98,7 +107,7 @@
                         <th>Référence</th>
                         <th>Type</th>
                         <th style="min-width: 220px;">Objet</th>
-                        <th>Direction Pilote</th>
+                        <th>Entités / Responsables</th>
                         <th>Priorité</th>
                         <th>Statut</th>
                         <th>Échéance</th>
@@ -131,9 +140,13 @@
                                 </div>
                             </td>
                             <td>
-                                <strong>{{ inst.entitePilote.code }}</strong>
-                                {% if inst.responsable %}
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Resp: {{ inst.responsable.nomComplet }}</div>
+                                {% for e in inst.entitesConcernees %}
+                                    <strong title="{{ e.nom }}">{{ e.code }}</strong>{% if not loop.last %}, {% endif %}
+                                {% else %}
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Aucune action</span>
+                                {% endfor %}
+                                {% if inst.responsables is not empty %}
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Resp : {{ inst.responsables|map(c => c.nom)|join(', ') }}</div>
                                 {% endif %}
                             </td>
                             <td><span class="badge {{ inst.priorite.badgeClass }}">{{ inst.priorite.libelle }}</span></td>

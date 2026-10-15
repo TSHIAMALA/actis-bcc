@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Action;
 use App\Entity\Commentaire;
+use App\Entity\ConseillerGouverneur;
 use App\Entity\Entite;
 use App\Entity\Instruction;
-use App\Entity\InstructionEntite;
 use App\Entity\Priorite;
 use App\Entity\Statut;
 use App\Entity\TypeEvenement;
@@ -46,6 +46,7 @@ class InstructionController extends AbstractController
         TypeInstructionRepository $typeRepo,
         EntiteRepository $entiteRepo,
         UtilisateurRepository $userRepo,
+        ConseillerGouverneurRepository $conseillerRepo,
         Request $request
     ): Response {
         $filters = [
@@ -69,6 +70,7 @@ class InstructionController extends AbstractController
             'types' => $typeRepo->findBy(['actif' => true], ['ordreAffichage' => 'ASC']),
             'entites' => $entiteRepo->findActivesGroupees(),
             'utilisateurs' => $userRepo->findBy(['actif' => true], ['nom' => 'ASC']),
+            'conseillers' => $conseillerRepo->findActifs(),
             'filters' => $filters,
         ]);
     }
@@ -96,8 +98,8 @@ class InstructionController extends AbstractController
                 $instruction->setReference($instructionService->generateReference($instruction->getTypeInstruction()));
             }
 
-            // Statut initial
-            $statutInitial = $instruction->getResponsable() 
+            // Statut initial : « Affectée » dès qu'au moins un conseiller responsable est désigné
+            $statutInitial = !$instruction->getResponsables()->isEmpty()
                 ? $statutRepo->findOneBy(['code' => Statut::CODE_AFFECTEE]) 
                 : $statutRepo->findOneBy(['code' => Statut::CODE_BROUILLON]);
             
@@ -197,6 +199,7 @@ class InstructionController extends AbstractController
         InstructionService $instructionService,
         InstructionDocumentStorage $documentStorage
     ): Response {
+        $responsablesAvant = $this->nomsResponsables($instruction);
         $form = $this->createForm(InstructionType::class, $instruction, ['is_edit' => true]);
         $form->handleRequest($request);
 
@@ -205,6 +208,10 @@ class InstructionController extends AbstractController
             $instruction->setUpdatedAt(new \DateTime());
 
             $description = 'Mise à jour des informations de l\'instruction.';
+            $responsablesApres = $this->nomsResponsables($instruction);
+            if ($responsablesApres !== $responsablesAvant) {
+                $description .= ' Responsables : ' . ($responsablesApres ?: 'aucun') . '.';
+            }
             $documentPdf = $form->get('documentPdf')->getData();
             if ($documentPdf) {
                 $documentStorage->store($instruction, $documentPdf);
@@ -293,80 +300,6 @@ class InstructionController extends AbstractController
 
             $em->flush();
             $this->addFlash('success', sprintf('Le statut de l\'instruction a été changé pour "%s".', $statut->getLibelle()));
-        }
-
-        return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
-    }
-
-    #[Route('/{id}/ajouter-contributeur', name: 'app_instruction_add_contributor', methods: ['POST'])]
-    public function addContributor(
-        Instruction $instruction,
-        Request $request,
-        EntityManagerInterface $em,
-        EntiteRepository $entiteRepo,
-        InstructionService $instructionService
-    ): Response {
-        $entiteId = $request->request->get('entite_id');
-        $role = $request->request->get('role_entite', 'CONTRIBUTEUR');
-        $commentaire = $request->request->get('commentaire');
-
-        $entite = $entiteRepo->find($entiteId);
-        if ($entite) {
-            // Check if already exists
-            foreach ($instruction->getInstructionEntites() as $ie) {
-                if ($ie->getEntite()->getId() === $entite->getId()) {
-                    $this->addFlash('warning', 'Cette entité est déjà enregistrée comme contributrice.');
-                    return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
-                }
-            }
-
-            $ie = new InstructionEntite();
-            $ie->setInstruction($instruction);
-            $ie->setEntite($entite);
-            $ie->setRoleEntite($role);
-            $ie->setCommentaire($commentaire);
-
-            $em->persist($ie);
-            $instruction->getInstructionEntites()->add($ie);
-
-            $instructionService->logHistorique(
-                $instruction,
-                TypeEvenement::AFFECTATION,
-                $this->getUser(),
-                null,
-                null,
-                sprintf('Ajout de l\'entité contributrice "%s".', $entite->getNomComplet())
-            );
-
-            $em->flush();
-            $this->addFlash('success', 'Entité contributrice ajoutée avec succès.');
-        }
-
-        return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
-    }
-
-    #[Route('/{id}/supprimer-contributeur/{entiteId}', name: 'app_instruction_remove_contributor', methods: ['POST'])]
-    public function removeContributor(
-        Instruction $instruction,
-        int $entiteId,
-        EntityManagerInterface $em,
-        InstructionService $instructionService
-    ): Response {
-        foreach ($instruction->getInstructionEntites() as $ie) {
-            if ($ie->getEntite()->getId() === $entiteId) {
-                $em->remove($ie);
-                $instructionService->logHistorique(
-                    $instruction,
-                    TypeEvenement::AFFECTATION,
-                    $this->getUser(),
-                    null,
-                    null,
-                    sprintf('Retrait de l\'entité contributrice "%s".', $ie->getEntite()->getNomComplet())
-                );
-                $em->flush();
-                $this->addFlash('success', 'Entité contributrice retirée.');
-                break;
-            }
         }
 
         return $this->redirectToRoute('app_instruction_show', ['id' => $instruction->getId()]);
@@ -496,12 +429,13 @@ class InstructionController extends AbstractController
             $uploadedFile = $request->files->get('document');
             $customPrompt = $request->request->get('custom_prompt');
 
-            $actions = $aiExtractor->extractActions($instruction, $uploadedFile, $customPrompt);
+            $resultat = $aiExtractor->extractActions($instruction, $uploadedFile, $customPrompt);
 
             return new JsonResponse([
                 'success' => true,
-                'actions' => $actions,
-                'count' => count($actions)
+                'actions' => $resultat['actions'],
+                'conseillers' => $resultat['conseillers'],
+                'count' => count($resultat['actions'])
             ]);
         } catch (\Throwable $e) {
             return new JsonResponse([
@@ -519,11 +453,22 @@ class InstructionController extends AbstractController
         InstructionService $instructionService,
         EntiteRepository $entiteRepo,
         PrioriteRepository $prioriteRepo,
-        StatutRepository $statutRepo
+        StatutRepository $statutRepo,
+        ConseillerGouverneurRepository $conseillerRepo
     ): JsonResponse {
         try {
             $data = json_decode($request->getContent(), true);
             $rawActions = $data['actions'] ?? [];
+
+            // Conseillers responsables retenus dans la fenêtre IA (proposés par l'IA ou cochés à la main)
+            $responsablesAjoutes = [];
+            foreach (array_unique(array_map('intval', $data['responsables'] ?? [])) as $conseillerId) {
+                $conseiller = $conseillerRepo->find($conseillerId);
+                if ($conseiller && $conseiller->isActif() && !$instruction->getResponsables()->contains($conseiller)) {
+                    $instruction->addResponsable($conseiller);
+                    $responsablesAjoutes[] = $conseiller->getNom();
+                }
+            }
 
             if (empty($rawActions)) {
                 return new JsonResponse([
@@ -554,7 +499,13 @@ class InstructionController extends AbstractController
                 // Entité responsable
                 $entiteId = !empty($item['entite_id']) ? (int)$item['entite_id'] : null;
                 $entite = $entiteId ? $entiteRepo->find($entiteId) : null;
-                $action->setEntiteResponsable($entite ?? $instruction->getEntitePilote());
+                if (!$entite) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => sprintf('Choisissez l\'entité responsable de l\'action « %s ».', $libelle),
+                    ], 400);
+                }
+                $action->setEntiteResponsable($entite);
 
                 // Priorité
                 $prioriteId = !empty($item['priorite_id']) ? (int)$item['priorite_id'] : null;
@@ -599,6 +550,23 @@ class InstructionController extends AbstractController
                 $this->addFlash('success', sprintf('%d action(s) opérationnelle(s) ont été créées avec succès.', $createdCount));
             }
 
+            if ($responsablesAjoutes) {
+                // Une instruction en brouillon devient « Affectée » dès qu'elle a un responsable
+                if ($instruction->getStatut()?->getCode() === Statut::CODE_BROUILLON) {
+                    $instruction->setStatut($statutRepo->findOneBy(['code' => Statut::CODE_AFFECTEE]) ?? $instruction->getStatut());
+                }
+                $instructionService->logHistorique(
+                    $instruction,
+                    TypeEvenement::AFFECTATION,
+                    $currentUser,
+                    null,
+                    $instruction->getStatut(),
+                    'Conseiller(s) responsable(s) désigné(s) : ' . implode(', ', $responsablesAjoutes) . '.'
+                );
+                $em->flush();
+                $this->addFlash('success', 'Responsable(s) désigné(s) : ' . implode(', ', $responsablesAjoutes) . '.');
+            }
+
             return new JsonResponse([
                 'success' => true,
                 'count' => $createdCount,
@@ -610,5 +578,10 @@ class InstructionController extends AbstractController
                 'message' => 'Erreur lors de la création : ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function nomsResponsables(Instruction $instruction): string
+    {
+        return implode(', ', $instruction->getResponsables()->map(fn (ConseillerGouverneur $c) => $c->getNom())->toArray());
     }
 }

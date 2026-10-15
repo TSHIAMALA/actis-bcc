@@ -179,6 +179,12 @@ class ConseillerGouverneur
         return $this->codeDomaine . ' — ' . $this->domaineCompetence;
     }
 
+    /** Nom du conseiller seul (ex. « Aline BUHENDWA NTAKWINDJA ») */
+    public function getNom(): string
+    {
+        return $this->utilisateur ? $this->utilisateur->getNomComplet() : 'N/A';
+    }
+
     public function __toString(): string
     {
         $nom = $this->utilisateur ? $this->utilisateur->getNomComplet() : 'N/A';

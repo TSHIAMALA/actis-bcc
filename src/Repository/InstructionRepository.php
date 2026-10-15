@@ -23,9 +23,10 @@ class InstructionRepository extends ServiceEntityRepository
             ->leftJoin('i.typeInstruction', 't')->addSelect('t')
             ->leftJoin('i.statut', 's')->addSelect('s')
             ->leftJoin('i.priorite', 'p')->addSelect('p')
-            ->leftJoin('i.entitePilote', 'e')->addSelect('e')
-            ->leftJoin('i.responsable', 'r')->addSelect('r')
             ->leftJoin('i.actions', 'a')->addSelect('a')
+            ->leftJoin('a.entiteResponsable', 'ae')->addSelect('ae')
+            ->leftJoin('i.responsables', 'rc')->addSelect('rc')
+            ->leftJoin('rc.utilisateur', 'rcu')->addSelect('rcu')
             ->orderBy('i.createdAt', 'DESC');
 
         if (!empty($filters['show_deleted']) && $filters['show_deleted'] === '1') {
@@ -55,13 +56,15 @@ class InstructionRepository extends ServiceEntityRepository
                 ->setParameter('typeId', $filters['type']);
         }
 
+        // Entité concernée = entité responsable d'au moins une action de l'instruction
         if (!empty($filters['entite'])) {
-            $qb->andWhere('e.id = :entiteId')
+            $qb->andWhere('EXISTS (SELECT ax.id FROM App\Entity\Action ax WHERE ax.instruction = i AND ax.entiteResponsable = :entiteId AND ax.deletedAt IS NULL)')
                 ->setParameter('entiteId', $filters['entite']);
         }
 
+        // Conseiller responsable
         if (!empty($filters['responsable'])) {
-            $qb->andWhere('r.id = :respId')
+            $qb->andWhere(':respId MEMBER OF i.responsables')
                 ->setParameter('respId', $filters['responsable']);
         }
 
@@ -145,8 +148,6 @@ class InstructionRepository extends ServiceEntityRepository
             ->leftJoin('i.typeInstruction', 't')->addSelect('t')
             ->leftJoin('i.statut', 's')->addSelect('s')
             ->leftJoin('i.priorite', 'p')->addSelect('p')
-            ->leftJoin('i.entitePilote', 'e')->addSelect('e')
-            ->leftJoin('i.responsable', 'r')->addSelect('r')
             ->where('i.deletedAt IS NULL')
             ->orderBy('i.createdAt', 'DESC')
             ->setMaxResults($limit)

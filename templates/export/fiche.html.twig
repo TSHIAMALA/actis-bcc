@@ -123,8 +123,8 @@
         <div class="meta-item"><strong>Type :</strong> {{ instruction.typeInstruction.libelle }}</div>
         <div class="meta-item"><strong>Date d'émission :</strong> {{ instruction.dateInstruction|date('d/m/Y') }}</div>
         <div class="meta-item"><strong>Échéance globale :</strong> {{ instruction.dateEcheance ? instruction.dateEcheance|date('d/m/Y') : 'Non définie' }}</div>
-        <div class="meta-item"><strong>Direction Pilote :</strong> {{ instruction.entitePilote.nomComplet }}</div>
-        <div class="meta-item"><strong>Responsable désigné :</strong> {{ instruction.responsable ? instruction.responsable.nomComplet : 'Non spécifié' }}</div>
+        <div class="meta-item"><strong>Entités concernées :</strong> {{ instruction.entitesConcernees|map(e => e.code)|join(', ')|default('Aucune action') }}</div>
+        <div class="meta-item"><strong>Conseillers responsables :</strong> {{ instruction.responsables|map(c => c.nom)|join(', ')|default('Non désignés') }}</div>
         <div class="meta-item"><strong>Niveau de Priorité :</strong> {{ instruction.priorite.libelle }}</div>
         <div class="meta-item"><strong>Statut Actuel :</strong> {{ instruction.statut.libelle }}</div>
     </div>

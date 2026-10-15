@@ -18,6 +18,9 @@ class StatsService
     private const CLOSED_CODES = [Statut::CODE_EXECUTEE, Statut::CODE_CLOTUREE, Statut::CODE_ANNULEE];
     private const EN_COURS_CODES = [Statut::CODE_EN_COURS, Statut::CODE_EN_ATTENTE, Statut::CODE_A_VERIFIER];
 
+    /** Une instruction concerne une entité si au moins une de ses actions lui est confiée (alias d'instruction : i) */
+    private const DQL_INSTRUCTION_CONCERNE_ENTITE = 'EXISTS (SELECT ax.id FROM App\Entity\Action ax WHERE ax.instruction = i AND ax.entiteResponsable = :entiteId AND ax.deletedAt IS NULL)';
+
     public function __construct(
         private InstructionRepository $instructionRepo,
         private ActionRepository $actionRepo,
@@ -113,7 +116,7 @@ class StatsService
             $qbActions->andWhere('a.createdAt <= :dateTo')->setParameter('dateTo', $to);
         }
         if ($entiteId) {
-            $qbInstructions->andWhere('i.entitePilote = :entiteId')->setParameter('entiteId', $entiteId);
+            $qbInstructions->andWhere(self::DQL_INSTRUCTION_CONCERNE_ENTITE)->setParameter('entiteId', $entiteId);
             $qbActions->andWhere('a.entiteResponsable = :entiteId')->setParameter('entiteId', $entiteId);
         }
 
@@ -383,7 +386,7 @@ class StatsService
             $qb->andWhere('i.createdAt <= :dateTo')->setParameter('dateTo', $dateTo);
         }
         if ($entiteId) {
-            $qb->andWhere('i.entitePilote = :entiteId')->setParameter('entiteId', $entiteId);
+            $qb->andWhere(self::DQL_INSTRUCTION_CONCERNE_ENTITE)->setParameter('entiteId', $entiteId);
         }
 
         $byStatut = $qb->getQuery()->getArrayResult();
@@ -519,7 +522,7 @@ class StatsService
         }
 
         if ($entiteId) {
-            $qb->andWhere('h.entite = :entiteId OR ha.entiteResponsable = :entiteId OR hi.entitePilote = :entiteId')
+            $qb->andWhere('h.entite = :entiteId OR ha.entiteResponsable = :entiteId OR ' . str_replace('ax.instruction = i', 'ax.instruction = hi', self::DQL_INSTRUCTION_CONCERNE_ENTITE))
                 ->setParameter('entiteId', $entiteId);
         }
 

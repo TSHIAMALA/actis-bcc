@@ -1,0 +1,52 @@
+{# Choix des conseillers responsables (formulaires de création et de modification) #}
+<div class="form-group">
+    {{ form_label(form.responsables, null, {'label_attr': {'class': 'form-label'}}) }}
+    <small style="display: block; color: var(--text-muted); font-size: 0.75rem; margin: -2px 0 8px;">
+        Un ou plusieurs conseillers du Gouverneur suivent l'instruction. La génération d'actions par IA en proposera selon leur domaine.
+        Les entités concernées se déduisent des actions.
+    </small>
+    <div class="responsables-grid">
+        {% for choice in form.responsables %}
+            <label class="responsable-option" title="{{ choice.vars.attr['data-domaine']|default('') }}">
+                {{ form_widget(choice) }}
+                <span>
+                    <span class="responsable-nom">{{ choice.vars.label }}</span>
+                    <span class="responsable-domaine">{{ choice.vars.attr['data-domaine']|default('') }}</span>
+                </span>
+            </label>
+        {% else %}
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">Aucun conseiller actif n'est enregistré.</p>
+        {% endfor %}
+    </div>
+    {{ form_errors(form.responsables) }}
+</div>
+
+<style>
+.responsables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+}
+.responsable-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    border: 1px solid transparent;
+    cursor: pointer;
+    margin: 0;
+}
+.responsable-option:hover { border-color: var(--border-color); }
+.responsable-option:has(input:checked) { border-color: #0D9488; background: #F0FDFA; }
+.responsable-option input { margin-top: 3px; flex-shrink: 0; }
+.responsable-nom { display: block; font-size: 0.82rem; font-weight: 600; color: var(--bcc-navy); }
+.responsable-domaine { display: block; font-size: 0.7rem; color: var(--text-muted); line-height: 1.25; }
+</style>

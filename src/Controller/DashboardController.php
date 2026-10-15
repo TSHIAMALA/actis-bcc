@@ -33,7 +33,7 @@ class DashboardController extends AbstractController
         StatsService $statsService
     ): JsonResponse {
         $periode = $request->query->get('periode', 'all');
-        $entiteId = $request->query->getInt('entite_id') ?: null;
+        $entiteId = (int) $request->query->get('entite_id') ?: null;
 
         if ($periode === 'custom') {
             $periode = StatsService::buildCustomPeriod($request->query->get('du'), $request->query->get('au'));

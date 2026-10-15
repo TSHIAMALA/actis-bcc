@@ -53,18 +53,7 @@
                 </div>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    {{ form_label(form.entitePilote, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.entitePilote, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.entitePilote) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.responsable, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.responsable, {'attr': {'class': 'form-select'}}) }}
-                    {{ form_errors(form.responsable) }}
-                </div>
-            </div>
+            {% include 'instruction/_responsables_field.html.twig' %}
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                 <div class="form-group">

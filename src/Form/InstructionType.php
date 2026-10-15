@@ -2,13 +2,11 @@
 
 namespace App\Form;
 
-use App\Entity\Entite;
+use App\Entity\ConseillerGouverneur;
 use App\Entity\Instruction;
 use App\Entity\Priorite;
-use App\Entity\Statut;
 use App\Entity\TypeInstruction;
-use App\Entity\Utilisateur;
-use App\Repository\EntiteRepository;
+use App\Repository\ConseillerGouverneurRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -54,20 +52,19 @@ class InstructionType extends AbstractType
                 'attr' => ['placeholder' => 'Gouverneur, Cabinet, etc.'],
                 'required' => false,
             ])
-            ->add('entitePilote', EntityType::class, [
-                'class' => Entite::class,
-                'query_builder' => fn (EntiteRepository $repo) => $repo->createChoicesQueryBuilder(($options['data'] ?? null)?->getEntitePilote()),
-                'choice_label' => 'nomComplet',
-                'group_by' => fn (Entite $e) => $e->getGroupeDirectionGenerale(),
-                'label' => 'Entité pilote (Direction / Département responsable)',
-                'placeholder' => '-- Sélectionner l\'entité pilote --',
-            ])
-            ->add('responsable', EntityType::class, [
-                'class' => Utilisateur::class,
-                'choice_label' => 'nomComplet',
-                'label' => 'Responsable désigné (optionnel)',
-                'placeholder' => '-- Aucun responsable direct désigné --',
+            // Les entités ne se saisissent plus ici : elles se déduisent des actions de l'instruction
+            ->add('responsables', EntityType::class, [
+                'class' => ConseillerGouverneur::class,
+                'query_builder' => fn (ConseillerGouverneurRepository $repo) => $repo->createChoicesQueryBuilder(
+                    ($options['data'] ?? null)?->getResponsables()?->toArray() ?? []
+                ),
+                'choice_label' => fn (ConseillerGouverneur $c) => $c->getNom(),
+                'choice_attr' => fn (ConseillerGouverneur $c) => ['data-domaine' => $c->getDomaineCompetence()],
+                'label' => 'Conseillers responsables',
+                'multiple' => true,
+                'expanded' => true,
                 'required' => false,
+                'by_reference' => false,
             ])
             ->add('dateInstruction', DateType::class, [
                 'widget' => 'single_text',

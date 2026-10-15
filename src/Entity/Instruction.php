@@ -61,13 +61,30 @@ class Instruction
     #[ORM\Column(name: 'lien_portail', length: 500, nullable: true)]
     private ?string $lienPortail = null;
 
+    /**
+     * Ancienne entité pilote : n'est plus saisie, les entités concernées se déduisent des actions
+     * (voir getEntitesConcernees). Conservée pour l'historique.
+     */
     #[ORM\ManyToOne(targetEntity: Entite::class)]
-    #[ORM\JoinColumn(name: 'entite_pilote_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'entite_pilote_id', referencedColumnName: 'id', nullable: true)]
     private ?Entite $entitePilote = null;
 
+    /** Ancien responsable unique : remplacé par les conseillers responsables ($responsables) */
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'responsable_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Utilisateur $responsable = null;
+
+    /**
+     * Conseillers du Gouverneur responsables du suivi de l'instruction
+     *
+     * @var Collection<int, ConseillerGouverneur>
+     */
+    #[ORM\ManyToMany(targetEntity: ConseillerGouverneur::class)]
+    #[ORM\JoinTable(name: 'instruction_responsables')]
+    #[ORM\JoinColumn(name: 'instruction_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'conseiller_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\OrderBy(['ordreAffichage' => 'ASC'])]
+    private Collection $responsables;
 
     #[ORM\Column(name: 'taux_avancement', type: Types::DECIMAL, precision: 5, scale: 2, options: ['default' => '0.00'])]
     private string $tauxAvancement = '0.00';
@@ -124,6 +141,7 @@ class Instruction
     public function __construct()
     {
         $this->actions = new ArrayCollection();
+        $this->responsables = new ArrayCollection();
         $this->instructionEntites = new ArrayCollection();
         $this->justificatifs = new ArrayCollection();
         $this->prorogations = new ArrayCollection();
@@ -308,6 +326,47 @@ class Instruction
     {
         $this->responsable = $responsable;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, ConseillerGouverneur>
+     */
+    public function getResponsables(): Collection
+    {
+        return $this->responsables;
+    }
+
+    public function addResponsable(ConseillerGouverneur $conseiller): static
+    {
+        if (!$this->responsables->contains($conseiller)) {
+            $this->responsables->add($conseiller);
+        }
+        return $this;
+    }
+
+    public function removeResponsable(ConseillerGouverneur $conseiller): static
+    {
+        $this->responsables->removeElement($conseiller);
+        return $this;
+    }
+
+    /**
+     * Entités concernées par l'instruction : les entités responsables de ses actions (hors actions supprimées).
+     *
+     * @return Entite[]
+     */
+    public function getEntitesConcernees(): array
+    {
+        $entites = [];
+        foreach ($this->actions as $action) {
+            $entite = $action->getEntiteResponsable();
+            if ($entite && $action->getDeletedAt() === null) {
+                $entites[$entite->getId()] = $entite;
+            }
+        }
+        uasort($entites, fn (Entite $a, Entite $b) => strcmp($a->getCode(), $b->getCode()));
+
+        return array_values($entites);
     }
 
     public function getTauxAvancement(): string

@@ -266,7 +266,9 @@ CREATE TABLE instructions (
     document_nom_original VARCHAR(255) NULL,
     lien_portail VARCHAR(500) NULL,
 
-    entite_pilote_id BIGINT UNSIGNED NOT NULL,
+    -- Facultatif : les entités concernées se déduisent des actions.
+    -- Les responsables (conseillers) sont dans instruction_responsables (scripts/add_instruction_responsables.php)
+    entite_pilote_id BIGINT UNSIGNED NULL,
     responsable_id BIGINT UNSIGNED NULL,
 
     taux_avancement DECIMAL(5,2) NOT NULL DEFAULT 0.00,

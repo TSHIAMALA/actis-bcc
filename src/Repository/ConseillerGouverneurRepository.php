@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ConseillerGouverneur;
 use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -30,6 +31,28 @@ class ConseillerGouverneurRepository extends ServiceEntityRepository
             ->addOrderBy('c.domaineCompetence', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Conseillers proposés comme responsables : les actifs, plus ceux déjà désignés
+     * (même désactivés depuis, pour ne pas les perdre en modifiant l'instruction).
+     *
+     * @param ConseillerGouverneur[] $dejaDesignes
+     */
+    public function createChoicesQueryBuilder(array $dejaDesignes = []): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.utilisateur', 'u')->addSelect('u')
+            ->where('c.actif = true')
+            ->orderBy('c.ordreAffichage', 'ASC')
+            ->addOrderBy('c.domaineCompetence', 'ASC');
+
+        $ids = array_filter(array_map(fn (ConseillerGouverneur $c) => $c->getId(), $dejaDesignes));
+        if ($ids) {
+            $qb->orWhere('c.id IN (:dejaDesignes)')->setParameter('dejaDesignes', $ids);
+        }
+
+        return $qb;
     }
 
     public function findByUtilisateur(Utilisateur $utilisateur): ?ConseillerGouverneur

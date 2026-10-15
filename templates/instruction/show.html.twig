@@ -88,13 +88,30 @@
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Émetteur</div>
                     <div style="font-weight: 600;">{{ instruction.emetteur|default('Gouverneur de la BCC') }}</div>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Direction Pilote</div>
-                    <div style="font-weight: 700; color: var(--bcc-navy-light);">{{ instruction.entitePilote.nomComplet }}</div>
+                <div style="grid-column: 1 / -1;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Conseillers responsables</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                        {% for c in instruction.responsables %}
+                            <span title="{{ c.domaineCompetence }}" style="display: inline-flex; align-items: center; gap: 6px; background: #F0FDFA; border: 1px solid #99F6E4; color: #0F766E; border-radius: 999px; padding: 3px 10px; font-size: 0.8rem; font-weight: 600;">
+                                <i class="bi bi-person-badge"></i> {{ c.nom }}
+                                <span style="font-weight: 400; color: #0F766E; opacity: 0.8;">· {{ c.codeDomaine }}</span>
+                            </span>
+                        {% else %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Aucun conseiller désigné —
+                                <a href="{{ path('app_instruction_edit', {'id': instruction.id}) }}">en désigner</a>, ou laisser l'IA en proposer.
+                            </span>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Responsable Désigné</div>
-                    <div style="font-weight: 600;">{{ instruction.responsable ? instruction.responsable.nomComplet : 'Non désigné directement' }}</div>
+                <div style="grid-column: 1 / -1;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Entités concernées <span style="text-transform: none;">(d'après les actions)</span></div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                        {% for e in instruction.entitesConcernees %}
+                            <span class="badge badge-secondary" title="{{ e.nom }}">{{ e.code }}</span>
+                        {% else %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Aucune action pour le moment.</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Date d'Émission</div>
@@ -117,10 +134,10 @@
         </div>
     </div>
 
-    <!-- Progress & Contributing Entities Card -->
+    <!-- Progress Card -->
     <div class="card" style="margin-bottom: 0;">
         <div class="card-header">
-            <h3 class="card-title"><i class="bi bi-speedometer2" style="color: var(--bcc-gold);"></i> Avancement & Entités Contributrices</h3>
+            <h3 class="card-title"><i class="bi bi-speedometer2" style="color: var(--bcc-gold);"></i> Avancement</h3>
         </div>
         <div class="card-body">
             <!-- Progress gauge -->
@@ -134,37 +151,6 @@
                 </div>
                 <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
                     Calculé automatiquement à partir des {{ instruction.actions|length }} actions opérationnelles.
-                </div>
-            </div>
-
-            <!-- Contributing Entities -->
-            <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <h4 style="font-size: 0.88rem; text-transform: uppercase; color: var(--bcc-navy); font-weight: 700; margin: 0;">
-                        Entités Contributrices ({{ instruction.instructionEntites|length }})
-                    </h4>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('modalAddContributor').style.display = 'flex'" style="padding: 2px 8px; font-size: 0.75rem;">
-                        <i class="bi bi-plus"></i> Associer
-                    </button>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    {% for ie in instruction.instructionEntites %}
-                        <div style="background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <strong>{{ ie.entite.code }}</strong> - {{ ie.entite.nom }}
-                                {% if ie.commentaire %}<div style="font-size: 0.75rem; color: var(--text-muted);">{{ ie.commentaire }}</div>{% endif %}
-                            </div>
-                            <form action="{{ path('app_instruction_remove_contributor', {'id': instruction.id, 'entiteId': ie.entite.id}) }}" method="post" onsubmit="return confirm('Retirer cette entité ?');">
-                                <button type="submit" style="background: none; border: none; color: var(--color-danger); cursor: pointer;" title="Retirer">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    {% else %}
-                        <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
-                            Aucune entité contributrice associée.
-                        </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -536,37 +522,6 @@
     </div>
 </div>
 
-<!-- Modal Add Contributor -->
-<div id="modalAddContributor" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: #FFFFFF; border-radius: var(--radius-lg); max-width: 500px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden;">
-        <div class="card-header">
-            <h3 class="card-title">Associer une Entité Contributrice</h3>
-            <button type="button" onclick="document.getElementById('modalAddContributor').style.display = 'none'" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-        </div>
-        <form action="{{ path('app_instruction_add_contributor', {'id': instruction.id}) }}" method="post" style="padding: 24px;">
-            <div class="form-group">
-                <label class="form-label">Entité / Direction</label>
-                <select name="entite_id" class="form-select" required>
-                    {% import '_macros/entites.html.twig' as entites_ui %}
-                    {{ entites_ui.options(allEntites, null, instruction.entitePilote.id) }}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Rôle / Nature de la contribution</label>
-                <input type="text" name="role_entite" class="form-control" value="CONTRIBUTEUR" placeholder="CONTRIBUTEUR, AVIS_TECHNIQUE, VALIDATION...">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Commentaire / Consigne particulière</label>
-                <textarea name="commentaire" class="form-control" rows="2" placeholder="Précisions..."></textarea>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalAddContributor').style.display = 'none'">Annuler</button>
-                <button type="submit" class="btn btn-primary">Associer l'entité</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- ===================================================================
      MODALE IA : EXTRACTION & CRÉATION EN BLOC DES ACTIONS OPÉRATIONNELLES
      =================================================================== -->
@@ -706,6 +661,20 @@
                     </div>
                 </div>
 
+                <!-- Conseillers responsables proposés par l'IA -->
+                <div id="aiConseillersBlock" style="border: 1px solid #99F6E4; background: #F0FDFA; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <div style="font-size: 0.9rem; font-weight: 700; color: #0F766E;">
+                            <i class="bi bi-person-badge me-1"></i> Conseillers responsables proposés
+                            <span style="font-weight: 400; font-size: 0.78rem; color: var(--text-muted);">— d'après leur domaine de compétence, à confirmer</span>
+                        </div>
+                        <select id="aiAjoutConseiller" class="form-select form-select-sm" style="max-width: 300px;" onchange="ajouterConseillerManuel(this)">
+                            <option value="">+ Ajouter un autre conseiller…</option>
+                        </select>
+                    </div>
+                    <div id="aiConseillersList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+
                 <!-- Tableau interactif d'actions -->
                 <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px; max-height: 48vh; overflow-y: auto;">
                     <table class="table mb-0" id="aiActionsTable" style="font-size: 0.85rem;">
@@ -763,7 +732,15 @@
         {% endfor %}
     ];
 
-    const DEFAULT_ENTITE_ID = {{ instruction.entitePilote.id }};
+    // Entité par défaut des nouvelles lignes : première entité déjà concernée, sinon celle de l'utilisateur
+    {% set entiteParDefaut = instruction.entitesConcernees|first ?: (app.user.entite ?? null) %}
+    const DEFAULT_ENTITE_ID = {{ entiteParDefaut ? entiteParDefaut.id : 'null' }};
+    const ALL_CONSEILLERS = [
+        {% for c in allConseillers %}
+            { id: {{ c.id }}, nom: {{ c.nom|json_encode|raw }}, code: {{ c.codeDomaine|json_encode|raw }}, domaine: {{ c.domaineCompetence|json_encode|raw }} },
+        {% endfor %}
+    ];
+    const RESPONSABLES_ACTUELS = {{ instruction.responsables|map(c => c.id)|json_encode|raw }};
     const INSTRUCTION_ID = {{ instruction.id }};
     let currentSelectedFile = null;
     let extractedActionsData = [];
@@ -924,6 +901,7 @@
 
             extractedActionsData = result.actions || [];
             renderActionsTable(extractedActionsData);
+            renderConseillersProposes(result.conseillers || []);
             switchToPreviewStep();
 
         } catch (error) {
@@ -933,6 +911,51 @@
             btnLaunch.disabled = false;
             loadingIndicator.style.display = 'none';
         }
+    }
+
+    // ── Conseillers responsables (proposés par l'IA, ou ajoutés à la main) ──
+    function conseillerLigneHtml(c, raison, coche) {
+        const deja = RESPONSABLES_ACTUELS.includes(c.id);
+        return `
+            <label class="ai-conseiller-row" data-id="${c.id}" style="display: flex; align-items: flex-start; gap: 10px; background: #FFFFFF; border: 1px solid #CCFBF1; border-radius: 6px; padding: 8px 10px; margin: 0; cursor: ${deja ? 'default' : 'pointer'};">
+                <input type="checkbox" class="ai-conseiller-checkbox" value="${c.id}" ${coche || deja ? 'checked' : ''} ${deja ? 'disabled' : ''} style="margin-top: 3px;">
+                <span style="flex: 1;">
+                    <span style="font-weight: 600; color: var(--bcc-navy); font-size: 0.85rem;">${escapeHtml(c.nom)}</span>
+                    <span class="badge badge-secondary" style="font-size: 0.65rem; margin-left: 4px;">${escapeHtml(c.code)}</span>
+                    ${deja ? '<span style="font-size: 0.72rem; color: #0F766E; margin-left: 6px;">déjà responsable</span>' : ''}
+                    <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(c.domaine)}</span>
+                    ${raison ? `<span style="display: block; font-size: 0.75rem; color: #0F766E; margin-top: 2px;"><i class="bi bi-stars"></i> ${escapeHtml(raison)}</span>` : ''}
+                </span>
+            </label>`;
+    }
+
+    function rafraichirListeAjoutConseiller() {
+        const affiches = Array.from(document.querySelectorAll('.ai-conseiller-row')).map(r => parseInt(r.dataset.id, 10));
+        const select = document.getElementById('aiAjoutConseiller');
+        select.innerHTML = '<option value="">+ Ajouter un autre conseiller…</option>'
+            + ALL_CONSEILLERS.filter(c => !affiches.includes(c.id))
+                .map(c => `<option value="${c.id}">${escapeHtml(c.nom)} — ${escapeHtml(c.domaine)}</option>`).join('');
+    }
+
+    function renderConseillersProposes(proposes) {
+        const list = document.getElementById('aiConseillersList');
+        const ids = proposes.map(p => p.id);
+        // Les responsables déjà désignés sont rappelés en tête, puis les propositions de l'IA
+        const actuels = ALL_CONSEILLERS.filter(c => RESPONSABLES_ACTUELS.includes(c.id) && !ids.includes(c.id));
+
+        let html = actuels.map(c => conseillerLigneHtml(c, null, true)).join('');
+        html += proposes.map(p => conseillerLigneHtml(p, p.raison, true)).join('');
+        list.innerHTML = html || '<div style="font-size: 0.8rem; color: var(--text-muted);">L\'IA n\'a pas identifié de conseiller pour ce sujet. Vous pouvez en ajouter un ci-dessus.</div>';
+        rafraichirListeAjoutConseiller();
+    }
+
+    function ajouterConseillerManuel(select) {
+        const c = ALL_CONSEILLERS.find(x => x.id === parseInt(select.value, 10));
+        if (!c) return;
+        const list = document.getElementById('aiConseillersList');
+        if (!list.querySelector('.ai-conseiller-row')) list.innerHTML = '';
+        list.insertAdjacentHTML('beforeend', conseillerLigneHtml(c, null, true));
+        rafraichirListeAjoutConseiller();
     }
 
     function switchToPreviewStep() {
@@ -962,7 +985,8 @@
         tr.className = 'ai-action-row';
 
         // Options Entités, groupées par Direction Générale (ALL_ENTITES est déjà trié par DG)
-        let entiteOptionsHtml = '';
+        const entiteChoisie = act.entite_id || DEFAULT_ENTITE_ID;
+        let entiteOptionsHtml = entiteChoisie ? '' : '<option value="" selected>-- Choisir l\'entité --</option>';
         let groupeCourant = null;
         ALL_ENTITES.forEach(ent => {
             if (ent.groupe !== groupeCourant) {
@@ -970,7 +994,7 @@
                 groupeCourant = ent.groupe;
                 entiteOptionsHtml += `<optgroup label="${escapeHtml(ent.groupe)}">`;
             }
-            const selected = (act.entite_id && act.entite_id == ent.id) || (!act.entite_id && ent.id == DEFAULT_ENTITE_ID) ? 'selected' : '';
+            const selected = entiteChoisie && entiteChoisie == ent.id ? 'selected' : '';
             entiteOptionsHtml += `<option value="${ent.id}" ${selected}>${escapeHtml(ent.code)} - ${escapeHtml(ent.nom)}</option>`;
         });
         if (groupeCourant !== null) entiteOptionsHtml += '</optgroup>';
@@ -1066,6 +1090,16 @@
             return;
         }
 
+        const sansEntite = actionsToCreate.find(a => !a.entite_id);
+        if (sansEntite) {
+            alert(`Choisissez l'entité responsable de l'action « ${sansEntite.libelle} ».`);
+            return;
+        }
+
+        // Conseillers cochés (les responsables déjà désignés sont désactivés, donc ignorés ici)
+        const responsables = Array.from(document.querySelectorAll('.ai-conseiller-checkbox:checked:not(:disabled)'))
+            .map(cb => parseInt(cb.value, 10));
+
         const btnBatch = document.getElementById('btnBatchSaveActions');
         btnBatch.disabled = true;
         btnBatch.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Création en cours...';
@@ -1077,7 +1111,7 @@
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({ actions: actionsToCreate })
+                body: JSON.stringify({ actions: actionsToCreate, responsables: responsables })
             });
 
             const result = await response.json();
