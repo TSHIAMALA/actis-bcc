@@ -82,11 +82,6 @@
                         <span>Échéances</span>
                     </a>
 
-                    <a href="{{ path('app_admin_entites') }}" class="actis-nav-item {% if 'app_admin_entite' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="bi bi-diagram-3 nav-icon"></i>
-                        <span>Entités</span>
-                    </a>
-
                     <a href="{{ path('app_relance_index') }}" class="actis-nav-item {% if 'app_relance' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="bi bi-send nav-icon"></i>
                         <span>Relances</span>
@@ -117,8 +112,8 @@
                                 <a href="{{ path('app_admin_utilisateurs') }}" class="submenu-item {% if 'app_admin_utilisateurs' in app.request.attributes.get('_route') %}active{% endif %}">
                                     Utilisateurs & Rôles
                                 </a>
-                                <a href="{{ path('app_admin_entites') }}" class="submenu-item {% if 'app_admin_entites' in app.request.attributes.get('_route') %}active{% endif %}">
-                                    Organigramme Entités
+                                <a href="{{ path('app_admin_entites') }}" class="submenu-item {% if 'app_admin_entite' in app.request.attributes.get('_route') %}active{% endif %}">
+                                    <i class="bi bi-diagram-3 me-1"></i> Entités
                                 </a>
                                 <a href="{{ path('app_admin_audit') }}" class="submenu-item {% if app.request.attributes.get('_route') == 'app_admin_audit' %}active{% endif %}">
                                     Journal d'audit
